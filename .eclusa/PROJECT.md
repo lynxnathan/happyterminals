@@ -48,7 +48,7 @@ A declarative, reactive terminal scene manager with GPU-quality visual effects r
 - **Ecosystem state (2025):** Ratatui is the de-facto Rust TUI framework. tachyonfx (1,182★, official ratatui-org project) is the effects library — 50+ built-in effects, composable DSL, WASM + browser-based editor, active maintenance. tui-vfx (8★, ~5 weeks old) is promising but not mature; we don't build on it. voxcii is the reference ASCII 3D viewer but isn't packaged as a library — we take inspiration, not code. PyO3 is the standard Rust↔Python bridge.
 - **Existing workspace state:** Cargo workspace already scaffolded with three placeholder crates — `happyterminals-core`, `happyterminals-renderer`, `happyterminals-compositor`. Vendored copies of `pyo3`, `ratatui`, and `tui-vfx` exist under `vendor/` for reference reading only (not as dependencies). README.md currently lists tui-vfx as a core dep — stale, needs correction to tachyonfx in an early phase.
 - **Who uses this:** Public open-source users first (Rust TUI devs, Python creative coders, terminal art hackers). Eclusa is the workflow manager being used to build it, not the target market — the project stands on its own.
-- **Design lineage:** SolidJS for reactivity (fine-grained, no diffing), tachyonfx for compositing, voxcii for 3D approach, chroma for the "audio-reactive" inspiration (parked), mixed-signals for easing primitives (future).
+- **Design lineage:** SolidJS for reactivity (fine-grained, no diffing), tachyonfx for compositing, voxcii for 3D approach, **react-three-fiber (R3F) for the declarative scene-graph feel** (components-as-props, tree-as-scene, re-render on prop change — but adapted to fine-grained signals, not VDOM), chroma for the "audio-reactive" inspiration (parked), mixed-signals for easing primitives (future).
 
 ## Constraints
 
@@ -73,6 +73,7 @@ A declarative, reactive terminal scene manager with GPU-quality visual effects r
 | **Public release from day one**, dual MIT OR Apache-2.0 | Project stands on its own. Rust-ecosystem standard licensing maximizes adoption. | — Pending |
 | **Phase 5 "fun" items → 999.x backlog** | Audio-reactive, AI scene gen, shader transpile, live REPL, multi-terminal — all valuable, none on the critical path. Revisit post-Python milestone. | — Pending |
 | **Roadmapper agent decides milestone ordering** | User deferred ordering to the eclusa-roadmapper, which will propose from research. Bottom-up vs vertical-slice to be resolved there. | — Pending |
+| **Scene DSL takes cues from react-three-fiber** | R3F's declarative component/prop model ("a tree of primitives is the scene") is the best prior art for terminal 3D scene description. We adapt the shape — tree of scene nodes with props that can be signals — but replace React's VDOM with fine-grained signal reactivity. | — Pending |
 
 ## Evolution
 
