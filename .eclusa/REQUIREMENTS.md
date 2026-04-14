@@ -170,31 +170,27 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Populated during roadmap creation — which phase covers which requirement.
+Authoritative coverage matrix lives in `.eclusa/ROADMAP.md` §"Coverage Matrix". Summary grouping here for quick reference:
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| HYG-01 … HYG-09 | Phase 0 | Pending |
-| REACT-01 … REACT-10 | Phase 1 | Pending |
-| GRID-01 … GRID-05 | Phase 2 | Pending |
-| PIPE-01 … PIPE-07 | Phase 3 | Pending |
-| REND-01 … REND-05 | Phase 4 | Pending |
-| REND-06 … REND-10 | Phase 6 | Pending |
-| SCENE-01 … SCENE-05 | Phase 5 | Pending |
-| DSL-01 … DSL-03 | Phase 5 | Pending |
-| DSL-04 … DSL-08 | Phase 7 | Pending |
-| BACK-01 … BACK-04 | Phase 2 | Pending |
-| BACK-05 | Phase 5 | Pending |
-| DEMO-01 … DEMO-04 | Phase 5 | Pending |
-| REL-01 … REL-05 | Phase 7 | Pending |
-| PY-01 … PY-10 | Phase 8 | Pending |
+| Requirement group | Phase(s) | Milestone |
+|-------------------|----------|-----------|
+| HYG-01 … HYG-09 | Phase 0 | M0 — Workspace Cleanup |
+| REACT-01 … REACT-10 | Phase 1.0 | M1 |
+| GRID-01 … GRID-05, BACK-01 … BACK-04 | Phase 1.1 | M1 |
+| PIPE-01 … PIPE-07 | Phase 1.2 | M1 |
+| REND-01 … REND-05, REND-09 (harness) | Phase 1.3 | M1 |
+| SCENE-01 … SCENE-03, SCENE-05, SCENE-04 (scaffold), DSL-01 … DSL-03 | Phase 1.4 | M1 |
+| DEMO-01 … DEMO-04, BACK-05 | Phase 1.5 | M1 — **spinning cube exit** |
+| REND-06 … REND-10, REND-09 (full), REL-03 | Phases 2.1–2.4 | M2 |
+| SCENE-04 (full), DSL-04 … DSL-08, REL-01 … REL-05 | Phases 3.1–3.5 | M3 — **v1 crates.io release** |
+| PY-01 … PY-10 | Phases 4.1–4.4 | M4 — **FINAL (Python bindings)** |
 
-**Coverage:**
-- v1 requirements: 69 total
-- Mapped to phases: 69 (provisional — roadmapper will refine phase boundaries)
-- Unmapped: 0
+**Coverage:** 69 v1 requirements, 69 mapped, 0 unmapped.
 
-*Note: the phase numbers above reflect the milestone sketch in `.eclusa/research/SUMMARY.md` (Phase 0 cleanup, M1 = Phases 1–5 inclusive of spinning-cube demo, M2 = Phase 6, M3 = Phase 7, M4 = Phase 8). The eclusa-roadmapper will finalize the exact phase breakdown and may split or merge.*
+Two requirements are split across phases (scaffold first, full coverage later):
+
+- **SCENE-04** — scaffolded in Phase 1.4, full TransitionManager in Phase 3.1.
+- **REND-09** — allocation-budget harness in Phase 1.3, full per-frame bench coverage in Phase 2.3.
 
 ---
 *Requirements defined: 2026-04-14*
