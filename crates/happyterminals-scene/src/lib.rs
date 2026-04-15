@@ -10,13 +10,19 @@
 
 pub mod camera;
 pub mod error;
+pub mod graph;
 pub mod ir;
 pub mod node;
 pub mod prop;
+pub mod scene;
+pub mod transition;
 
 // Re-export key types at the crate root.
 pub use camera::CameraConfig;
 pub use error::SceneError;
+pub use graph::SceneGraph;
 pub use ir::SceneIr;
 pub use node::{NodeId, NodeKind, PropMap, SceneNode, Transform};
 pub use prop::{AnyReactive, PropValue};
+pub use scene::Scene;
+pub use transition::TransitionManager;
