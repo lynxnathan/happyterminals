@@ -5,8 +5,8 @@
 See: `.eclusa/PROJECT.md` (updated 2026-04-14)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Milestone 1 — Spinning Cube Demo. Phase 1.0 (Reactive Core) in-progress: Wave 1 (01.0-01) and Wave 2 (01.0-02, 01.0-03, 01.0-04) complete. Wave 3 complete: 01.0-02b (crate-root re-exports) landed. Next up: Wave 4 — 01.0-05 (tests + benches + docs) to finalize Phase 1.0.
-**Next command:** `/eclusa:execute-phase 1.0` (run Wave 4)
+**Current focus:** Milestone 1 — Spinning Cube Demo. Phase 1.0 (Reactive Core) COMPLETE. Phase 1.1 (Grid + Ratatui Backend) PLANNED — 3 plans in 2 waves, all 9 requirements covered (GRID-01..05, BACK-01..04), verification passed.
+**Next command:** `/eclusa:execute-phase 1.1`
 
 ---
 
@@ -104,4 +104,11 @@ From `.eclusa/config.json`:
 | `project.eclusa` | Machine-readable project identity + stances | 2026-04-14 |
 
 ---
-*Last updated: 2026-04-15 — 01.0-02b-lib-reexports-PLAN.md complete (Wave 3); Phase 1.0 Waves 1–3 done, Wave 4 (01.0-05) next*
+## Session Continuity
+
+Last session: 2026-04-15
+Stopped at: Phase 1.1 planned, ready for execution
+Resume file: n/a
+
+---
+*Last updated: 2026-04-15 — Phase 1.1 planned (3 plans, 2 waves, verification passed). Ready to execute.*
