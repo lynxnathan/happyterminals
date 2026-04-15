@@ -20,6 +20,7 @@ pub mod effects;
 pub mod error;
 pub mod pipeline;
 
+pub use adapter::TachyonAdapter;
 pub use effect::{Effect, EffectState};
 pub use error::PipelineError;
 pub use pipeline::Pipeline;
