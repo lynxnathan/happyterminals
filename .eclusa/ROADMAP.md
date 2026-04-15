@@ -180,7 +180,7 @@ M1 delivers the PROJECT.md exit criterion: a signal-driven spinning ASCII cube w
 **Plans:** 3 plans
 
 Plans:
-- [ ] 01.1-01-PLAN.md -- Cell + Grid types (grapheme-cluster-correct newtype over ratatui::Buffer)
+- [x] 01.1-01-PLAN.md -- Cell + Grid types (grapheme-cluster-correct newtype over ratatui::Buffer)
 - [ ] 01.1-02-PLAN.md -- TerminalGuard RAII + event mapping + FrameSpec
 - [ ] 01.1-03-PLAN.md -- run() event loop + 1-cell bytes test + meta prelude + static demo
 **UI hint**: yes

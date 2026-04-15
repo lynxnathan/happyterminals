@@ -34,11 +34,11 @@ Requirements for the public v1 release — everything up to and including Python
 
 ### Grid (`happyterminals-core`)
 
-- [ ] **GRID-01**: `Cell` holds one grapheme cluster (not a `char`) plus display width, fg/bg colors (RGB+256+16+auto-fallback), and modifiers (bold/italic/underline/reverse)
-- [ ] **GRID-02**: `Grid` is a newtype over `ratatui::Buffer` (or layout-equivalent); a 1–2 day spike in Phase M1.1 verifies layout compatibility before the newtype lands in public API
-- [ ] **GRID-03**: `Grid::put_str(x, y, s, style)` handles multi-byte characters, wide (east-asian, emoji) cells, combining marks, and ZWJ sequences correctly via `unicode-segmentation` + `unicode-width` (or `runefix-core`)
+- [x] **GRID-01**: `Cell` holds one grapheme cluster (not a `char`) plus display width, fg/bg colors (RGB+256+16+auto-fallback), and modifiers (bold/italic/underline/reverse)
+- [x] **GRID-02**: `Grid` is a newtype over `ratatui::Buffer` (or layout-equivalent); a 1–2 day spike in Phase M1.1 verifies layout compatibility before the newtype lands in public API
+- [x] **GRID-03**: `Grid::put_str(x, y, s, style)` handles multi-byte characters, wide (east-asian, emoji) cells, combining marks, and ZWJ sequences correctly via `unicode-segmentation` + `unicode-width` (or `runefix-core`)
 - [ ] **GRID-04**: No custom ANSI diff layer — Grid cells blit into `ratatui::Buffer` and `terminal.flush()` emits minimal ANSI. M1 exit includes a test: "one signal change → ≤ ~10 bytes written to TTY"
-- [ ] **GRID-05**: Grid clears cleanly on resize; resize events are drained between frames (no resize during rasterization); Windows-Terminal resize is tested
+- [x] **GRID-05**: Grid clears cleanly on resize; resize events are drained between frames (no resize during rasterization); Windows-Terminal resize is tested
 
 ### Pipeline + Effects (`happyterminals-pipeline`)
 
