@@ -22,7 +22,7 @@
 //!
 //! [`Effect`] is **single-threaded** (`!Send + !Sync`). The user closure may
 //! capture non-`Send` data (e.g. `Rc`, `RefCell`) because we route it through
-//! [`crate::runtime::wrap_local_fnmut`], a `SendWrapper`-based shim that
+//! an internal `SendWrapper`-based shim (`runtime::wrap_local_fnmut`) that
 //! satisfies `ImmediateEffect::new_mut_scoped`'s `FnMut + Send + Sync +
 //! 'static` bound while panicking if the closure is ever invoked from another
 //! thread — matching our single-threaded promise.

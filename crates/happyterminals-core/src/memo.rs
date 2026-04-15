@@ -9,8 +9,8 @@
 //! [`Memo<T>`] is **single-threaded**: `!Send + !Sync`. It wraps
 //! `reactive_graph::computed::Memo`; the user-provided compute closure may
 //! capture non-`Send` data (e.g. `Rc`, `RefCell`) because we route it through
-//! [`crate::runtime::wrap_local_fn`] (a `SendWrapper` shell that panics if
-//! dereferenced from another thread — matching our single-threaded promise).
+//! an internal `SendWrapper` shell (`runtime::wrap_local_fn`) that panics if
+//! dereferenced from another thread — matching our single-threaded promise.
 //!
 //! # Known deviation from CONTEXT.md §"API surface"
 //!
