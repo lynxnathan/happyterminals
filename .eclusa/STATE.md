@@ -3,13 +3,13 @@ eclusa_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02.1-01-PLAN.md (mesh module + load_obj + corpus + proptest)
-last_updated: "2026-04-15T22:52:23.769Z"
+stopped_at: Completed 02.1-02-PLAN.md
+last_updated: "2026-04-15T23:03:35.857Z"
 progress:
   total_phases: 12
   completed_phases: 5
   total_plans: 26
-  completed_plans: 17
+  completed_plans: 18
 ---
 
 # State: happyterminals
@@ -120,8 +120,8 @@ From `.eclusa/config.json`:
 ---
 ## Session Continuity
 
-Last session: 2026-04-15T22:52:23.765Z
-Stopped at: Completed 02.1-01-PLAN.md (mesh module + load_obj + corpus + proptest)
+Last session: 2026-04-15T23:03:35.853Z
+Stopped at: Completed 02.1-02-PLAN.md
 Resume file: None
 Pending decision carried: model-toggler (bunny/cow/teapot viewer) resolved by pulling Phase 2.1 forward (option B from 2026-04-15 session)
 
@@ -143,3 +143,4 @@ Pending decision carried: model-toggler (bunny/cow/teapot viewer) resolved by pu
 | Phase 01.4 P01 | 4min | 2 tasks | 12 files |
 | Phase 01.4 P02 | 5min | 2 tasks | 10 files |
 | Phase 02.1 P01 | 8 min | 3 tasks | 16 files |
+| Phase 02.1 P02 | 6 min | 2 tasks | 6 files |
