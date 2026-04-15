@@ -11,7 +11,7 @@
 //!
 //! - [`projection`] -- Perspective projection with cell aspect ratio correction.
 //! - [`cube`] -- Unit cube primitive (8 vertices, 12 triangles, 6 face normals).
-//! - [`shading`] -- ASCII shading ramp mapping NdotL to characters.
+//! - [`shading`] -- ASCII shading ramp mapping `NdotL` to characters.
 //! - [`camera`] -- Orbit camera converting spherical coordinates to view matrix.
 
 #![forbid(unsafe_code)]

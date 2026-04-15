@@ -33,7 +33,7 @@ impl Projection {
     /// near plane maps to depth 1.0, infinity maps to depth 0.0.
     #[must_use]
     pub fn matrix(&self) -> Mat4 {
-        let pixel_aspect = self.viewport_w as f32 / self.viewport_h as f32;
+        let pixel_aspect = f32::from(self.viewport_w) / f32::from(self.viewport_h);
         let effective_aspect = pixel_aspect / self.cell_aspect;
 
         Mat4::perspective_infinite_reverse_rh(self.fov_y, effective_aspect, 0.1)
