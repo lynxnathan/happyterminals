@@ -4,6 +4,7 @@
 use crossterm::event::{
     Event as CrosstermEvent, KeyCode, KeyEventKind, KeyModifiers, MouseEventKind,
 };
+use happyterminals_core::Signal;
 
 /// Terminal input event, mapped from crossterm events.
 ///
@@ -81,6 +82,33 @@ pub fn is_quit_event(ev: &InputEvent) -> bool {
             modifiers,
         } if modifiers.contains(KeyModifiers::CONTROL)
     )
+}
+
+/// Signals updated by `run()` on each input event. Scenes read these to react
+/// to user input. Per CONTEXT.md locked decision: "Input events -> signals:
+/// key, mouse, resize, focus events map to signals the scene can read."
+pub struct InputSignals {
+    /// Last key event received (`None` initially).
+    pub last_key: Signal<Option<InputEvent>>,
+    /// Last mouse event received (`None` initially).
+    pub last_mouse: Signal<Option<InputEvent>>,
+    /// Current terminal size `(width, height)`. Updated on Resize events.
+    pub terminal_size: Signal<(u16, u16)>,
+    /// Whether the terminal has focus. Updated on FocusGained/FocusLost.
+    pub focused: Signal<bool>,
+}
+
+impl InputSignals {
+    /// Creates a new set of input signals with the given initial terminal size.
+    #[must_use]
+    pub fn new(initial_width: u16, initial_height: u16) -> Self {
+        Self {
+            last_key: Signal::new(None),
+            last_mouse: Signal::new(None),
+            terminal_size: Signal::new((initial_width, initial_height)),
+            focused: Signal::new(true), // assume focused on start
+        }
+    }
 }
 
 #[cfg(test)]

@@ -7,10 +7,12 @@
 #![forbid(unsafe_code)]
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-pub mod guard;
 pub mod event;
 pub mod frame_spec;
+pub mod guard;
+pub mod run;
 
-pub use event::InputEvent;
+pub use event::{InputEvent, InputSignals};
 pub use frame_spec::FrameSpec;
 pub use guard::{install_panic_hook, TerminalGuard};
+pub use run::run;

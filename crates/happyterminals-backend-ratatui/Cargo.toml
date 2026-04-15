@@ -17,6 +17,7 @@ happyterminals-core = { workspace = true }
 ratatui             = { workspace = true }
 ratatui-crossterm   = { workspace = true }
 crossterm           = { workspace = true }
+futures             = { workspace = true }
 tokio               = { workspace = true }
 tracing             = { workspace = true }
 
