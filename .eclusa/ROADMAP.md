@@ -301,7 +301,11 @@ Plans:
 
 **Parallelization:** Can start **in parallel with Phase 1.3** using a stub renderer; both converge before 1.5.
 
-**Plans:** TBD
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [ ] 01.4-01-PLAN.md — Scene crate types (NodeId, SceneNode, PropValue, SceneIr, SceneGraph, CameraConfig, Scene, TransitionManager)
+- [ ] 01.4-02-PLAN.md — DSL builder (SceneBuilder, CubeBuilder, LayerBuilder) + prelude + meta crate update
 **UI hint**: yes
 
 ---
