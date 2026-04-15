@@ -10,9 +10,12 @@ use glam::Vec3;
 
 /// Default shading characters, from darkest to brightest.
 ///
-/// Dotted progression — unlit faces render as `·` (middle dot, visible but
-/// subtle) rather than blank space, so a cube's back face is still legible.
-pub const DEFAULT_RAMP: &[char] = &['·', '.', ':', ';', '+', 'o', 'O', '●', '█'];
+/// Adopted from voxcii (https://github.com/lynxnathan/voxcii) — a pure-ASCII
+/// progression that uses punctuation variants for the low-density end and
+/// progressively heavier glyphs for highlights. Unlit faces render as `.`
+/// rather than blank space so a model's back face stays legible.
+pub const DEFAULT_RAMP: &[char] =
+    &['.', ',', '\'', ':', ';', '!', '+', '*', '=', '#', '$', '@'];
 
 /// Maps the dot product of a face normal and light direction to an ASCII character.
 #[derive(Debug, Clone)]
@@ -57,11 +60,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn default_ramp_is_dotted_progression() {
-        assert_eq!(DEFAULT_RAMP.len(), 9);
+    fn default_ramp_matches_voxcii() {
+        assert_eq!(DEFAULT_RAMP.len(), 12);
         assert_eq!(
             DEFAULT_RAMP,
-            &['·', '.', ':', ';', '+', 'o', 'O', '●', '█']
+            &['.', ',', '\'', ':', ';', '!', '+', '*', '=', '#', '$', '@']
         );
     }
 
@@ -71,7 +74,7 @@ mod tests {
         // Vec3::Y dotted with normalized (1,1,1) = 1/sqrt(3) ~ 0.577
         let ch = ramp.shade(Vec3::Y);
         // Should be in the brighter half, definitely not the darkest dot
-        assert_ne!(ch, '·', "Normal facing light should not be darkest");
+        assert_ne!(ch, '.', "Normal facing light should not be darkest");
     }
 
     #[test]
@@ -79,7 +82,7 @@ mod tests {
         let ramp = ShadingRamp::default();
         // -Y is mostly away from (1,1,1).normalize()
         let ch = ramp.shade(-Vec3::Y);
-        assert_eq!(ch, '·', "Normal facing away from light should be darkest (middle dot)");
+        assert_eq!(ch, '.', "Normal facing away from light should be darkest");
     }
 
     #[test]
@@ -87,7 +90,7 @@ mod tests {
         let ramp = ShadingRamp::default();
         let light = Vec3::new(1.0, 1.0, 1.0).normalize();
         let ch = ramp.shade(light);
-        assert_eq!(ch, '█', "Normal aligned with light should be brightest (full block)");
+        assert_eq!(ch, '@', "Normal aligned with light should be brightest");
     }
 
     #[test]
