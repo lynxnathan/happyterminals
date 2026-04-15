@@ -201,9 +201,31 @@ impl Default for Renderer {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used, clippy::unwrap_used)]
 mod tests {
     use super::*;
     use happyterminals_core::Rect;
+
+    /// Absolute path to a pre-imported real-world model at the workspace root.
+    macro_rules! real_model {
+        ($name:literal) => {
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/models/", $name)
+        };
+    }
+
+    fn count_non_space_cells(grid: &Grid, w: u16, h: u16) -> usize {
+        let mut non_space = 0;
+        for y in 0..h {
+            for x in 0..w {
+                if let Some(cell) = grid.cell(Position::new(x, y)) {
+                    if cell.symbol() != " " {
+                        non_space += 1;
+                    }
+                }
+            }
+        }
+        non_space
+    }
 
     #[test]
     fn draw_renders_visible_cube() {
@@ -221,20 +243,11 @@ mod tests {
         };
         let shading = ShadingRamp::default();
         let mut renderer = Renderer::new();
+        let cube_mesh = Cube::mesh();
 
-        renderer.draw(&mut grid, &camera, &projection, &shading);
+        renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &shading);
 
-        // Count non-space cells
-        let mut non_space = 0;
-        for y in 0..24_u16 {
-            for x in 0..80_u16 {
-                if let Some(cell) = grid.cell(Position::new(x, y)) {
-                    if cell.symbol() != " " {
-                        non_space += 1;
-                    }
-                }
-            }
-        }
+        let non_space = count_non_space_cells(&grid, 80, 24);
         assert!(
             non_space > 10,
             "Cube should be visible (non-space cells), got {non_space}"
@@ -248,16 +261,138 @@ mod tests {
         let projection = Projection::default();
         let shading = ShadingRamp::default();
         let mut renderer = Renderer::new();
+        let cube_mesh = Cube::mesh();
 
-        renderer.draw(&mut grid, &camera, &projection, &shading);
+        renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &shading);
         let cap_after_first = renderer.z_buffer.capacity();
 
-        renderer.draw(&mut grid, &camera, &projection, &shading);
+        renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &shading);
         let cap_after_second = renderer.z_buffer.capacity();
 
         assert_eq!(
             cap_after_first, cap_after_second,
             "z_buffer should not grow between draws: {cap_after_first} vs {cap_after_second}"
+        );
+    }
+
+    /// VALIDATION must-have #5: rasterizing a loaded bunny Mesh produces
+    /// >= 50 non-space cells on an 80x24 grid at default orbit pose.
+    #[test]
+    fn draw_loaded_bunny_produces_pixels() {
+        let bunny_path = real_model!("bunny.obj");
+        let (bunny_mesh, _stats) = load_obj(bunny_path).expect("bunny.obj must load");
+
+        // Auto-fit camera to bunny bounding sphere.
+        let (center, radius) = bunny_mesh.bounding_sphere();
+        let camera = OrbitCamera {
+            azimuth: std::f32::consts::FRAC_PI_4,
+            elevation: std::f32::consts::FRAC_PI_6,
+            distance: radius * 2.5,
+            target: center,
+        };
+        let projection = Projection {
+            viewport_w: 80,
+            viewport_h: 24,
+            ..Projection::default()
+        };
+        let shading = ShadingRamp::default();
+        let mut grid = Grid::new(Rect::new(0, 0, 80, 24));
+        let mut renderer = Renderer::new();
+
+        renderer.draw(&mut grid, &bunny_mesh, &camera, &projection, &shading);
+
+        let non_space = count_non_space_cells(&grid, 80, 24);
+        assert!(
+            non_space >= 50,
+            "Bunny should rasterize to >= 50 non-space cells, got {non_space}"
+        );
+    }
+
+    /// REND-09 zero-allocation discipline: drawing a 12-tri mesh twice does
+    /// not grow the z-buffer capacity. This is the same invariant as the
+    /// original `draw_twice_does_not_grow_z_buffer` test; kept explicitly
+    /// under a "mesh" name for clarity post-refactor.
+    #[test]
+    fn draw_mesh_twice_does_not_grow_z_buffer() {
+        let mut grid = Grid::new(Rect::new(0, 0, 80, 24));
+        let camera = OrbitCamera::default();
+        let projection = Projection::default();
+        let shading = ShadingRamp::default();
+        let mut renderer = Renderer::new();
+        let cube_mesh = Cube::mesh();
+
+        renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &shading);
+        let cap_first = renderer.z_buffer.capacity();
+        let cap_chars_first = renderer.cell_chars.capacity();
+
+        for _ in 0..10 {
+            renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &shading);
+        }
+        let cap_last = renderer.z_buffer.capacity();
+        let cap_chars_last = renderer.cell_chars.capacity();
+
+        assert_eq!(
+            cap_first, cap_last,
+            "z_buffer capacity must stay stable across 11 draws"
+        );
+        assert_eq!(
+            cap_chars_first, cap_chars_last,
+            "cell_chars capacity must stay stable across 11 draws"
+        );
+    }
+
+    /// Per-mesh shading override: if `mesh.shading` is Some, the rasterizer
+    /// must use it in place of the scene-default ramp. Exercises the 999.x
+    /// scaffolding field on `Mesh`.
+    #[test]
+    fn draw_respects_per_mesh_shading_override() {
+        let mut grid = Grid::new(Rect::new(0, 0, 80, 24));
+        let camera = OrbitCamera {
+            azimuth: std::f32::consts::FRAC_PI_4,
+            elevation: std::f32::consts::FRAC_PI_6,
+            distance: 5.0,
+            target: Vec3::ZERO,
+        };
+        let projection = Projection {
+            viewport_w: 80,
+            viewport_h: 24,
+            ..Projection::default()
+        };
+        // Scene-default ramp uses DEFAULT_RAMP characters ('.', ',', ...).
+        let scene_shading = ShadingRamp::default();
+
+        // Custom ramp made entirely of characters that are NOT in DEFAULT_RAMP.
+        static CUSTOM_RAMP: &[char] = &['X', 'Y', 'Z', 'W', 'V'];
+        let custom = ShadingRamp {
+            ramp: CUSTOM_RAMP,
+            light_dir: Vec3::new(1.0, 1.0, 1.0).normalize(),
+        };
+
+        let mut cube_mesh = Cube::mesh();
+        cube_mesh.shading = Some(custom);
+
+        let mut renderer = Renderer::new();
+        renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &scene_shading);
+
+        // Collect the distinct non-space glyphs drawn.
+        let mut found_custom_glyph = false;
+        for y in 0..24_u16 {
+            for x in 0..80_u16 {
+                if let Some(cell) = grid.cell(Position::new(x, y)) {
+                    let sym = cell.symbol();
+                    if sym != " " && CUSTOM_RAMP.iter().any(|c| sym.starts_with(*c)) {
+                        found_custom_glyph = true;
+                        break;
+                    }
+                }
+            }
+            if found_custom_glyph {
+                break;
+            }
+        }
+        assert!(
+            found_custom_glyph,
+            "Per-mesh shading override should inject custom ramp characters"
         );
     }
 
@@ -267,7 +402,8 @@ mod tests {
             distance: 0.5,
             ..OrbitCamera::default()
         };
-        let near = scene_fit_near(&cam);
+        let cube_mesh = Cube::mesh();
+        let near = scene_fit_near(&cam, &cube_mesh);
         assert!(
             (near - 0.01).abs() < f32::EPSILON,
             "Near plane should clamp to 0.01 for close camera, got {near}"
@@ -277,8 +413,10 @@ mod tests {
     #[test]
     fn scene_fit_near_at_default_distance() {
         let cam = OrbitCamera::default(); // distance = 5.0
-        let near = scene_fit_near(&cam);
-        let expected = 5.0 - CUBE_BOUNDING_RADIUS;
+        let cube_mesh = Cube::mesh();
+        let near = scene_fit_near(&cam, &cube_mesh);
+        // sqrt(3)/2 ≈ 0.8660254 — bounding radius of the unit cube.
+        let expected = 5.0 - cube_mesh.bounding_sphere().1;
         assert!(
             (near - expected).abs() < 0.001,
             "Near plane should be distance - bounding_radius, got {near} expected {expected}"
