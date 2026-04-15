@@ -219,7 +219,7 @@ Plans:
 **Plans:** 2 plans in 2 waves
 
 Plans:
-- [ ] 01.2-01-PLAN.md — Effect trait + EffectState + Pipeline executor + Fx alias + Grid::buffer_mut()
+- [x] 01.2-01-PLAN.md — Effect trait + EffectState + Pipeline executor + Fx alias + Grid::buffer_mut()
 - [ ] 01.2-02-PLAN.md — TachyonAdapter + 10 tachyonfx effect wrappers + smoke tests + criterion benchmark
 
 ---

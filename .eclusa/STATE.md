@@ -3,13 +3,13 @@ eclusa_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 1.2 context gathered
-last_updated: "2026-04-15T12:10:31.003Z"
+stopped_at: Completed 01.2-01-PLAN.md
+last_updated: "2026-04-15T12:29:41.844Z"
 progress:
   total_phases: 8
   completed_phases: 1
-  total_plans: 14
-  completed_plans: 7
+  total_plans: 16
+  completed_plans: 8
 ---
 
 # State: happyterminals
@@ -120,9 +120,9 @@ From `.eclusa/config.json`:
 ---
 ## Session Continuity
 
-Last session: 2026-04-15T12:10:31.000Z
-Stopped at: Phase 1.2 context gathered
-Resume file: .eclusa/phases/01.2-pipeline-tachyonfx-adapter/01.2-CONTEXT.md
+Last session: 2026-04-15T12:29:41.841Z
+Stopped at: Completed 01.2-01-PLAN.md
+Resume file: None
 
 ---
 
@@ -135,3 +135,4 @@ Resume file: .eclusa/phases/01.2-pipeline-tachyonfx-adapter/01.2-CONTEXT.md
 ---
 *Last updated: 2026-04-15 — Plan 01.1-02 complete. TerminalGuard RAII, InputEvent mapping, FrameSpec shipped.*
 | Phase 01.1 P03 | 5min | 3 tasks | 11 files |
+| Phase 01.2 P01 | 5min | 2 tasks | 8 files |

@@ -42,13 +42,13 @@ Requirements for the public v1 release — everything up to and including Python
 
 ### Pipeline + Effects (`happyterminals-pipeline`)
 
-- [ ] **PIPE-01**: `Effect` trait: `fn apply(&mut self, grid: &mut Grid, dt: Duration) -> EffectState`; returns `Running`/`Done`. Effects are stateful (hold timers, progress).
-- [ ] **PIPE-02**: `Pipeline` is `Vec<Box<dyn Effect>>` — trait objects, not generic chains, so JSON recipes and Python can construct pipelines at runtime
+- [x] **PIPE-01**: `Effect` trait: `fn apply(&mut self, grid: &mut Grid, dt: Duration) -> EffectState`; returns `Running`/`Done`. Effects are stateful (hold timers, progress).
+- [x] **PIPE-02**: `Pipeline` is `Vec<Box<dyn Effect>>` — trait objects, not generic chains, so JSON recipes and Python can construct pipelines at runtime
 - [ ] **PIPE-03**: `TachyonAdapter<S: tachyonfx::Shader>` wraps a tachyonfx effect as one of our `Effect` trait objects (with real `Duration` dt forwarded)
-- [ ] **PIPE-04**: `tachyonfx::Effect` is aliased to `Fx` in our public surface so our `Effect` trait name stays unambiguous (decision committed before any Pipeline consumer lands)
-- [ ] **PIPE-05**: Whole-grid composition passes — no per-object effect loops that go O(objects × effects); criterion bench documents the floor
+- [x] **PIPE-04**: `tachyonfx::Effect` is aliased to `Fx` in our public surface so our `Effect` trait name stays unambiguous (decision committed before any Pipeline consumer lands)
+- [x] **PIPE-05**: Whole-grid composition passes — no per-object effect loops that go O(objects × effects); criterion bench documents the floor
 - [ ] **PIPE-06**: At least 10 tachyonfx effects wired end-to-end and smoke-tested (vignette, dissolve, fade_in, fade_out, crt, color_ramp, typewriter, sweep, slide, and one glitch/shader effect)
-- [ ] **PIPE-07**: Effects mutate scene state only through the reactive channel — **never** mutate `Grid` from outside a Pipeline apply. Documented invariant, lint-enforced where possible.
+- [x] **PIPE-07**: Effects mutate scene state only through the reactive channel — **never** mutate `Grid` from outside a Pipeline apply. Documented invariant, lint-enforced where possible.
 
 ### 3D Renderer (`happyterminals-renderer`)
 
@@ -75,7 +75,7 @@ Requirements for the public v1 release — everything up to and including Python
 
 - [ ] **DSL-01**: Rust builder API shaped after react-three-fiber: tree of typed nodes with props, props can be signals — e.g. `scene().layer(|l| l.cube().rotation(&r).position(vec3(0., 0., 0.))).effect(fx::vignette(0.3)).build()?`
 - [ ] **DSL-02**: "Hello world" for a user (open an editor → spinning cube on screen) is ≤25 lines of Rust including imports
-- [ ] **DSL-03**: Errors are `Result`-based on the public API surface; `clippy::unwrap_used`/`clippy::expect_used` denied in every library crate
+- [x] **DSL-03**: Errors are `Result`-based on the public API surface; `clippy::unwrap_used`/`clippy::expect_used` denied in every library crate
 - [ ] **DSL-04**: JSON recipe loader (`-dsl::json`) accepts a JSON scene, validates against a schemars-generated schema via jsonschema, binds named signal references, and produces a `SceneIr` identical to the Rust builder path
 - [ ] **DSL-05**: JSON recipes are pure data — effect names resolve through a static registry; no `eval`, no shell-out, no mesh paths that escape a user-defined sandbox
 - [ ] **DSL-06**: Round-trip property test: Rust builder → SceneIr → JSON → SceneIr produces identical render output
