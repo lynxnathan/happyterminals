@@ -43,6 +43,7 @@ pub mod prelude {
 
     // Renderer types
     pub use happyterminals_renderer::{OrbitCamera, Projection, ShadingRamp};
+    pub use happyterminals_renderer::{Cube, LoadStats, Mesh, MeshError, load_obj};
 
     // Pipeline
     pub use happyterminals_pipeline::{Pipeline, Fx};
@@ -74,6 +75,10 @@ mod tests {
             let _ = std::any::type_name::<CubeBuilder>();
             let _ = std::any::type_name::<OrbitCamera>();
             let _ = std::any::type_name::<Pipeline>();
+            let _ = std::any::type_name::<Mesh>();
+            let _ = std::any::type_name::<LoadStats>();
+            let _ = std::any::type_name::<MeshError>();
+            let _ = std::any::type_name::<Cube>();
         }
     }
 }
