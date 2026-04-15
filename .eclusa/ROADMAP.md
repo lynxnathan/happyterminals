@@ -177,12 +177,12 @@ M1 delivers the PROJECT.md exit criterion: a signal-driven spinning ASCII cube w
 
 **Parallelization:** Grid-newtype spike, TerminalGuard implementation, and the tokio::select loop skeleton can proceed as three parallel plans once Phase 1.0 is done.
 
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 01.1-01-PLAN.md -- Cell + Grid types (grapheme-cluster-correct newtype over ratatui::Buffer)
 - [x] 01.1-02-PLAN.md -- TerminalGuard RAII + event mapping + FrameSpec
-- [ ] 01.1-03-PLAN.md -- run() event loop + 1-cell bytes test + meta prelude + static demo
+- [x] 01.1-03-PLAN.md -- run() event loop + 1-cell bytes test + meta prelude + static demo
 **UI hint**: yes
 
 ---
@@ -559,7 +559,7 @@ Highest-value parallelization opportunities inside M1:
 
 - [ ] **Phase 0: Workspace Hygiene** — Resolve stub-crate dep rot, vendor debris, license + registry plumbing, CI baseline.
 - [ ] **Phase 1.0: Reactive Core** — Signal/Memo/Effect/Owner/batch/untracked/SignalSetter with clean disposal and cycle detection.
-- [ ] **Phase 1.1: Grid + Ratatui Backend (static)** — Grapheme-correct Grid, panic-safe TerminalGuard, tokio::select loop, 1-cell-bytes test harness.
+- [x] **Phase 1.1: Grid + Ratatui Backend (static)** — Grapheme-correct Grid, panic-safe TerminalGuard, tokio::select loop, 1-cell-bytes test harness. (completed 2026-04-15)
 - [ ] **Phase 1.2: Pipeline + tachyonfx** — Our Effect trait, Pipeline<Vec<Box<dyn Effect>>>, TachyonAdapter, `Fx` rename, 10+ effects smoke-tested.
 - [ ] **Phase 1.3: Minimal Renderer (Cube)** — Z-buffer, cell-aspect projection, reversed-Z, shading ramp, Cube primitive, signal-driven orbit camera.
 - [ ] **Phase 1.4: Scene IR + Rust DSL** — SceneIr, layered SceneGraph, react-three-fiber-shaped builder with signal-bindable props, ≤25-line hello-world.
@@ -578,7 +578,7 @@ The sections above (Milestone 0, Milestone 1 phases 1.0–1.5, Milestone 2 sketc
 |-------|----------------|--------|-----------|
 | 0. Workspace Hygiene | 0/? | Not started | - |
 | 1.0 Reactive Core | 0/? | Not started | - |
-| 1.1 Grid + Ratatui Backend | 0/? | Not started | - |
+| 1.1 Grid + Ratatui Backend | 3/3 | Complete   | 2026-04-15 |
 | 1.2 Pipeline + tachyonfx | 0/? | Not started | - |
 | 1.3 Minimal Renderer | 0/? | Not started | - |
 | 1.4 Scene IR + Rust DSL | 0/? | Not started | - |

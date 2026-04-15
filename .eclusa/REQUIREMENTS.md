@@ -37,7 +37,7 @@ Requirements for the public v1 release — everything up to and including Python
 - [x] **GRID-01**: `Cell` holds one grapheme cluster (not a `char`) plus display width, fg/bg colors (RGB+256+16+auto-fallback), and modifiers (bold/italic/underline/reverse)
 - [x] **GRID-02**: `Grid` is a newtype over `ratatui::Buffer` (or layout-equivalent); a 1–2 day spike in Phase M1.1 verifies layout compatibility before the newtype lands in public API
 - [x] **GRID-03**: `Grid::put_str(x, y, s, style)` handles multi-byte characters, wide (east-asian, emoji) cells, combining marks, and ZWJ sequences correctly via `unicode-segmentation` + `unicode-width` (or `runefix-core`)
-- [ ] **GRID-04**: No custom ANSI diff layer — Grid cells blit into `ratatui::Buffer` and `terminal.flush()` emits minimal ANSI. M1 exit includes a test: "one signal change → ≤ ~10 bytes written to TTY"
+- [x] **GRID-04**: No custom ANSI diff layer — Grid cells blit into `ratatui::Buffer` and `terminal.flush()` emits minimal ANSI. M1 exit includes a test: "one signal change → ≤ ~10 bytes written to TTY"
 - [x] **GRID-05**: Grid clears cleanly on resize; resize events are drained between frames (no resize during rasterization); Windows-Terminal resize is tested
 
 ### Pipeline + Effects (`happyterminals-pipeline`)
@@ -84,10 +84,10 @@ Requirements for the public v1 release — everything up to and including Python
 
 ### Ratatui Backend (`happyterminals-backend-ratatui`)
 
-- [ ] **BACK-01**: `run(scene, FrameSpec)` drives a `tokio::select!` loop between a frame ticker (30/60 fps) and `crossterm::EventStream`; all frame work is synchronous on the render thread
+- [x] **BACK-01**: `run(scene, FrameSpec)` drives a `tokio::select!` loop between a frame ticker (30/60 fps) and `crossterm::EventStream`; all frame work is synchronous on the render thread
 - [x] **BACK-02**: `TerminalGuard` RAII + panic hook restore cursor, raw mode, alternate-screen buffer, mouse capture, and SGR state even on panic; Ctrl-C in any example leaves a sane shell
 - [x] **BACK-03**: Input events propagate into scene signals (key, mouse, resize, focus)
-- [ ] **BACK-04**: Meta crate `happyterminals` re-exports a curated public surface (signals, scene builder, fx preludes, run, common types); users typically write `use happyterminals::prelude::*;`
+- [x] **BACK-04**: Meta crate `happyterminals` re-exports a curated public surface (signals, scene builder, fx preludes, run, common types); users typically write `use happyterminals::prelude::*;`
 - [ ] **BACK-05**: Cross-terminal verification matrix — Windows Terminal, GNOME Terminal, macOS Terminal.app, iTerm2, Kitty, Alacritty, tmux + screen, SSH session; spinning cube runs on all of them before M1 exit
 
 ### Milestone 1 Demo Exit
