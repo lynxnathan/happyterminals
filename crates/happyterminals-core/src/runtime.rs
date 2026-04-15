@@ -44,6 +44,23 @@ pub(crate) fn wrap_local_fnmut<F: FnMut() + 'static>(f: F) -> impl FnMut() + Sen
     }
 }
 
+/// Wraps a non-`Send` `Fn` closure returning `T` in a `Send + Sync` shell that
+/// panics if invoked from another thread. Sibling of [`wrap_local_fnmut`],
+/// used by `Memo::new` in 01.0-02.
+///
+/// The returned closure takes an `Option<&T>` argument (ignored) so that its
+/// signature matches `reactive_graph::computed::Memo::new`'s
+/// `Fn(Option<&T>) -> T`. The previous-value hint is not exposed through our
+/// public `Memo` API.
+pub(crate) fn wrap_local_fn<F, T>(f: F) -> impl Fn(Option<&T>) -> T + Send + Sync + 'static
+where
+    F: Fn() -> T + 'static,
+    T: 'static,
+{
+    let cell = SendWrapper::new(f);
+    move |_prev: Option<&T>| (*cell)()
+}
+
 /// Spike A: confirm `Owner::current()` exists and returns an Option.
 #[doc(hidden)]
 #[allow(dead_code)]
@@ -59,4 +76,15 @@ pub(crate) fn __spike_owner_current_exists() -> bool {
 pub(crate) fn __spike_immediate_effect_accepts_wrapped_fnmut() {
     let wrapped = wrap_local_fnmut(|| {});
     let _: () = reactive_graph::effect::ImmediateEffect::new_mut_scoped(wrapped);
+}
+
+/// Spike C: confirm `wrap_local_fn` output satisfies `reactive_graph::Memo::new`'s
+/// `Fn(Option<&T>) -> T + Send + Sync + 'static` closure bound. `T = i32` so the
+/// outer `T: Send + Sync + 'static + PartialEq` bound on `RgMemo<T>` itself is
+/// already satisfied — the spike only exercises the closure-wrapping path.
+#[doc(hidden)]
+#[allow(dead_code)]
+pub(crate) fn __spike_memo_accepts_wrapped_fn() {
+    let wrapped = wrap_local_fn(|| 42i32);
+    let _m: reactive_graph::computed::Memo<i32> = reactive_graph::computed::Memo::new(wrapped);
 }
