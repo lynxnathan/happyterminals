@@ -45,3 +45,15 @@ pub mod rng;
 pub mod signal;
 
 mod runtime; // private helpers
+
+// Crate-root re-exports (Phase 1.0) — owned by plan 01.0-02b-lib-reexports.
+// See VERIFICATION.md §"BLOCK 1" for why this is a dedicated plan.
+
+pub use batch::batch;
+pub use clock::{Clock, SystemClock};
+pub use effect::Effect;
+pub use error::CoreError;
+pub use memo::Memo;
+pub use owner::{Owner, create_root, on_cleanup};
+pub use rng::{Rng, ThreadRng};
+pub use signal::{Signal, SignalSetter};
