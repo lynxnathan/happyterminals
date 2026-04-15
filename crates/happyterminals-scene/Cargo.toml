@@ -13,7 +13,14 @@ categories.workspace   = true
 readme                 = "README.md"
 
 [dependencies]
-# Empty during Phase 0 — stubs have no call sites yet.
+happyterminals-core     = { workspace = true }
+happyterminals-renderer = { workspace = true }
+happyterminals-pipeline = { workspace = true }
+glam                    = { workspace = true }
+thiserror               = { workspace = true }
+
+[dev-dependencies]
+happyterminals-core = { workspace = true }
 
 [lints]
 workspace = true
