@@ -104,7 +104,14 @@ Milestone 2 → Milestone 3 → Milestone 4
 
 **Parallelization:** Plans within Phase 0 are mostly independent — license files, workspace-deps refactor, vendor relocation, registry reservation, CI baseline can run as 4–5 parallel plans.
 
-**Plans:** TBD (eclusa-planner will decompose into 3–5 plans)
+**Plans:** 5/5 plans complete
+
+Plans:
+- [x] 00-01-PLAN.md — Workspace deps + crate scaffold
+- [x] 00-02-PLAN.md — Licensing + contribution + changelog
+- [x] 00-03-PLAN.md — Vendor relocation + toolchain
+- [x] 00-04-PLAN.md — Docs rewrite + doc-lint
+- [x] 00-05-PLAN.md — GitHub Actions CI
 
 ---
 
@@ -140,7 +147,15 @@ M1 delivers the PROJECT.md exit criterion: a signal-driven spinning ASCII cube w
 
 **Pitfalls addressed:** §4 (owner-tree leaks), §5 (over-fire / under-fire / cycles), §6 (Send/Sync ambiguity), §26 (snapshot determinism via Clock+Rng injection).
 
-**Plans:** TBD
+**Plans:** 6/6 plans complete
+
+Plans:
+- [x] 01.0-01-PLAN.md — Cargo module scaffold
+- [x] 01.0-02-PLAN.md — Signal + Memo + batch
+- [x] 01.0-02b-PLAN.md — Lib re-exports
+- [x] 01.0-03-PLAN.md — Effect + Owner + cleanup
+- [x] 01.0-04-PLAN.md — Clock + Rng + errors
+- [x] 01.0-05-PLAN.md — Tests + benches + docs
 
 ---
 
@@ -216,7 +231,7 @@ Plans:
 
 **Parallelization:** Can run **in parallel with Phase 1.3** — both consume Grid from 1.1 and neither depends on the other's output until Phase 1.5.
 
-**Plans:** 2 plans in 2 waves
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 01.2-01-PLAN.md — Effect trait + EffectState + Pipeline executor + Fx alias + Grid::buffer_mut()
@@ -253,7 +268,7 @@ Plans:
 
 **Parallelization:** Can run **in parallel with Phase 1.2**.
 
-**Plans:** 2 plans in 2 waves
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 01.3-01-PLAN.md — Crate setup + projection, cube, shading, camera modules
@@ -301,7 +316,7 @@ Plans:
 
 **Parallelization:** Can start **in parallel with Phase 1.3** using a stub renderer; both converge before 1.5.
 
-**Plans:** 2 plans in 2 waves
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 01.4-01-PLAN.md — Scene crate types (NodeId, SceneNode, PropValue, SceneIr, SceneGraph, CameraConfig, Scene, TransitionManager)
@@ -347,33 +362,137 @@ Plans:
 
 **Parallelization:** Example implementation, README + GIF production, and the cross-terminal verification matrix are three independent plans once 1.2/1.3/1.4 have merged.
 
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 01.5-01-PLAN.md — Integration wiring (run_scene, spinning cube example, bytes test)
-- [ ] 01.5-02-PLAN.md — README update with spinning cube showcase
+- [x] 01.5-02-PLAN.md — README update with spinning cube showcase
 - [x] 01.5-03-PLAN.md — Cross-terminal verification matrix (HUMAN-UAT)
 
 **UI hint**: yes
 
 ---
 
-## Milestone 2 — Renderer Depth + Cross-Terminal Polish (summary)
+## Milestone 2 — Renderer Depth + Cross-Terminal Polish (full detail)
 
 **Goal:** Harden the renderer for real-world meshes and non-truecolor terminals; add particles; document the per-frame allocation budget.
 
-**Indicative phases (re-planned at M1 exit):**
+**M1 context carried in:** Spinning cube shipped; voxcii shading ramp `.,':;!+*=#$@` adopted as default; bunny/cow/teapot OBJs imported into `examples/models/` awaiting Phase 2.1. Pending visual decision: per-model shading ramp selection — tracked in `.eclusa/backlog/999.x-shading-ramp-strategies.md`, surfaces during Phase 2.1 discuss.
 
-- **Phase 2.1 — OBJ mesh loading.** `tobj 4.0.3`; triangulation of quads; winding normalization; flat-normal fallback when normals are missing. 10+ real-world `.obj` file corpus in `tests/fixtures/obj/`. `Result<Mesh, MeshError>` — **no panics on malformed input.** Covers REND-06. Pitfall §15.
-- **Phase 2.2 — Color-mode pipeline.** RGB → 256 → 16 → monochrome fallback. `NO_COLOR` env var honored; `--force-color` override; tmux `Tc` truecolor guidance in docs. Covers REND-08. Pitfall §8.
-- **Phase 2.3 — Particle system + camera modes.** Emitter + gravity + lifetime + color-over-time. At least one particle example runs. Free + FPS camera modes (orbit shipped in M1). Covers REND-07 (and the orbit part of REND-05 is already done). M1's criterion-bench harness (REND-09) matures into full per-frame allocation coverage here.
-- **Phase 2.4 — Resize hardening + MSRV policy.** Resize-race hardening on Windows Terminal. STL loading via `stl_io 0.11` (REND-10). MSRV 1.86 pinned; CI tests MSRV + stable. Covers REND-10, REL-03.
+---
 
-**Requirements covered:** REND-06, REND-07, REND-08, REND-09 (matures), REND-10, REL-03.
+### Phase 2.1: OBJ Mesh Loading
 
-**Pitfall notes:** §8 (color regression), §10 (resize race hardened), §15 (OBJ/STL brittleness), §29 (logging — file/stderr only, never in-frame), §30 (composition cost re-validated with real meshes).
+**Goal:** Ship a panic-free OBJ loader that can import arbitrary real-world `.obj` files into a `Mesh` consumable by the existing renderer — unlocking the bunny/cow/teapot models and any future model corpus without touching the rasterizer.
 
-**Re-planning trigger:** After M1 ships, re-plan M2 phases based on what cross-terminal verification exposed.
+**Scope:**
+- `tobj 4.0` integration with triangulation of quads + winding normalization + flat-normal fallback when normals are missing.
+- `Mesh` abstraction: vertex buffer, index buffer, per-face or per-vertex normals, optional material slot.
+- `Result<Mesh, MeshError>` — **no panics on malformed input.** MeshError enumerates parse/winding/degenerate-triangle failures with file:line context.
+- 10+ real-world `.obj` corpus in `tests/fixtures/obj/` including degenerate cases (missing normals, mixed tri/quad, flipped winding, ngon).
+- `examples/models/` (already imported) wired into a model-viewer example that loads bunny/cow/teapot and cycles via arrow keys — resolves the pending model-toggler decision.
+- Per-model shading ramp selection **scaffolded but not full-featured** — the 999.x backlog's multi-strategy work is deferred; for now accept a ramp override per `Mesh` if trivial.
+
+**Requirements covered:** REND-06
+
+**Success criteria (observable):**
+1. Loading every file in the fixture corpus produces either a valid `Mesh` or a `MeshError` — never a panic, never a hang.
+2. The bunny/cow/teapot viewer renders each model recognizably with arrow-key cycling, no dropped frames.
+3. Missing-normal files render with flat-face normals (no black faces, no NaN shading).
+4. `cargo test -p happyterminals-renderer` passes including OBJ fixture fuzz cases.
+
+**Dependencies:** Phase 1.3 (Renderer + shading), Phase 1.4 (Scene DSL for the viewer example).
+
+**Pitfalls addressed:** §15 (OBJ/STL brittleness — no panics, Result-typed), §28 (errors not panics on public surface).
+
+**Plans:** TBD (planner decomposes)
+
+---
+
+### Phase 2.2: Color-Mode Pipeline
+
+**Goal:** Make color output safely degrade across the full terminal capability spectrum (truecolor → 256 → 16 → monochrome) with explicit user control via `NO_COLOR` and `--force-color`, so the library never outputs a garbled color sequence on a terminal that can't parse it.
+
+**Scope:**
+- Color-mode detection: runtime probe (`$COLORTERM`, `$TERM`, `NO_COLOR`) + explicit override API.
+- Downsample pipeline: RGB → 256 (Euclidean in Oklab or sRGB, configurable) → 16 → monochrome.
+- `NO_COLOR` standard honored; `--force-color={truecolor,256,16,none}` CLI-style override for the meta crate + renderer.
+- tmux `Tc` / `RGB` truecolor passthrough guidance documented in docs site.
+- Snapshot tests per color mode at the Grid flush level (`captured_tty_bytes` harness from Phase 1.1).
+
+**Requirements covered:** REND-08
+
+**Success criteria (observable):**
+1. Setting `NO_COLOR=1` produces zero SGR color escapes on flush.
+2. Forcing 16-color mode on a truecolor terminal emits only 4-bit color codes — visually verified on Windows Terminal (8+ colors legible).
+3. Docs explain the tmux `set -g default-terminal "tmux-256color"` + `Tc` flag combo for truecolor passthrough.
+4. Snapshot tests for the spinning cube exist at every color mode.
+
+**Dependencies:** Phase 1.1 (Grid + bytes-test harness), Phase 1.3 (shading output).
+
+**Pitfalls addressed:** §8 (color regression across terminals).
+
+**Plans:** TBD (planner decomposes)
+
+---
+
+### Phase 2.3: Particles + Camera Modes
+
+**Goal:** Grow the renderer from "static meshes orbited" to "particles + multiple camera paradigms" so the demo surface can show non-rigid motion and richer navigation — and mature the per-frame allocation bench into full-coverage regression enforcement.
+
+**Scope:**
+- Particle system: emitter + gravity + lifetime + color-over-time + spawn/despawn without heap churn.
+- At least one particle example (snow, sparks, or similar) runs on top of an existing mesh.
+- Camera modes: free-look (fly-through) + FPS-style + orbit (shipped in M1).
+- `Camera` trait polymorphic over modes; signal-driven like orbit.
+- Per-frame allocation criterion bench expanded: every renderer path (cube, OBJ, particles) gets allocation assertions.
+
+**Requirements covered:** REND-07, REND-09 (matures to full coverage).
+
+**Success criteria (observable):**
+1. A particle example runs at 60fps on a 200×60 Grid with zero heap allocations per frame (criterion + `dhat` or equivalent).
+2. Switching camera modes mid-session via keys produces no visual artifacts.
+3. The per-frame alloc bench fails CI if any renderer path regresses.
+
+**Dependencies:** Phase 2.1 (OBJ meshes, camera trait extension hook).
+
+**Pitfalls addressed:** §11 (per-frame allocation), §30 (composition cost re-validated with particles).
+
+**Plans:** TBD (planner decomposes)
+
+---
+
+### Phase 2.4: Resize Hardening + MSRV + STL
+
+**Goal:** Close the M2 milestone by hardening the resize race on Windows Terminal, pinning MSRV in CI, and adding STL mesh support — finishing the "renderer depth" story so M3 (compositor + release) can start from a known-stable base.
+
+**Scope:**
+- Resize-race hardening: Windows Terminal-specific race where resize events arrive mid-rasterization. Drain + clamp + re-rasterize strategy documented and tested.
+- STL loader via `stl_io 0.11` — same `Mesh` output as OBJ path, same Result-typed error surface.
+- MSRV 1.86 pinned in `rust-toolchain.toml`; CI matrix adds MSRV job + stable job.
+- `cargo-msrv` verification step.
+
+**Requirements covered:** REND-10, REL-03
+
+**Success criteria (observable):**
+1. Rapid terminal-window-resize stress test on Windows Terminal produces zero crashes, zero garbled frames over a 30-second soak.
+2. Loading STL fixtures produces `Mesh` or `MeshError`, no panics.
+3. CI runs green on both MSRV 1.86 and stable; any use of a post-1.86 feature fails CI.
+
+**Dependencies:** Phase 2.1 (Mesh type), Phase 1.1 (TerminalGuard + resize handling).
+
+**Pitfalls addressed:** §10 (resize race hardened), §15 (STL brittleness — no panics).
+
+**Plans:** TBD (planner decomposes)
+
+**Milestone 2 exit criteria:**
+- Arbitrary OBJ + STL meshes load without panics.
+- Non-truecolor terminals and `NO_COLOR` environments render legibly.
+- Particle example demonstrates non-rigid motion with zero per-frame allocation.
+- Windows Terminal resize stress passes.
+- MSRV 1.86 pinned and CI-enforced.
+
+**Re-planning trigger:** After M2 ships, re-plan M3 based on real-world OBJ and color-fallback lessons.
 
 ---
 
@@ -575,14 +694,17 @@ Highest-value parallelization opportunities inside M1:
 
 ## Phases (summary checklist)
 
-- [ ] **Phase 0: Workspace Hygiene** — Resolve stub-crate dep rot, vendor debris, license + registry plumbing, CI baseline.
-- [ ] **Phase 1.0: Reactive Core** — Signal/Memo/Effect/Owner/batch/untracked/SignalSetter with clean disposal and cycle detection.
+- [x] **Phase 0: Workspace Hygiene** — Resolve stub-crate dep rot, vendor debris, license + registry plumbing, CI baseline. (completed 2026-04-14)
+- [x] **Phase 1.0: Reactive Core** — Signal/Memo/Effect/Owner/batch/untracked/SignalSetter with clean disposal and cycle detection. (completed 2026-04-15)
 - [x] **Phase 1.1: Grid + Ratatui Backend (static)** — Grapheme-correct Grid, panic-safe TerminalGuard, tokio::select loop, 1-cell-bytes test harness. (completed 2026-04-15)
-- [ ] **Phase 1.2: Pipeline + tachyonfx** — Our Effect trait, Pipeline<Vec<Box<dyn Effect>>>, TachyonAdapter, `Fx` rename, 10+ effects smoke-tested.
-- [ ] **Phase 1.3: Minimal Renderer (Cube)** — Z-buffer, cell-aspect projection, reversed-Z, shading ramp, Cube primitive, signal-driven orbit camera.
-- [ ] **Phase 1.4: Scene IR + Rust DSL** — SceneIr, layered SceneGraph, react-three-fiber-shaped builder with signal-bindable props, ≤25-line hello-world.
-- [ ] **Phase 1.5: Spinning Cube Demo** — <100 LOC example, README + GIF, cross-terminal matrix, soak test, 1-cell-bytes hard gate → **M1 EXIT**.
-- [ ] **Milestone 2 (sketch)** — OBJ, color fallback, particles, resize hardening.
+- [x] **Phase 1.2: Pipeline + tachyonfx** — Our Effect trait, Pipeline<Vec<Box<dyn Effect>>>, TachyonAdapter, `Fx` rename, 10+ effects smoke-tested. (completed 2026-04-15)
+- [x] **Phase 1.3: Minimal Renderer (Cube)** — Z-buffer, cell-aspect projection, reversed-Z, shading ramp, Cube primitive, signal-driven orbit camera. (completed 2026-04-15)
+- [x] **Phase 1.4: Scene IR + Rust DSL** — SceneIr, layered SceneGraph, react-three-fiber-shaped builder with signal-bindable props, ≤25-line hello-world. (completed 2026-04-15)
+- [x] **Phase 1.5: Spinning Cube Demo** — <100 LOC example, README + GIF, cross-terminal matrix, soak test, 1-cell-bytes hard gate → **M1 EXIT**. (completed 2026-04-15)
+- [ ] **Phase 2.1: OBJ Mesh Loading** — `tobj 4.0` + triangulation + winding normalization + flat-normal fallback + 10+ file corpus; `Result<Mesh, MeshError>` no panics on malformed input.
+- [ ] **Phase 2.2: Color-Mode Pipeline** — RGB → 256 → 16 → monochrome fallback; `NO_COLOR` + `--force-color`; tmux `Tc` truecolor guidance docs.
+- [ ] **Phase 2.3: Particles + Camera Modes** — Emitter + gravity + lifetime + color-over-time; free + FPS camera modes; full per-frame alloc coverage.
+- [ ] **Phase 2.4: Resize Hardening + MSRV + STL** — Resize-race hardening on Windows Terminal; STL loader via `stl_io 0.11`; MSRV 1.86 pinned and CI-enforced.
 - [ ] **Milestone 3 (sketch)** — Transitions, JSON recipes, 5+ examples, crates.io v1 publish.
 - [ ] **Milestone 4 (sketch)** — Python bindings. FINAL.
 
@@ -594,14 +716,17 @@ The sections above (Milestone 0, Milestone 1 phases 1.0–1.5, Milestone 2 sketc
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Workspace Hygiene | 0/? | Not started | - |
-| 1.0 Reactive Core | 0/? | Not started | - |
-| 1.1 Grid + Ratatui Backend | 3/3 | Complete   | 2026-04-15 |
-| 1.2 Pipeline + tachyonfx | 0/? | Not started | - |
-| 1.3 Minimal Renderer | 0/? | Not started | - |
-| 1.4 Scene IR + Rust DSL | 0/? | Not started | - |
-| 1.5 Spinning Cube Demo | 1/3 | In Progress|  |
-| M2 (sketch) | — | Re-plan at M1 exit | - |
+| 0. Workspace Hygiene | 5/5 | Complete | 2026-04-14 |
+| 1.0 Reactive Core | 6/6 | Complete | 2026-04-15 |
+| 1.1 Grid + Ratatui Backend | 3/3 | Complete | 2026-04-15 |
+| 1.2 Pipeline + tachyonfx | 2/2 | Complete | 2026-04-15 |
+| 1.3 Minimal Renderer | 2/2 | Complete | 2026-04-15 |
+| 1.4 Scene IR + Rust DSL | 2/2 | Complete | 2026-04-15 |
+| 1.5 Spinning Cube Demo | 3/3 | Complete — M1 EXIT | 2026-04-15 |
+| 2.1 OBJ Mesh Loading | 0/? | Not started | - |
+| 2.2 Color-Mode Pipeline | 0/? | Not started | - |
+| 2.3 Particles + Camera Modes | 0/? | Not started | - |
+| 2.4 Resize Hardening + MSRV | 0/? | Not started | - |
 | M3 (sketch) | — | Re-plan at M2 exit | - |
 | M4 (sketch) | — | Re-plan at M3 exit | - |
 

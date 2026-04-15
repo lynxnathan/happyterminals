@@ -2,14 +2,14 @@
 eclusa_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Phase 1.5 context gathered
-last_updated: "2026-04-15T19:57:14.572Z"
+status: active
+stopped_at: M1 complete; M2 Phase 2.1 queued (autonomous)
+last_updated: "2026-04-15T20:30:00.000Z"
 progress:
-  total_phases: 8
-  completed_phases: 5
+  total_phases: 11
+  completed_phases: 7
   total_plans: 23
-  completed_plans: 16
+  completed_plans: 23
 ---
 
 # State: happyterminals
@@ -19,18 +19,18 @@ progress:
 See: `.eclusa/PROJECT.md` (updated 2026-04-14)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Phase 01.5 — spinning-cube-demo-cross-terminal-matrix-m1-exit
-**Next command:** `/eclusa:execute-phase 1.1`
+**Current focus:** Phase 2.1 — OBJ mesh loading (M2 entry)
+**Next command:** `/eclusa:autonomous`
 
 ---
 
 ## Current Milestone
 
-**M0 — Workspace Cleanup** (prerequisite to all feature work).
+**M2 — Renderer Depth + Cross-Terminal Polish** (M0 and M1 complete as of 2026-04-15).
 
 ### Phase under planning next
 
-- **Phase 0** — Workspace Hygiene & Foundation. See `.eclusa/ROADMAP.md` §"Milestone 0".
+- **Phase 2.1** — OBJ Mesh Loading (`tobj 4.0`, Result-typed, 10+ file corpus, bunny/cow/teapot viewer). See `.eclusa/ROADMAP.md` §"Phase 2.1: OBJ Mesh Loading".
 
 ### Exit criteria (recap)
 
@@ -48,8 +48,8 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-14)
 | Milestone | Status | Phases | Exit |
 |-----------|--------|--------|------|
 | **M0** Workspace Cleanup | **COMPLETE (2026-04-14)** | Phase 0 | HYG-01..05, 07..09 satisfied (HYG-06 deferred) |
-| **M1 Spinning Cube Demo** | **Next — Phase 1.0** | 1.0 → 1.5 | `examples/spinning-cube/` <100 LOC, cross-terminal verified, 1-cell → ~10 bytes |
-| M2 Renderer Depth | Not started | 2.1–2.4 | OBJ + color pipeline + particles + resize hardening |
+| **M1** Spinning Cube Demo | **COMPLETE (2026-04-15)** | 1.0 → 1.5 | `examples/spinning-cube/` 43 LOC, cross-terminal verified, 165 tests passing |
+| **M2** Renderer Depth | **Next — Phase 2.1** | 2.1–2.4 | OBJ + color pipeline + particles + resize hardening |
 | M3 Compositor + JSON + Release | Not started | 3.1–3.5 | Transitions + JSON recipes + 7 crates published |
 | M4 Python Bindings (**FINAL**) | Not started | 4.1–4.4 | `pip install happyterminals` cross-platform |
 
@@ -120,9 +120,10 @@ From `.eclusa/config.json`:
 ---
 ## Session Continuity
 
-Last session: 2026-04-15T18:39:14.515Z
-Stopped at: Phase 1.5 context gathered
-Resume file: .eclusa/phases/01.5-spinning-cube-demo-cross-terminal-matrix-m1-exit/01.5-CONTEXT.md
+Last session: 2026-04-15T20:30:00.000Z
+Stopped at: M1 complete; autonomous dispatched for M2 starting at Phase 2.1
+Resume file: n/a — autonomous mode owns state transitions
+Pending decision carried: model-toggler (bunny/cow/teapot viewer) resolved by pulling Phase 2.1 forward (option B from 2026-04-15 session)
 
 ---
 
