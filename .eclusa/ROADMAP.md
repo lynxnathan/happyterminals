@@ -216,7 +216,11 @@ Plans:
 
 **Parallelization:** Can run **in parallel with Phase 1.3** — both consume Grid from 1.1 and neither depends on the other's output until Phase 1.5.
 
-**Plans:** TBD
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [ ] 01.2-01-PLAN.md — Effect trait + EffectState + Pipeline executor + Fx alias + Grid::buffer_mut()
+- [ ] 01.2-02-PLAN.md — TachyonAdapter + 10 tachyonfx effect wrappers + smoke tests + criterion benchmark
 
 ---
 
