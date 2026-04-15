@@ -1,0 +1,23 @@
+Upstream:         https://github.com/PyO3/pyo3
+Upstream name:    pyo3
+Upstream version: (placeholder, workspace pins 0.28.3)
+Upstream commit:  placeholder — no upstream snapshot taken; local stub only.
+Captured:         2026-04-14
+Captured by:      Nathan Ribeiro <nribeiro@strm.com.br>
+Purpose:          Reference reading only. Never consumed as a `path =` dependency.
+                  See PROJECT.md §"Vendor policy" for the full rationale.
+
+Relationship to workspace:
+    This directory is NOT a dependency. The workspace consumes pyo3 via
+    crates.io pin 0.28.3 in [workspace.dependencies] (activated only when
+    happyterminals-py lands in Milestone 4). The current contents are a
+    minimal local stub that was authored before this policy existed; a real
+    upstream snapshot will replace it when Milestone 4 begins, or sooner if
+    someone needs to grep real PyO3 source.
+
+How to refresh to a real upstream snapshot:
+    1. git clone https://github.com/PyO3/pyo3 /tmp/pyo3-upstream
+    2. git -C /tmp/pyo3-upstream checkout v0.28.3
+    3. rm -rf vendor/_reference/pyo3/*
+    4. cp -r /tmp/pyo3-upstream/{src,Cargo.toml,README.md,CHANGELOG.md} vendor/_reference/pyo3/
+    5. Update this STAMP.txt: Upstream commit = `git -C /tmp/pyo3-upstream rev-parse HEAD`.

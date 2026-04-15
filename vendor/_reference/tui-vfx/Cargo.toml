@@ -1,0 +1,9 @@
+[package]
+name = "tui-vfx"
+version = "0.2.0"
+edition = "2021"
+
+[lib]
+name = "tui_vfx"
+path = "src/lib.rs"
+

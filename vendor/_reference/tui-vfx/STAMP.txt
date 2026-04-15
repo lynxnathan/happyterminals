@@ -1,0 +1,25 @@
+Upstream:         https://github.com/5ocworkshop/tui-vfx
+Upstream name:    tui-vfx
+Upstream version: (placeholder — project not consumed; tachyonfx replaces it)
+Upstream commit:  placeholder — no upstream snapshot taken; local stub only.
+Captured:         2026-04-14
+Captured by:      Nathan Ribeiro <nribeiro@strm.com.br>
+Purpose:          Preserved as reference for the "why we chose tachyonfx over tui-vfx"
+                  rationale section in PROJECT.md. Reference reading only. Never
+                  consumed as a `path =` dependency. See PROJECT.md §"Vendor policy"
+                  for the full rationale.
+
+Relationship to workspace:
+    This directory is NOT a dependency. The workspace does NOT consume tui-vfx at
+    all — the effect pipeline is built on tachyonfx instead. This copy exists as
+    a rationale anchor: it lets future contributors compare the two libraries
+    side-by-side and understand the pivot recorded in PROJECT.md. The current
+    contents are a minimal local stub; a real upstream snapshot can replace it
+    if a deeper comparison is ever needed.
+
+How to refresh to a real upstream snapshot:
+    1. git clone https://github.com/5ocworkshop/tui-vfx /tmp/tui-vfx-upstream
+    2. git -C /tmp/tui-vfx-upstream checkout <release-tag-or-main>
+    3. rm -rf vendor/_reference/tui-vfx/*
+    4. cp -r /tmp/tui-vfx-upstream/{src,Cargo.toml,README.md} vendor/_reference/tui-vfx/
+    5. Update this STAMP.txt: Upstream commit = `git -C /tmp/tui-vfx-upstream rev-parse HEAD`.

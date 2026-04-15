@@ -1,0 +1,23 @@
+Upstream:         https://github.com/ratatui/ratatui
+Upstream name:    ratatui
+Upstream version: (placeholder, workspace pins 0.30)
+Upstream commit:  placeholder — no upstream snapshot taken; local stub only.
+Captured:         2026-04-14
+Captured by:      Nathan Ribeiro <nribeiro@strm.com.br>
+Purpose:          Reference reading only. Never consumed as a `path =` dependency.
+                  See PROJECT.md §"Vendor policy" for the full rationale.
+
+Relationship to workspace:
+    This directory is NOT a dependency. The workspace consumes ratatui via
+    crates.io pin 0.30 in [workspace.dependencies]. The current contents are a
+    minimal local stub that was authored before this policy existed; a real
+    upstream snapshot can be taken at any time when someone wants to grep
+    real ratatui source while debugging API choices or comparing our
+    implementation to upstream without a network round-trip.
+
+How to refresh to a real upstream snapshot:
+    1. git clone https://github.com/ratatui/ratatui /tmp/ratatui-upstream
+    2. git -C /tmp/ratatui-upstream checkout v0.30.0
+    3. rm -rf vendor/_reference/ratatui/*
+    4. cp -r /tmp/ratatui-upstream/{src,Cargo.toml,README.md,CHANGELOG.md} vendor/_reference/ratatui/
+    5. Update this STAMP.txt: Upstream commit = `git -C /tmp/ratatui-upstream rev-parse HEAD`.

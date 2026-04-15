@@ -1,0 +1,9 @@
+[package]
+name = "pyo3"
+version = "0.22.0"
+edition = "2021"
+
+[lib]
+name = "pyo3"
+path = "src/lib.rs"
+

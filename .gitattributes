@@ -1,0 +1,22 @@
+# Default: treat files as text; let Git auto-detect line endings on checkin/checkout.
+*           text=auto eol=lf
+
+# Rust source + config — always LF, text.
+*.rs        text eol=lf
+*.toml      text eol=lf
+*.md        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+Cargo.lock  text eol=lf
+
+# Vendored reference copies — linguist stats exclude these, and they should
+# never be linted, formatted, or modified by tooling in this repo.
+vendor/_reference/**                    linguist-vendored=true
+vendor/_reference/**/*.rs               linguist-vendored=true -diff
+vendor/_reference/**                    -text
+
+# Binary fixtures we may add later for mesh/snapshot tests
+*.obj       binary
+*.stl       binary
+*.png       binary
+*.gif       binary
