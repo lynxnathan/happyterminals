@@ -85,8 +85,8 @@ Requirements for the public v1 release — everything up to and including Python
 ### Ratatui Backend (`happyterminals-backend-ratatui`)
 
 - [ ] **BACK-01**: `run(scene, FrameSpec)` drives a `tokio::select!` loop between a frame ticker (30/60 fps) and `crossterm::EventStream`; all frame work is synchronous on the render thread
-- [ ] **BACK-02**: `TerminalGuard` RAII + panic hook restore cursor, raw mode, alternate-screen buffer, mouse capture, and SGR state even on panic; Ctrl-C in any example leaves a sane shell
-- [ ] **BACK-03**: Input events propagate into scene signals (key, mouse, resize, focus)
+- [x] **BACK-02**: `TerminalGuard` RAII + panic hook restore cursor, raw mode, alternate-screen buffer, mouse capture, and SGR state even on panic; Ctrl-C in any example leaves a sane shell
+- [x] **BACK-03**: Input events propagate into scene signals (key, mouse, resize, focus)
 - [ ] **BACK-04**: Meta crate `happyterminals` re-exports a curated public surface (signals, scene builder, fx preludes, run, common types); users typically write `use happyterminals::prelude::*;`
 - [ ] **BACK-05**: Cross-terminal verification matrix — Windows Terminal, GNOME Terminal, macOS Terminal.app, iTerm2, Kitty, Alacritty, tmux + screen, SSH session; spinning cube runs on all of them before M1 exit
 
