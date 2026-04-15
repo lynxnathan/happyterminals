@@ -11,4 +11,6 @@ pub mod guard;
 pub mod event;
 pub mod frame_spec;
 
+pub use event::InputEvent;
+pub use frame_spec::FrameSpec;
 pub use guard::{install_panic_hook, TerminalGuard};
