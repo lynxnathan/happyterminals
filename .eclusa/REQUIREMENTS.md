@@ -21,14 +21,14 @@ Requirements for the public v1 release — everything up to and including Python
 
 ### Reactive Core (`happyterminals-core`)
 
-- [ ] **REACT-01**: `Signal<T>` primitive with fine-grained dependency tracking — reading inside an Effect or Memo registers a subscription; `signal.set(x)` triggers dependents only if the value actually changed
-- [ ] **REACT-02**: `Memo<T>` caches derived values; recomputes only when tracked dependencies change; downstream consumers only re-run when the memo's own value changes (PartialEq equality-skip decision documented in the phase)
+- [x] **REACT-01**: `Signal<T>` primitive with fine-grained dependency tracking — reading inside an Effect or Memo registers a subscription; `signal.set(x)` triggers dependents only if the value actually changed
+- [x] **REACT-02**: `Memo<T>` caches derived values; recomputes only when tracked dependencies change; downstream consumers only re-run when the memo's own value changes (PartialEq equality-skip decision documented in the phase)
 - [ ] **REACT-03**: `Effect` runs an arbitrary side-effect closure whenever any tracked signal/memo read inside it changes
 - [ ] **REACT-04**: Owner/scope tree: `create_root` + `Owner::run_in` + `on_cleanup` — when an owner is disposed, all its effects and memos are cleaned up, no leaks
-- [ ] **REACT-05**: `batch(|| { ... })` groups multiple signal updates so dependents run once with the final state
+- [x] **REACT-05**: `batch(|| { ... })` groups multiple signal updates so dependents run once with the final state
 - [ ] **REACT-06**: Two-phase propagation (mark dirty → recompute in topo order); cycle detection panics with a clear "signal cycle A→B→A" message, not stack overflow
-- [ ] **REACT-07**: `signal.untracked()` lets the renderer read current values without registering a dependency; it's the only way the render loop reads scene state
-- [ ] **REACT-08**: Single-threaded runtime + `SignalSetter` channel: cross-thread writes go through a `Send` handle drained on the render thread each tick. Threading rules documented in every public reactive API docstring.
+- [x] **REACT-07**: `signal.untracked()` lets the renderer read current values without registering a dependency; it's the only way the render loop reads scene state
+- [x] **REACT-08**: Single-threaded runtime + `SignalSetter` channel: cross-thread writes go through a `Send` handle drained on the render thread each tick. Threading rules documented in every public reactive API docstring.
 - [ ] **REACT-09**: `Clock` and `Rng` are trait-injected so snapshot/property tests are deterministic; the production default is `SystemClock` + `thread_rng`
 - [ ] **REACT-10**: 10k-scene-transition test keeps RSS under a documented ceiling (proves owner disposal works); diamond-dependency test proves a signal firing once triggers each downstream exactly once
 

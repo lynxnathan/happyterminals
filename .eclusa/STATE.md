@@ -5,8 +5,8 @@
 See: `.eclusa/PROJECT.md` (updated 2026-04-14)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Milestone 0 — COMPLETE (Phase 0 shipped 2026-04-14). Next: Milestone 1 — Spinning Cube Demo, starting with Phase 1.0 (Reactive Core).
-**Next command:** `/eclusa:plan-phase 1.0`
+**Current focus:** Milestone 1 — Spinning Cube Demo. Phase 1.0 (Reactive Core) in-progress: plans 01.0-01 (cargo scaffold) and 01.0-02 (Signal/SignalSetter/Memo/batch) complete. Next up in Wave 2: 01.0-03 (Effect/Owner/cleanup) and 01.0-04 (Clock/Rng/errors) in parallel.
+**Next command:** `/eclusa:execute-phase 1.0` (continue Wave 2)
 
 ---
 
@@ -45,7 +45,7 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-14)
 
 Tracked in `.eclusa/ROADMAP.md` §"Open Questions". The eclusa-planner will pick these up per phase:
 
-1. **Q1 `Memo<T>: PartialEq` bound** — resolve in Phase 1.0.
+1. **Q1 `Memo<T>: PartialEq` bound** — **RESOLVED** in Phase 1.0-02 (2026-04-15): `PartialEq` is always-on. Secondary finding: `Memo<T>` also requires `T: Send + Sync` in v0.0.0 (reactive_graph 0.2.13's `SyncStorage`-default `Memo<T>` imposes it; pre-authorized in plan 01.0-02 §decisions.2). Potential future relaxation via a `LocalStorage`-backed variant is tracked.
 2. **Q2 Async runtime** (tokio vs smol) — resolve in Phase 1.1.
 3. **Q3 `Effect` name clash** — recommended resolution: tachyonfx's becomes `Fx`. Resolve in Phase 1.2 before any pipeline consumer.
 4. **Q4 Wide-char rendering polish** — Phase 1.1 ships grapheme + width fields; wide-cell edge-case polish deferrable.
@@ -104,4 +104,4 @@ From `.eclusa/config.json`:
 | `project.eclusa` | Machine-readable project identity + stances | 2026-04-14 |
 
 ---
-*Last updated: 2026-04-14 after initialization*
+*Last updated: 2026-04-15 — 01.0-02-signal-memo-batch-PLAN.md complete (Wave 2)*
