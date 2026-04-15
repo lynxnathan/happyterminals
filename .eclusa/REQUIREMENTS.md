@@ -65,11 +65,11 @@ Requirements for the public v1 release — everything up to and including Python
 
 ### Scene & Transitions (`happyterminals-scene`)
 
-- [ ] **SCENE-01**: `SceneIr` is the one intermediate representation; Rust builder, JSON, and Python front-ends all produce it
-- [ ] **SCENE-02**: `SceneGraph` supports layered composition with explicit z-order; camera is owned by the scene (not a global)
-- [ ] **SCENE-03**: Scene node props can be `Signal<T>`, plain `T`, or `Memo<T>` — fine-grained subscription at the prop level
-- [ ] **SCENE-04**: `TransitionManager` handles scene A → scene B with a named effect (dissolve, slide, etc.); outgoing scene's owner is disposed cleanly
-- [ ] **SCENE-05**: Scene construction is `Result<Scene, SceneError>` — invalid scenes (missing refs, bad signal bindings) fail at build time, not render time
+- [x] **SCENE-01**: `SceneIr` is the one intermediate representation; Rust builder, JSON, and Python front-ends all produce it
+- [x] **SCENE-02**: `SceneGraph` supports layered composition with explicit z-order; camera is owned by the scene (not a global)
+- [x] **SCENE-03**: Scene node props can be `Signal<T>`, plain `T`, or `Memo<T>` — fine-grained subscription at the prop level
+- [x] **SCENE-04**: `TransitionManager` handles scene A → scene B with a named effect (dissolve, slide, etc.); outgoing scene's owner is disposed cleanly
+- [x] **SCENE-05**: Scene construction is `Result<Scene, SceneError>` — invalid scenes (missing refs, bad signal bindings) fail at build time, not render time
 
 ### Declarative DSL (`happyterminals-dsl`)
 
