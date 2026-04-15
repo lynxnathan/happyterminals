@@ -3,9 +3,41 @@
 //! Declarative scene builder for [happyterminals](https://github.com/lynxnathan/happyterminals).
 //!
 //! A `react-three-fiber`-shaped tree of typed nodes with props that can be plain
-//! values, `Signal<T>`, or `Memo<T>`. Also ships the JSON recipe loader that
-//! validates input against a `schemars`-generated schema via `jsonschema`, then
-//! produces the same `SceneIr` as the Rust builder path.
+//! values, `Signal<T>`, or `Memo<T>`. The builder produces a validated [`Scene`]
+//! via [`scene()`] -> chain -> [`SceneBuilder::build()`].
 //!
-//! Phase 0 scaffolding — no public types yet. Rust builder lands in Phase 1.4;
-//! JSON recipes in Phases 3.2–3.4.
+//! # Quick Start
+//!
+//! ```ignore
+//! use happyterminals_dsl::prelude::*;
+//!
+//! let scene = scene()
+//!     .camera(OrbitCamera::default())
+//!     .layer(0, |l| l.cube().position(vec3(0., 0., 0.)))
+//!     .build()?;
+//! ```
+
+#![forbid(unsafe_code)]
+
+pub mod builder;
+pub mod node_builder;
+pub mod prelude;
+
+pub use builder::SceneBuilder;
+
+/// Entry point for the DSL builder chain.
+///
+/// Returns a fresh [`SceneBuilder`] ready for method chaining.
+///
+/// # Example
+///
+/// ```ignore
+/// let scene = scene()
+///     .camera(OrbitCamera::default())
+///     .layer(0, |l| l.cube())
+///     .build()?;
+/// ```
+#[must_use]
+pub fn scene() -> SceneBuilder {
+    SceneBuilder::new()
+}

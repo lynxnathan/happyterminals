@@ -3,13 +3,13 @@ eclusa_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 1.4 context gathered
-last_updated: "2026-04-15T18:16:32.851Z"
+stopped_at: Completed 01.4-02-PLAN.md
+last_updated: "2026-04-15T18:29:53.129Z"
 progress:
   total_phases: 8
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 20
-  completed_plans: 11
+  completed_plans: 13
 ---
 
 # State: happyterminals
@@ -19,7 +19,7 @@ progress:
 See: `.eclusa/PROJECT.md` (updated 2026-04-14)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Phase 01.4 — scene-ir-rust-builder-dsl
+**Current focus:** Milestone 1 — Spinning Cube Demo. Phase 1.0 (Reactive Core) COMPLETE. Phase 1.1 (Grid + Ratatui Backend) PLANNED — 3 plans in 2 waves, all 9 requirements covered (GRID-01..05, BACK-01..04), verification passed.
 **Next command:** `/eclusa:execute-phase 1.1`
 
 ---
@@ -120,9 +120,9 @@ From `.eclusa/config.json`:
 ---
 ## Session Continuity
 
-Last session: 2026-04-15T17:38:51.848Z
-Stopped at: Phase 1.4 context gathered
-Resume file: .eclusa/phases/01.4-scene-ir-rust-builder-dsl/01.4-CONTEXT.md
+Last session: 2026-04-15T18:29:53.124Z
+Stopped at: Completed 01.4-02-PLAN.md
+Resume file: None
 
 ---
 
@@ -139,3 +139,5 @@ Resume file: .eclusa/phases/01.4-scene-ir-rust-builder-dsl/01.4-CONTEXT.md
 | Phase 01.2 P02 | 7min | 2 tasks | 5 files |
 | Phase 01.3 P01 | 4min | 2 tasks | 7 files |
 | Phase 01.3 P02 | 9min | 2 tasks | 10 files |
+| Phase 01.4 P01 | 4min | 2 tasks | 12 files |
+| Phase 01.4 P02 | 5min | 2 tasks | 10 files |

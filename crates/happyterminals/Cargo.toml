@@ -14,8 +14,13 @@ readme                 = "README.md"
 
 [dependencies]
 happyterminals-core            = { workspace = true }
+happyterminals-scene           = { workspace = true }
+happyterminals-dsl             = { workspace = true }
+happyterminals-renderer        = { workspace = true }
+happyterminals-pipeline        = { workspace = true }
 happyterminals-backend-ratatui = { workspace = true }
 ratatui-core                   = { workspace = true }
+glam                           = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt", "time", "macros"] }

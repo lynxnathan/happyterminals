@@ -73,8 +73,8 @@ Requirements for the public v1 release — everything up to and including Python
 
 ### Declarative DSL (`happyterminals-dsl`)
 
-- [ ] **DSL-01**: Rust builder API shaped after react-three-fiber: tree of typed nodes with props, props can be signals — e.g. `scene().layer(|l| l.cube().rotation(&r).position(vec3(0., 0., 0.))).effect(fx::vignette(0.3)).build()?`
-- [ ] **DSL-02**: "Hello world" for a user (open an editor → spinning cube on screen) is ≤25 lines of Rust including imports
+- [x] **DSL-01**: Rust builder API shaped after react-three-fiber: tree of typed nodes with props, props can be signals — e.g. `scene().layer(|l| l.cube().rotation(&r).position(vec3(0., 0., 0.))).effect(fx::vignette(0.3)).build()?`
+- [x] **DSL-02**: "Hello world" for a user (open an editor → spinning cube on screen) is ≤25 lines of Rust including imports
 - [x] **DSL-03**: Errors are `Result`-based on the public API surface; `clippy::unwrap_used`/`clippy::expect_used` denied in every library crate
 - [ ] **DSL-04**: JSON recipe loader (`-dsl::json`) accepts a JSON scene, validates against a schemars-generated schema via jsonschema, binds named signal references, and produces a `SceneIr` identical to the Rust builder path
 - [ ] **DSL-05**: JSON recipes are pure data — effect names resolve through a static registry; no `eval`, no shell-out, no mesh paths that escape a user-defined sandbox
