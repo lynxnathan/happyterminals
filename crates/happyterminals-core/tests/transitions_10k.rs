@@ -47,14 +47,11 @@ fn run_cycle() {
     owner.dispose();
 }
 
-// BLOCKER: this test exercises `Memo` inside the reactive-scope cycle. The
-// `ImmediateEffect` + `Memo` combination deadlocks in `reactive_graph 0.2.13`
-// (see `tests/diamond.rs` for the root-cause analysis). `#[ignore]` keeps the
-// suite green; the RSS ceiling measurement is deferred until the Memo
-// deadlock is resolved. See `.eclusa/phases/01.0-reactive-core/01.0-05-
-// SUMMARY.md` §"Deferred Issues".
+// Unblocked in plan `01.0-06` (2026-04-15): our custom `Memo` wrapper
+// replaces `reactive_graph::computed::Memo`, sidestepping the `ImmediateEffect
+// + Memo` deadlock. See `tests/diamond.rs` for the narrative and
+// `crates/happyterminals-core/src/memo.rs` for the wrapper.
 #[test]
-#[ignore = "BLOCKER: ImmediateEffect + Memo deadlocks in reactive_graph 0.2.13 — see SUMMARY.md"]
 fn ten_thousand_transitions_stay_under_10mb_rss_delta() {
     /// Reads resident-set-size in kilobytes from `/proc/self/statm`.
     ///
