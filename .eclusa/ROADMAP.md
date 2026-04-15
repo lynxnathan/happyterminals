@@ -347,12 +347,12 @@ Plans:
 
 **Parallelization:** Example implementation, README + GIF production, and the cross-terminal verification matrix are three independent plans once 1.2/1.3/1.4 have merged.
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [x] 01.5-01-PLAN.md — Integration wiring (run_scene, spinning cube example, bytes test)
 - [ ] 01.5-02-PLAN.md — README update with spinning cube showcase
-- [ ] 01.5-03-PLAN.md — Cross-terminal verification matrix (HUMAN-UAT)
+- [x] 01.5-03-PLAN.md — Cross-terminal verification matrix (HUMAN-UAT)
 
 **UI hint**: yes
 
@@ -600,7 +600,7 @@ The sections above (Milestone 0, Milestone 1 phases 1.0–1.5, Milestone 2 sketc
 | 1.2 Pipeline + tachyonfx | 0/? | Not started | - |
 | 1.3 Minimal Renderer | 0/? | Not started | - |
 | 1.4 Scene IR + Rust DSL | 0/? | Not started | - |
-| 1.5 Spinning Cube Demo | 0/? | Not started | - |
+| 1.5 Spinning Cube Demo | 1/3 | In Progress|  |
 | M2 (sketch) | — | Re-plan at M1 exit | - |
 | M3 (sketch) | — | Re-plan at M2 exit | - |
 | M4 (sketch) | — | Re-plan at M3 exit | - |
