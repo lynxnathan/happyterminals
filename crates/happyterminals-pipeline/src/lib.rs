@@ -14,10 +14,13 @@
 #![forbid(unsafe_code)]
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+pub mod adapter;
 pub mod effect;
+pub mod effects;
 pub mod error;
 pub mod pipeline;
 
+pub use adapter::TachyonAdapter;
 pub use effect::{Effect, EffectState};
 pub use error::PipelineError;
 pub use pipeline::Pipeline;

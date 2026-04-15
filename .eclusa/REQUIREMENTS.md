@@ -44,10 +44,10 @@ Requirements for the public v1 release — everything up to and including Python
 
 - [x] **PIPE-01**: `Effect` trait: `fn apply(&mut self, grid: &mut Grid, dt: Duration) -> EffectState`; returns `Running`/`Done`. Effects are stateful (hold timers, progress).
 - [x] **PIPE-02**: `Pipeline` is `Vec<Box<dyn Effect>>` — trait objects, not generic chains, so JSON recipes and Python can construct pipelines at runtime
-- [ ] **PIPE-03**: `TachyonAdapter<S: tachyonfx::Shader>` wraps a tachyonfx effect as one of our `Effect` trait objects (with real `Duration` dt forwarded)
+- [x] **PIPE-03**: `TachyonAdapter<S: tachyonfx::Shader>` wraps a tachyonfx effect as one of our `Effect` trait objects (with real `Duration` dt forwarded)
 - [x] **PIPE-04**: `tachyonfx::Effect` is aliased to `Fx` in our public surface so our `Effect` trait name stays unambiguous (decision committed before any Pipeline consumer lands)
 - [x] **PIPE-05**: Whole-grid composition passes — no per-object effect loops that go O(objects × effects); criterion bench documents the floor
-- [ ] **PIPE-06**: At least 10 tachyonfx effects wired end-to-end and smoke-tested (vignette, dissolve, fade_in, fade_out, crt, color_ramp, typewriter, sweep, slide, and one glitch/shader effect)
+- [x] **PIPE-06**: At least 10 tachyonfx effects wired end-to-end and smoke-tested (vignette, dissolve, fade_in, fade_out, crt, color_ramp, typewriter, sweep, slide, and one glitch/shader effect)
 - [x] **PIPE-07**: Effects mutate scene state only through the reactive channel — **never** mutate `Grid` from outside a Pipeline apply. Documented invariant, lint-enforced where possible.
 
 ### 3D Renderer (`happyterminals-renderer`)
