@@ -305,7 +305,7 @@ Plans:
 
 Plans:
 - [x] 01.4-01-PLAN.md — Scene crate types (NodeId, SceneNode, PropValue, SceneIr, SceneGraph, CameraConfig, Scene, TransitionManager)
-- [ ] 01.4-02-PLAN.md — DSL builder (SceneBuilder, CubeBuilder, LayerBuilder) + prelude + meta crate update
+- [x] 01.4-02-PLAN.md — DSL builder (SceneBuilder, CubeBuilder, LayerBuilder) + prelude + meta crate update
 **UI hint**: yes
 
 ---
