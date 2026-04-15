@@ -3,8 +3,8 @@ eclusa_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01.2-02-PLAN.md
-last_updated: "2026-04-15T12:42:14.746Z"
+stopped_at: Phase 1.3 context gathered
+last_updated: "2026-04-15T16:50:45.131Z"
 progress:
   total_phases: 8
   completed_phases: 2
@@ -120,9 +120,9 @@ From `.eclusa/config.json`:
 ---
 ## Session Continuity
 
-Last session: 2026-04-15T12:38:43.096Z
-Stopped at: Completed 01.2-02-PLAN.md
-Resume file: None
+Last session: 2026-04-15T16:50:45.126Z
+Stopped at: Phase 1.3 context gathered
+Resume file: .eclusa/phases/01.3-minimal-3d-renderer-cube-primitive/01.3-CONTEXT.md
 
 ---
 
