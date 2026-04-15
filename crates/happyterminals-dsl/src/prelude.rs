@@ -1,3 +1,29 @@
 //! Prelude re-exports for single-import hello world.
 //!
-//! Filled in Task 2 of Plan 01.4-02.
+//! ```ignore
+//! use happyterminals_dsl::prelude::*;
+//! ```
+
+// DSL entry point + builder types
+pub use crate::node_builder::{CubeBuilder, GroupBuilder, LayerBuilder};
+pub use crate::{scene, SceneBuilder};
+
+// Scene types
+pub use happyterminals_scene::{
+    CameraConfig, Scene, SceneError, SceneIr, TransitionManager,
+};
+
+// Reactive core
+pub use happyterminals_core::{
+    Signal, Memo, Effect, Owner,
+    batch, create_root, on_cleanup,
+};
+
+// Renderer types
+pub use happyterminals_renderer::{OrbitCamera, Projection, ShadingRamp};
+
+// Pipeline
+pub use happyterminals_pipeline::{Pipeline, Fx};
+
+// Math
+pub use glam::vec3;
