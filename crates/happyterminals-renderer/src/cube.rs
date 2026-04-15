@@ -66,6 +66,32 @@ impl Cube {
     pub const fn face_normal_index(triangle_index: usize) -> usize {
         triangle_index / 2
     }
+
+    /// Construct a heap-allocated [`Mesh`](crate::mesh::Mesh) equivalent to
+    /// the `Cube` primitive.
+    ///
+    /// Unifies the const-data cube with runtime-loaded OBJ meshes so the
+    /// rasterizer can consume `&Mesh` uniformly (refactor lands in Plan 02).
+    /// Every triangle gets its owning face's normal — 12 triangles, 12
+    /// normals, 8 unique vertex positions.
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
+    pub fn mesh() -> crate::mesh::Mesh {
+        let vertices = Self::VERTICES.to_vec();
+        let indices: Vec<[u32; 3]> = Self::INDICES
+            .iter()
+            .map(|&[a, b, c]| [a as u32, b as u32, c as u32])
+            .collect();
+        let normals: Vec<glam::Vec3> = (0..Self::INDICES.len())
+            .map(|tri_idx| Self::FACE_NORMALS[Self::face_normal_index(tri_idx)])
+            .collect();
+        crate::mesh::Mesh {
+            vertices,
+            indices,
+            normals,
+            shading: None,
+        }
+    }
 }
 
 #[cfg(test)]

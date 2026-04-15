@@ -14,17 +14,20 @@
 //! - [`shading`] -- ASCII shading ramp mapping `NdotL` to characters.
 //! - [`camera`] -- Orbit camera converting spherical coordinates to view matrix.
 //! - [`rasterizer`] -- Triangle rasterizer with half-space edge functions.
+//! - [`mesh`] -- Runtime-loaded triangle mesh + panic-free OBJ loader.
 
 #![forbid(unsafe_code)]
 
 pub mod camera;
 pub mod cube;
+pub mod mesh;
 pub mod projection;
 pub mod rasterizer;
 pub mod shading;
 
 pub use camera::OrbitCamera;
 pub use cube::Cube;
+pub use mesh::{LoadStats, Mesh, MeshError, load_obj};
 pub use projection::Projection;
 pub use shading::ShadingRamp;
 

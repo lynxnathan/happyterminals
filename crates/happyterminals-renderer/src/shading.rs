@@ -10,7 +10,7 @@ use glam::Vec3;
 
 /// Default shading characters, from darkest to brightest.
 ///
-/// Adopted from voxcii (https://github.com/lynxnathan/voxcii) — a pure-ASCII
+/// Adopted from voxcii (<https://github.com/lynxnathan/voxcii>) — a pure-ASCII
 /// progression that uses punctuation variants for the low-density end and
 /// progressively heavier glyphs for highlights. Unlit faces render as `.`
 /// rather than blank space so a model's back face stays legible.
