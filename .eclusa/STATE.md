@@ -3,8 +3,8 @@ eclusa_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01.3-02-PLAN.md
-last_updated: "2026-04-15T17:24:50.885Z"
+stopped_at: Phase 1.4 context gathered
+last_updated: "2026-04-15T17:38:51.852Z"
 progress:
   total_phases: 8
   completed_phases: 3
@@ -120,9 +120,9 @@ From `.eclusa/config.json`:
 ---
 ## Session Continuity
 
-Last session: 2026-04-15T17:21:28.813Z
-Stopped at: Completed 01.3-02-PLAN.md
-Resume file: None
+Last session: 2026-04-15T17:38:51.848Z
+Stopped at: Phase 1.4 context gathered
+Resume file: .eclusa/phases/01.4-scene-ir-rust-builder-dsl/01.4-CONTEXT.md
 
 ---
 
