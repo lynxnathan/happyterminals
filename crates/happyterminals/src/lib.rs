@@ -6,11 +6,47 @@
 //! ```ignore
 //! use happyterminals::prelude::*;
 //! ```
-//!
-//! Phase 0 scaffolding — no re-exports yet. The prelude lands in Phase 1.1
-//! (after `-backend-ratatui` ships its `run` entry point).
 
 /// Curated re-export module.
 ///
-/// Empty during Phase 0; populated in Phase 1.1+.
-pub mod prelude {}
+/// Contains all the types needed to build a happyterminals application:
+/// reactive primitives (Signal, Memo, Effect), Grid/Cell, run loop, and
+/// style types.
+pub mod prelude {
+    // Reactive core (from Phase 1.0)
+    pub use happyterminals_core::{
+        Signal, SignalSetter, Memo, Effect, Owner,
+        create_root, on_cleanup, batch,
+    };
+
+    // Grid + Cell (from Phase 1.1, Plan 01)
+    pub use happyterminals_core::{Grid, Cell};
+
+    // Style types (re-exported through core)
+    pub use happyterminals_core::{Color, Modifier, Style, Rect};
+
+    // Backend (from Phase 1.1, Plan 02-03)
+    pub use happyterminals_backend_ratatui::{run, FrameSpec, InputEvent, InputSignals};
+    pub use happyterminals_backend_ratatui::{TerminalGuard, install_panic_hook};
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn prelude_reexports_compile() {
+        // Verify all prelude types are accessible
+        use crate::prelude::*;
+        let _: fn() -> Grid = || Grid::new(Rect::new(0, 0, 80, 24));
+        let _: fn() -> FrameSpec = FrameSpec::default;
+        // Signal, Memo, Effect etc. require reactive runtime context
+        // so we just verify the types exist
+        fn _check_types() {
+            let _ = std::any::type_name::<Signal<i32>>();
+            let _ = std::any::type_name::<Memo<i32>>();
+            let _ = std::any::type_name::<FrameSpec>();
+            let _ = std::any::type_name::<InputEvent>();
+            let _ = std::any::type_name::<InputSignals>();
+            let _ = std::any::type_name::<TerminalGuard>();
+        }
+    }
+}

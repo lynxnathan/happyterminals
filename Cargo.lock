@@ -758,6 +758,12 @@ dependencies = [
 [[package]]
 name = "happyterminals"
 version = "0.0.0"
+dependencies = [
+ "happyterminals-backend-ratatui",
+ "happyterminals-core",
+ "ratatui-core",
+ "tokio",
+]
 
 [[package]]
 name = "happyterminals-backend-ratatui"
