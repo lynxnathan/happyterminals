@@ -20,6 +20,7 @@ pub mod pipeline;
 
 pub use effect::{Effect, EffectState};
 pub use error::PipelineError;
+pub use pipeline::Pipeline;
 
 // D-02: Fx alias — tachyonfx::Effect renamed to avoid clash with our Effect trait
 pub use tachyonfx::Effect as Fx;
