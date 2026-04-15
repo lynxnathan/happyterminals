@@ -3,8 +3,8 @@ eclusa_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01.1-03-PLAN.md
-last_updated: "2026-04-15T11:01:11.168Z"
+stopped_at: Phase 1.2 context gathered
+last_updated: "2026-04-15T12:10:31.003Z"
 progress:
   total_phases: 8
   completed_phases: 1
@@ -120,9 +120,9 @@ From `.eclusa/config.json`:
 ---
 ## Session Continuity
 
-Last session: 2026-04-15T10:56:58.618Z
-Stopped at: Completed 01.1-03-PLAN.md
-Resume file: None
+Last session: 2026-04-15T12:10:31.000Z
+Stopped at: Phase 1.2 context gathered
+Resume file: .eclusa/phases/01.2-pipeline-tachyonfx-adapter/01.2-CONTEXT.md
 
 ---
 
