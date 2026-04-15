@@ -21,3 +21,9 @@ impl Default for CameraConfig {
         Self::Orbit(OrbitCamera::default())
     }
 }
+
+impl From<OrbitCamera> for CameraConfig {
+    fn from(cam: OrbitCamera) -> Self {
+        Self::Orbit(cam)
+    }
+}

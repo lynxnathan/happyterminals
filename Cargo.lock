@@ -835,6 +835,13 @@ dependencies = [
 [[package]]
 name = "happyterminals-dsl"
 version = "0.0.0"
+dependencies = [
+ "glam",
+ "happyterminals-core",
+ "happyterminals-pipeline",
+ "happyterminals-renderer",
+ "happyterminals-scene",
+]
 
 [[package]]
 name = "happyterminals-pipeline"
@@ -863,6 +870,13 @@ dependencies = [
 [[package]]
 name = "happyterminals-scene"
 version = "0.0.0"
+dependencies = [
+ "glam",
+ "happyterminals-core",
+ "happyterminals-pipeline",
+ "happyterminals-renderer",
+ "thiserror 2.0.18",
+]
 
 [[package]]
 name = "hashbrown"
