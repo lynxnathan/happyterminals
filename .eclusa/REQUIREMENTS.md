@@ -54,13 +54,13 @@ Requirements for the public v1 release — everything up to and including Python
 
 - [x] **REND-01**: Fresh (not forked) z-buffer rasterizer with perspective projection, configurable ASCII shading ramp (default 10 levels `` .:-=+*#%@``), flat/per-face shading sufficient for M1
 - [x] **REND-02**: Cell aspect ratio is a public projection-API parameter (default 2:1 tall); a cube rendered with defaults looks cubic, not tower-shaped
-- [ ] **REND-03**: Reversed-Z + scene-fit near/far planes prevent visible z-fighting on the spinning cube demo at default resolutions
+- [x] **REND-03**: Reversed-Z + scene-fit near/far planes prevent visible z-fighting on the spinning cube demo at default resolutions
 - [x] **REND-04**: Built-in `Cube` primitive in the renderer (M1 demo dependency); more primitives (sphere, plane, torus) are v2
 - [x] **REND-05**: Orbit camera with signal-driven azimuth/elevation/distance (M1); free and FPS cameras are v2
 - [ ] **REND-06**: OBJ mesh loading via `tobj` with triangulation of quads, winding normalization, flat-normal fallback for missing normals; corpus of 10+ real-world OBJ files tested; load errors return `Result<Mesh, MeshError>`, never panic
 - [ ] **REND-07**: Particle system infrastructure (emitter, gravity, lifetime, color over time); at least one particle example runs
 - [ ] **REND-08**: Color-mode pipeline: RGB → 256 → 16 → monochrome fallback; `NO_COLOR` env var honored; `--force-color` override; tmux `Tc` truecolor guidance in docs
-- [ ] **REND-09**: Per-frame allocation budget enforced via criterion bench — reusable string buffers, cached SGR escape sequences, no heap churn in the hot path
+- [x] **REND-09**: Per-frame allocation budget enforced via criterion bench — reusable string buffers, cached SGR escape sequences, no heap churn in the hot path
 - [ ] **REND-10**: STL mesh loading via `stl_io` (v2 — post-OBJ)
 
 ### Scene & Transitions (`happyterminals-scene`)
