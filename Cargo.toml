@@ -1,0 +1,95 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/happyterminals",
+    "crates/happyterminals-core",
+    "crates/happyterminals-renderer",
+    "crates/happyterminals-pipeline",
+    "crates/happyterminals-scene",
+    "crates/happyterminals-dsl",
+    "crates/happyterminals-backend-ratatui",
+    # "crates/happyterminals-py",  # activated in Milestone 4
+]
+
+[workspace.package]
+version      = "0.0.0"
+edition      = "2024"
+rust-version = "1.86"
+license      = "MIT OR Apache-2.0"
+repository   = "https://github.com/lynxnathan/happyterminals"
+homepage     = "https://github.com/lynxnathan/happyterminals"
+authors      = ["the happyterminals authors"]
+keywords     = ["terminal", "tui", "ratatui", "ascii", "reactive"]
+categories   = ["command-line-interface", "graphics", "rendering"]
+readme       = "README.md"
+
+[workspace.dependencies]
+# ratatui ecosystem (libs consume ratatui-core; apps consume ratatui)
+ratatui-core      = "0.1"
+ratatui           = { version = "0.30", features = ["crossterm"] }
+ratatui-widgets   = "0.3"
+ratatui-crossterm = "0.1"
+ratatui-macros    = "0.7"
+crossterm         = "0.29"
+tachyonfx         = "0.25"
+
+# reactivity
+reactive_graph = "0.2.13"
+any_spawner    = "0.3"
+
+# 3D
+glam   = "0.32.1"
+tobj   = "4.0"
+stl_io = "0.11"
+
+# serde + schema
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+schemars   = "1.2"
+jsonschema = "0.46"
+
+# errors / logs
+thiserror          = "2.0"
+color-eyre         = "0.6.5"
+tracing            = "0.1"
+tracing-subscriber = "0.3"
+
+# misc utils (aligned with tachyonfx's choices to keep the lockfile tidy)
+compact_str = "0.9"
+bon         = "3.9"
+slotmap     = "1"
+
+# python (final milestone; pinned now so -py drop-in is trivial)
+pyo3                = { version = "0.28.3", default-features = false }
+pyo3-async-runtimes = "0.28"
+
+# dev-dependencies
+insta     = "1.47"
+proptest  = "1.11"
+criterion = "0.8"
+
+# Internal crates — members declare each other via workspace deps for consistent pathing.
+happyterminals                  = { version = "0.0.0", path = "crates/happyterminals" }
+happyterminals-core             = { version = "0.0.0", path = "crates/happyterminals-core" }
+happyterminals-renderer         = { version = "0.0.0", path = "crates/happyterminals-renderer" }
+happyterminals-pipeline         = { version = "0.0.0", path = "crates/happyterminals-pipeline" }
+happyterminals-scene            = { version = "0.0.0", path = "crates/happyterminals-scene" }
+happyterminals-dsl              = { version = "0.0.0", path = "crates/happyterminals-dsl" }
+happyterminals-backend-ratatui  = { version = "0.0.0", path = "crates/happyterminals-backend-ratatui" }
+
+[workspace.lints.rust]
+unsafe_code                    = "forbid"  # per-crate override in -renderer (see Item 4)
+missing_docs                   = "warn"
+rust_2018_idioms               = { level = "warn", priority = -1 }
+unreachable_pub                = "warn"
+
+[workspace.lints.clippy]
+all                = { level = "warn", priority = -1 }
+pedantic           = { level = "warn", priority = -1 }
+unwrap_used        = "deny"
+expect_used        = "deny"
+dbg_macro          = "deny"
+todo               = "warn"
+module_name_repetitions = "allow"  # clippy::pedantic is noisy on workspace naming
+missing_errors_doc = "allow"       # turn back on in each crate as APIs stabilize
+missing_panics_doc = "allow"

@@ -1,0 +1,19 @@
+[package]
+name         = "happyterminals-dsl"
+description  = "Declarative scene builder (Rust) and JSON recipe loader for happyterminals."
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+repository.workspace   = true
+homepage.workspace     = true
+authors.workspace      = true
+keywords.workspace     = true
+categories.workspace   = true
+readme                 = "README.md"
+
+[dependencies]
+# Empty during Phase 0 — stubs have no call sites yet.
+
+[lints]
+workspace = true

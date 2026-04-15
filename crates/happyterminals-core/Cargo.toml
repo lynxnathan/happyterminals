@@ -1,0 +1,23 @@
+[package]
+name         = "happyterminals-core"
+description  = "Reactive primitives (Signal / Memo / Effect) and Grid buffer for the happyterminals scene manager."
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+repository.workspace   = true
+homepage.workspace     = true
+authors.workspace      = true
+keywords.workspace     = true
+categories.workspace   = true
+readme                 = "README.md"
+
+[dependencies]
+# Empty during Phase 0 — stubs have no call sites yet.
+# Real deps added in Phase 1.0 when the reactive graph lands:
+#   reactive_graph = { workspace = true }
+#   any_spawner    = { workspace = true }
+#   thiserror      = { workspace = true }
+
+[lints]
+workspace = true
