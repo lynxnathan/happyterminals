@@ -257,7 +257,7 @@ Plans:
 
 Plans:
 - [x] 01.3-01-PLAN.md — Crate setup + projection, cube, shading, camera modules
-- [ ] 01.3-02-PLAN.md — Rasterizer + Renderer::draw() + snapshot test + criterion bench
+- [x] 01.3-02-PLAN.md — Rasterizer + Renderer::draw() + snapshot test + criterion bench
 **UI hint**: yes
 
 ---
