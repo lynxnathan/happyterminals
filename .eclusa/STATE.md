@@ -2,14 +2,14 @@
 eclusa_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: active
-stopped_at: M1 complete; M2 Phase 2.1 queued (autonomous)
-last_updated: "2026-04-15T20:30:00.000Z"
+status: unknown
+stopped_at: Completed 02.1-01-PLAN.md (mesh module + load_obj + corpus + proptest)
+last_updated: "2026-04-15T22:52:23.769Z"
 progress:
-  total_phases: 11
-  completed_phases: 7
-  total_plans: 23
-  completed_plans: 23
+  total_phases: 12
+  completed_phases: 5
+  total_plans: 26
+  completed_plans: 17
 ---
 
 # State: happyterminals
@@ -19,7 +19,7 @@ progress:
 See: `.eclusa/PROJECT.md` (updated 2026-04-14)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Phase 2.1 — OBJ mesh loading (M2 entry)
+**Current focus:** Phase 02.1 — OBJ Mesh Loading
 **Next command:** `/eclusa:autonomous`
 
 ---
@@ -120,9 +120,9 @@ From `.eclusa/config.json`:
 ---
 ## Session Continuity
 
-Last session: 2026-04-15T20:30:00.000Z
-Stopped at: M1 complete; autonomous dispatched for M2 starting at Phase 2.1
-Resume file: n/a — autonomous mode owns state transitions
+Last session: 2026-04-15T22:52:23.765Z
+Stopped at: Completed 02.1-01-PLAN.md (mesh module + load_obj + corpus + proptest)
+Resume file: None
 Pending decision carried: model-toggler (bunny/cow/teapot viewer) resolved by pulling Phase 2.1 forward (option B from 2026-04-15 session)
 
 ---
@@ -142,3 +142,4 @@ Pending decision carried: model-toggler (bunny/cow/teapot viewer) resolved by pu
 | Phase 01.3 P02 | 9min | 2 tasks | 10 files |
 | Phase 01.4 P01 | 4min | 2 tasks | 12 files |
 | Phase 01.4 P02 | 5min | 2 tasks | 10 files |
+| Phase 02.1 P01 | 8 min | 3 tasks | 16 files |

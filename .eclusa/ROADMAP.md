@@ -408,7 +408,7 @@ Plans:
 **Plans:** 3 plans in 3 waves
 
 Plans:
-- [ ] 02.1-01-PLAN.md — Mesh module + load_obj + fixture corpus (Wave 1)
+- [x] 02.1-01-PLAN.md — Mesh module + load_obj + fixture corpus (Wave 1)
 - [ ] 02.1-02-PLAN.md — Rasterizer &Mesh refactor + renderer_alloc bunny bench (Wave 2)
 - [ ] 02.1-03-PLAN.md — Model-viewer example + happyterminals::prelude re-exports (Wave 3)
 
