@@ -82,6 +82,22 @@ impl PropValue {
             }
         }
     }
+
+    /// Read the current value as an owned `T` without subscribing to reactive updates.
+    ///
+    /// CRITICAL: Use this in the render loop instead of [`read()`](Self::read).
+    /// `read()` calls `get_any()` which creates signal subscriptions that accumulate
+    /// every frame, causing memory growth.
+    #[must_use]
+    pub fn read_untracked<T: Clone + 'static>(&self) -> Option<T> {
+        match self {
+            Self::Static(boxed) => boxed.downcast_ref::<T>().cloned(),
+            Self::Reactive(reactive) => {
+                let any = reactive.get_any_untracked();
+                any.downcast_ref::<T>().cloned()
+            }
+        }
+    }
 }
 
 impl fmt::Debug for PropValue {

@@ -15,4 +15,4 @@ pub mod run;
 pub use event::{InputEvent, InputSignals};
 pub use frame_spec::FrameSpec;
 pub use guard::{install_panic_hook, TerminalGuard};
-pub use run::run;
+pub use run::{run, run_scene};

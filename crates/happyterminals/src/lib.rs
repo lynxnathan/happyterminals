@@ -26,7 +26,7 @@ pub mod prelude {
     pub use happyterminals_core::{Color, Modifier, Style, Rect};
 
     // Backend (from Phase 1.1, Plan 02-03)
-    pub use happyterminals_backend_ratatui::{run, FrameSpec, InputEvent, InputSignals};
+    pub use happyterminals_backend_ratatui::{run, run_scene, FrameSpec, InputEvent, InputSignals};
     pub use happyterminals_backend_ratatui::{TerminalGuard, install_panic_hook};
 
     // Scene types (from Phase 1.4, Plan 01)
@@ -46,6 +46,7 @@ pub mod prelude {
 
     // Pipeline
     pub use happyterminals_pipeline::{Pipeline, Fx};
+    pub use happyterminals_pipeline::effects;
 
     // Math
     pub use glam::vec3;

@@ -13,15 +13,20 @@ categories.workspace   = true
 readme                 = "README.md"
 
 [dependencies]
-happyterminals-core = { workspace = true }
-ratatui             = { workspace = true }
-ratatui-crossterm   = { workspace = true }
-crossterm           = { workspace = true }
-futures             = { workspace = true }
-tokio               = { workspace = true }
-tracing             = { workspace = true }
+happyterminals-core     = { workspace = true }
+happyterminals-scene    = { workspace = true }
+happyterminals-renderer = { workspace = true }
+happyterminals-pipeline = { workspace = true }
+glam                    = { workspace = true }
+ratatui                 = { workspace = true }
+ratatui-crossterm       = { workspace = true }
+crossterm               = { workspace = true }
+futures                 = { workspace = true }
+tokio                   = { workspace = true }
+tracing                 = { workspace = true }
 
 [dev-dependencies]
+happyterminals-dsl = { workspace = true }
 tokio = { workspace = true, features = ["rt", "time", "macros", "test-util"] }
 
 [lints]

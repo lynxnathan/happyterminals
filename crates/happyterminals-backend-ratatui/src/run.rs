@@ -7,6 +7,7 @@
 
 use std::io;
 use std::ops::Deref;
+use std::time::Duration;
 
 use crossterm::event::EventStream;
 use crossterm::terminal::SetTitle;
@@ -17,6 +18,9 @@ use tokio::time::{interval, MissedTickBehavior};
 
 use happyterminals_core::grid::Grid;
 use happyterminals_core::Rect;
+use happyterminals_renderer::{OrbitCamera, Projection, Renderer, ShadingRamp};
+use happyterminals_scene::node::{NodeKind, SceneNode};
+use happyterminals_scene::{CameraConfig, Scene, SceneIr};
 
 use crate::event::{is_quit_event, map_event, InputEvent, InputSignals};
 use crate::frame_spec::FrameSpec;
@@ -108,4 +112,155 @@ where
 
     Ok(())
     // _guard drops here, restoring terminal
+}
+
+/// Runs the terminal event loop driven by a [`Scene`].
+///
+/// Like [`run`], creates a [`TerminalGuard`] on entry and drives a
+/// `tokio::select!` loop. Instead of a user-provided render closure, the
+/// scene IR tree is walked each frame: Cube nodes are rendered via
+/// [`Renderer::draw`], and the scene-level pipeline (if any) is applied.
+///
+/// `tick_fn` is called at the start of every frame tick with the frame
+/// duration and input signals, allowing the caller to update reactive
+/// signals (e.g. rotation) before the scene is rendered.
+///
+/// # Errors
+///
+/// Returns an error if terminal acquisition fails or an I/O error occurs
+/// during rendering.
+pub async fn run_scene<F>(
+    scene: Scene,
+    spec: FrameSpec,
+    mut tick_fn: F,
+) -> Result<(), Box<dyn std::error::Error>>
+where
+    F: FnMut(Duration, &InputSignals),
+{
+    install_panic_hook();
+
+    let _guard = TerminalGuard::acquire()?;
+
+    // Best-effort window title
+    if let Some(ref title) = spec.title {
+        let _ = crossterm::execute!(io::stdout(), SetTitle(title.as_str()));
+    }
+
+    let backend = CrosstermBackend::new(io::stdout());
+    let mut terminal = Terminal::new(backend)?;
+
+    let mut events = EventStream::new();
+
+    let mut tick = interval(spec.frame_duration());
+    tick.set_missed_tick_behavior(MissedTickBehavior::Delay);
+
+    let (w, h) = crossterm::terminal::size()?;
+    let input_signals = InputSignals::new(w, h);
+    let mut grid = Grid::new(Rect::new(0, 0, w, h));
+
+    // Extract scene parts for mutable access
+    let (ir, camera_config, mut pipeline) = scene.into_parts();
+    let CameraConfig::Orbit(mut camera) = camera_config;
+    let mut renderer = Renderer::new();
+    let shading = ShadingRamp::default();
+    let dt = spec.frame_duration();
+
+    loop {
+        tokio::select! {
+            _ = tick.tick() => {
+                let _span = tracing::trace_span!("frame").entered();
+                tick_fn(dt, &input_signals);
+
+                terminal.draw(|frame| {
+                    grid.resize(frame.area());
+                    let projection = Projection {
+                        viewport_w: grid.area.width,
+                        viewport_h: grid.area.height,
+                        ..Projection::default()
+                    };
+
+                    walk_and_render(&ir, &mut grid, &mut renderer, &mut camera, &projection, &shading);
+
+                    if let Some(ref mut pipe) = pipeline {
+                        pipe.run_frame(&mut grid, dt);
+                    }
+
+                    *frame.buffer_mut() = grid.deref().clone();
+                })?;
+            }
+            maybe_event = events.next() => {
+                match maybe_event {
+                    Some(Ok(ev)) => {
+                        if let Some(input) = map_event(&ev) {
+                            if is_quit_event(&input) {
+                                break;
+                            }
+                            match &input {
+                                InputEvent::Key { .. } => {
+                                    input_signals.last_key.set(Some(input));
+                                }
+                                InputEvent::Mouse { .. } => {
+                                    input_signals.last_mouse.set(Some(input));
+                                }
+                                InputEvent::Resize { width, height } => {
+                                    input_signals.terminal_size.set((*width, *height));
+                                }
+                                InputEvent::FocusGained => {
+                                    input_signals.focused.set(true);
+                                }
+                                InputEvent::FocusLost => {
+                                    input_signals.focused.set(false);
+                                }
+                            }
+                        }
+                    }
+                    Some(Err(_)) | None => break,
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Walk all root nodes in the scene IR and render each.
+fn walk_and_render(
+    ir: &SceneIr,
+    grid: &mut Grid,
+    renderer: &mut Renderer,
+    camera: &mut OrbitCamera,
+    projection: &Projection,
+    shading: &ShadingRamp<'_>,
+) {
+    for node in ir.nodes() {
+        render_node(node, grid, renderer, camera, projection, shading);
+    }
+}
+
+/// Recursively render a single scene node.
+fn render_node(
+    node: &SceneNode,
+    grid: &mut Grid,
+    renderer: &mut Renderer,
+    camera: &mut OrbitCamera,
+    projection: &Projection,
+    shading: &ShadingRamp<'_>,
+) {
+    match &node.kind {
+        NodeKind::Cube => {
+            // Read reactive rotation prop without subscribing (REACT-07)
+            if let Some(prop) = node.props.get("rotation") {
+                if let Some(angle) = prop.read_untracked::<f32>() {
+                    camera.azimuth = angle;
+                }
+            }
+            renderer.draw(grid, camera, projection, shading);
+        }
+        NodeKind::Layer { .. } | NodeKind::Group => {
+            for child in &node.children {
+                render_node(child, grid, renderer, camera, projection, shading);
+            }
+        }
+        NodeKind::Custom(_) => {}
+    }
 }

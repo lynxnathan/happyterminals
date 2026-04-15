@@ -71,6 +71,15 @@ impl Scene {
     pub fn pipeline(&self) -> Option<&Pipeline> {
         self.pipeline.as_ref()
     }
+
+    /// Consume the scene and return its parts for mutable access.
+    ///
+    /// Used by `run_scene()` which needs mutable ownership of the camera
+    /// and pipeline while the IR tree stays immutable.
+    #[must_use]
+    pub fn into_parts(self) -> (SceneIr, CameraConfig, Option<Pipeline>) {
+        (self.ir, self.camera, self.pipeline)
+    }
 }
 
 /// Recursively collect all node IDs, returning an error on the first duplicate.
