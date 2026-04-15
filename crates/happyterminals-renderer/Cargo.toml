@@ -16,11 +16,14 @@ readme                 = "README.md"
 glam = { workspace = true }
 happyterminals-core = { path = "../happyterminals-core" }
 ratatui-core = { workspace = true }
+thiserror = { workspace = true }
+tobj = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
 criterion = { workspace = true }
 proptest = { workspace = true }
+tempfile = { workspace = true }
 
 [[bench]]
 name = "renderer_alloc"

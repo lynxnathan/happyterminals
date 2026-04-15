@@ -1,0 +1,5 @@
+# OBJ supports -1-indexed refs (tobj handles; must not crash)
+v 0.0 0.0 0.0
+v 1.0 0.0 0.0
+v 0.5 1.0 0.0
+f -3 -2 -1

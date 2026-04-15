@@ -72,6 +72,7 @@ pyo3-async-runtimes = "0.28"
 insta     = "1.47"
 proptest  = "1.11"
 criterion = "0.8"
+tempfile  = "3"
 
 # Internal crates — members declare each other via workspace deps for consistent pathing.
 happyterminals                  = { version = "0.0.0", path = "crates/happyterminals" }
