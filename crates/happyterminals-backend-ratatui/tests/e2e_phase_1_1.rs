@@ -141,7 +141,7 @@ fn e2e_resize_propagation_grid_and_signals() {
         // Initial state
         assert_eq!(grid.area.width, 80);
         assert_eq!(grid.area.height, 24);
-        assert_eq!(signals.terminal_size.get(), (80, 24));
+        assert_eq!(signals.terminal_size.untracked(), (80, 24));
 
         // Simulate what run() does on resize event:
         // 1. Signal update (from event branch)
@@ -149,7 +149,7 @@ fn e2e_resize_propagation_grid_and_signals() {
         // 2. Grid resize (from tick branch via frame.area())
         grid.resize(Rect::new(0, 0, 120, 40));
 
-        assert_eq!(signals.terminal_size.get(), (120, 40));
+        assert_eq!(signals.terminal_size.untracked(), (120, 40));
         assert_eq!(grid.area.width, 120);
         assert_eq!(grid.area.height, 40);
 

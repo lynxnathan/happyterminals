@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             );
 
             // Demo: show terminal size from input signals (BACK-03 proof)
-            let (w, h) = input_signals.terminal_size.get();
+            let (w, h) = input_signals.terminal_size.untracked();
             let size_str = format!("Terminal: {w}x{h}");
             grid.put_str(2, 8, &size_str, Style::default());
 
