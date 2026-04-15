@@ -13,7 +13,10 @@ categories.workspace   = true
 readme                 = "README.md"
 
 [dependencies]
-reactive_graph = { workspace = true }
+# `effects` feature must be enabled so `ImmediateEffect::new_mut_scoped` actually
+# runs its closure; without it `reactive_graph` short-circuits the constructor
+# to a dead handle (`Self { inner: None }`). Required for REACT-03.
+reactive_graph = { workspace = true, features = ["effects"] }
 thiserror      = { workspace = true }
 rand           = { workspace = true }
 # send_wrapper: direct dep for `runtime::wrap_local_fnmut` (SendWrapper<RefCell<FnMut>>
