@@ -5,8 +5,8 @@
 See: `.eclusa/PROJECT.md` (updated 2026-04-14)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Milestone 1 — Spinning Cube Demo. Phase 1.0 (Reactive Core) in-progress: plans 01.0-01 (cargo scaffold) and 01.0-02 (Signal/SignalSetter/Memo/batch) complete. Next up in Wave 2: 01.0-03 (Effect/Owner/cleanup) and 01.0-04 (Clock/Rng/errors) in parallel.
-**Next command:** `/eclusa:execute-phase 1.0` (continue Wave 2)
+**Current focus:** Milestone 1 — Spinning Cube Demo. Phase 1.0 (Reactive Core) in-progress: Wave 1 (01.0-01) and Wave 2 (01.0-02, 01.0-03, 01.0-04) complete. Wave 3 complete: 01.0-02b (crate-root re-exports) landed. Next up: Wave 4 — 01.0-05 (tests + benches + docs) to finalize Phase 1.0.
+**Next command:** `/eclusa:execute-phase 1.0` (run Wave 4)
 
 ---
 
@@ -104,4 +104,4 @@ From `.eclusa/config.json`:
 | `project.eclusa` | Machine-readable project identity + stances | 2026-04-14 |
 
 ---
-*Last updated: 2026-04-15 — 01.0-02-signal-memo-batch-PLAN.md complete (Wave 2)*
+*Last updated: 2026-04-15 — 01.0-02b-lib-reexports-PLAN.md complete (Wave 3); Phase 1.0 Waves 1–3 done, Wave 4 (01.0-05) next*
