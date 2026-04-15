@@ -450,6 +450,7 @@ Plans:
 - At least one particle example (snow, sparks, or similar) runs on top of an existing mesh.
 - Camera modes: free-look (fly-through) + FPS-style + orbit (shipped in M1).
 - `Camera` trait polymorphic over modes; signal-driven like orbit.
+- **Interactive pan/zoom controls in `model-viewer` example** — carried from Phase 2.1 UAT feedback (2026-04-15, user: "preciso de pan/zoom controls"). Keyboard (WASD + `+`/`-`) and/or mouse wheel scroll. Wire into the same signal-bindable-prop pattern the orbit camera already uses. **Also resolves:** bunny-orientation quirk observed during Phase 2.1 UAT (user reported seeing only the bottom of the bunny while cow and teapot framed correctly — Stanford bunny's canonical axis differs from Spot/teapot, and the fixed orbit default azimuth/elevation lands on the wrong side). User-controlled pan/rotate eliminates the need for per-model default-pose overrides.
 - Per-frame allocation criterion bench expanded: every renderer path (cube, OBJ, particles) gets allocation assertions.
 
 **Requirements covered:** REND-07, REND-09 (matures to full coverage).
@@ -706,7 +707,7 @@ Highest-value parallelization opportunities inside M1:
 - [x] **Phase 1.3: Minimal Renderer (Cube)** — Z-buffer, cell-aspect projection, reversed-Z, shading ramp, Cube primitive, signal-driven orbit camera. (completed 2026-04-15)
 - [x] **Phase 1.4: Scene IR + Rust DSL** — SceneIr, layered SceneGraph, react-three-fiber-shaped builder with signal-bindable props, ≤25-line hello-world. (completed 2026-04-15)
 - [x] **Phase 1.5: Spinning Cube Demo** — <100 LOC example, README + GIF, cross-terminal matrix, soak test, 1-cell-bytes hard gate → **M1 EXIT**. (completed 2026-04-15)
-- [ ] **Phase 2.1: OBJ Mesh Loading** — `tobj 4.0` + triangulation + winding normalization + flat-normal fallback + 10+ file corpus; `Result<Mesh, MeshError>` no panics on malformed input.
+- [x] **Phase 2.1: OBJ Mesh Loading** — `tobj 4.0` + triangulation + winding normalization + flat-normal fallback + 11-file corpus + 256-case proptest; `Result<Mesh, MeshError>` no panics; model-viewer ships bunny/cow/teapot with auto-fit camera. (completed 2026-04-15)
 - [ ] **Phase 2.2: Color-Mode Pipeline** — RGB → 256 → 16 → monochrome fallback; `NO_COLOR` + `--force-color`; tmux `Tc` truecolor guidance docs.
 - [ ] **Phase 2.3: Particles + Camera Modes** — Emitter + gravity + lifetime + color-over-time; free + FPS camera modes; full per-frame alloc coverage.
 - [ ] **Phase 2.4: Resize Hardening + MSRV + STL** — Resize-race hardening on Windows Terminal; STL loader via `stl_io 0.11`; MSRV 1.86 pinned and CI-enforced.
@@ -728,7 +729,7 @@ The sections above (Milestone 0, Milestone 1 phases 1.0–1.5, Milestone 2 sketc
 | 1.3 Minimal Renderer | 2/2 | Complete | 2026-04-15 |
 | 1.4 Scene IR + Rust DSL | 2/2 | Complete | 2026-04-15 |
 | 1.5 Spinning Cube Demo | 3/3 | Complete — M1 EXIT | 2026-04-15 |
-| 2.1 OBJ Mesh Loading | 0/? | Not started | - |
+| 2.1 OBJ Mesh Loading | 3/3 | Complete | 2026-04-15 |
 | 2.2 Color-Mode Pipeline | 0/? | Not started | - |
 | 2.3 Particles + Camera Modes | 0/? | Not started | - |
 | 2.4 Resize Hardening + MSRV | 0/? | Not started | - |
