@@ -52,11 +52,11 @@ Requirements for the public v1 release — everything up to and including Python
 
 ### 3D Renderer (`happyterminals-renderer`)
 
-- [ ] **REND-01**: Fresh (not forked) z-buffer rasterizer with perspective projection, configurable ASCII shading ramp (default 10 levels `` .:-=+*#%@``), flat/per-face shading sufficient for M1
-- [ ] **REND-02**: Cell aspect ratio is a public projection-API parameter (default 2:1 tall); a cube rendered with defaults looks cubic, not tower-shaped
+- [x] **REND-01**: Fresh (not forked) z-buffer rasterizer with perspective projection, configurable ASCII shading ramp (default 10 levels `` .:-=+*#%@``), flat/per-face shading sufficient for M1
+- [x] **REND-02**: Cell aspect ratio is a public projection-API parameter (default 2:1 tall); a cube rendered with defaults looks cubic, not tower-shaped
 - [ ] **REND-03**: Reversed-Z + scene-fit near/far planes prevent visible z-fighting on the spinning cube demo at default resolutions
-- [ ] **REND-04**: Built-in `Cube` primitive in the renderer (M1 demo dependency); more primitives (sphere, plane, torus) are v2
-- [ ] **REND-05**: Orbit camera with signal-driven azimuth/elevation/distance (M1); free and FPS cameras are v2
+- [x] **REND-04**: Built-in `Cube` primitive in the renderer (M1 demo dependency); more primitives (sphere, plane, torus) are v2
+- [x] **REND-05**: Orbit camera with signal-driven azimuth/elevation/distance (M1); free and FPS cameras are v2
 - [ ] **REND-06**: OBJ mesh loading via `tobj` with triangulation of quads, winding normalization, flat-normal fallback for missing normals; corpus of 10+ real-world OBJ files tested; load errors return `Result<Mesh, MeshError>`, never panic
 - [ ] **REND-07**: Particle system infrastructure (emitter, gravity, lifetime, color over time); at least one particle example runs
 - [ ] **REND-08**: Color-mode pipeline: RGB → 256 → 16 → monochrome fallback; `NO_COLOR` env var honored; `--force-color` override; tmux `Tc` truecolor guidance in docs
