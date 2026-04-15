@@ -23,7 +23,8 @@ ratatui-core                   = { workspace = true }
 glam                           = { workspace = true }
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["rt", "time", "macros"] }
+tokio     = { workspace = true, features = ["rt", "time", "macros"] }
+crossterm = { workspace = true }
 
 [lints]
 workspace = true
