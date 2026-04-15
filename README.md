@@ -7,57 +7,85 @@
 [![Rust](https://img.shields.io/badge/rust-1.86%2B-orange.svg)](rust-toolchain.toml)
 
 A declarative, reactive terminal scene manager with composable visual effects
-and ASCII 3D rendering. Pure text output — runs on every terminal ever made.
+and ASCII 3D rendering. Describe a scene with signals, cameras, and layers --
+the framework handles projection, compositing, and ANSI output. Pure text,
+every terminal, everywhere.
 
-**Status:** Pre-alpha. Phase 0 (workspace hygiene) is in progress.
-The first milestone is a signal-driven spinning cube demo.
+## Spinning Cube Demo
 
-## Stack
+<!-- TODO: Replace with animated GIF or asciinema recording once captured -->
+<!-- asciinema rec / termsvg / vhs recording goes here -->
 
-- **[ratatui](https://ratatui.rs/)** for terminal I/O (via crossterm)
-- **[tachyonfx](https://github.com/ratatui/tachyonfx)** for the effects library
-- **[reactive_graph](https://crates.io/crates/reactive_graph)** (Leptos's reactive core) for fine-grained signals
-- **[glam](https://crates.io/crates/glam)** for 3D math
-- Fresh ASCII rasterizer (not a fork of any existing renderer)
+*A signal-rotated, effect-enhanced ASCII cube rendered entirely in your terminal.*
 
-See [`project.md`](./project.md) for the design manifesto
-and [`docs/decisions/stack-rationale.md`](./docs/decisions/stack-rationale.md)
-for "why not X" decisions.
+```
+cargo run --example spinning-cube
+```
 
-## Crates
+The spinning cube exercises the full stack end-to-end: reactive signals drive
+rotation, the 3D rasterizer projects and shades, the effect pipeline composites,
+and the ratatui backend paints pure ANSI text to any terminal.
 
-| Crate | Role |
-|-------|------|
-| `happyterminals-core` | Reactive primitives (Signal, Memo, Effect) and Grid buffer |
-| `happyterminals-renderer` | 3D projection, z-buffer rasterization, mesh loading |
-| `happyterminals-pipeline` | Effect trait, Pipeline executor, tachyonfx adapter |
-| `happyterminals-scene` | Scene IR and scene graph |
-| `happyterminals-dsl` | Rust builder API + JSON recipe loader |
-| `happyterminals-backend-ratatui` | Event loop + panic-safe TerminalGuard |
-| `happyterminals` | Meta crate — curated public surface (`use happyterminals::prelude::*`) |
-| `happyterminals-py` | Python bindings (Milestone 4, not yet activated) |
+## Hello World
 
-## Quick Start
-
-> This is the target shape; the spinning-cube example ships with Milestone 1.
+A complete scene in under 20 lines:
 
 ```rust
 use happyterminals::prelude::*;
 
-fn main() -> Result<()> {
-    let rotation = signal(0.0_f32);
-    let scene = scene()
-        .layer(|l| l.cube().rotation(&rotation))
-        .effect(fx::vignette(0.3))
-        .build()?;
-
-    run(scene, FrameSpec::fps(30))
+#[tokio::main(flavor = "current_thread")]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let (result, _owner) = create_root(|| {
+        let rotation = Signal::new(0.0_f32);
+        let r = rotation.clone();
+        let scene = scene()
+            .camera(OrbitCamera::default())
+            .layer(0, |l| l.cube().rotation(&rotation))
+            .build()?;
+        Ok((scene, r))
+    });
+    let (scene, rotation) = result?;
+    run_scene(scene, FrameSpec::default(), |dt, _| {
+        rotation.set(rotation.untracked() + dt.as_secs_f32());
+    }).await
 }
 ```
 
-## Development
+## Features
+
+- **Fine-grained reactive signals** -- SolidJS-style `Signal`, `Memo`, `Effect` with surgical cell-level redraws (no VDOM diffing)
+- **3D ASCII rendering** -- perspective projection, z-buffer rasterization, shading ramp, orbit camera
+- **tachyonfx effects pipeline** -- 50+ composable visual effects via the official ratatui effects library
+- **Scene graph DSL** -- declarative builder API inspired by react-three-fiber: cameras, layers, meshes, signals as props
+- **Cross-terminal output** -- pure text + ANSI escapes; works on Windows Terminal, macOS Terminal.app, iTerm2, Kitty, tmux, screen, and SSH sessions
+
+## Installation
+
+```bash
+cargo add happyterminals
+```
 
 Requires Rust 1.86+ (pinned via `rust-toolchain.toml`; `rustup` auto-installs).
+
+The async runtime is tokio (current-thread flavor):
+
+```bash
+cargo add tokio --features rt,macros
+```
+
+## Crate Structure
+
+| Crate | Role |
+|-------|------|
+| [`happyterminals`](crates/happyterminals/) | Meta crate -- curated public surface (`use happyterminals::prelude::*`) |
+| [`happyterminals-core`](crates/happyterminals-core/) | Reactive primitives (`Signal`, `Memo`, `Effect`) and `Grid` buffer |
+| [`happyterminals-renderer`](crates/happyterminals-renderer/) | 3D projection, z-buffer rasterization, shading |
+| [`happyterminals-pipeline`](crates/happyterminals-pipeline/) | Effect trait, `Pipeline` executor, tachyonfx adapter |
+| [`happyterminals-scene`](crates/happyterminals-scene/) | Scene IR, scene graph, transition manager |
+| [`happyterminals-dsl`](crates/happyterminals-dsl/) | Rust builder API (`scene()`, `layer()`, `camera()`) |
+| [`happyterminals-backend-ratatui`](crates/happyterminals-backend-ratatui/) | Event loop, `TerminalGuard` RAII, ratatui bridge |
+
+## Development
 
 ```bash
 cargo build --workspace
@@ -66,26 +94,17 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo fmt --all
 ```
 
-Docs, duplicate-dep scan, and unused-dep scan:
-
-```bash
-cargo doc --workspace --no-deps
-cargo tree --workspace --duplicates
-cargo install cargo-machete && cargo machete
-```
-
 ## Contributing
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md). Contributions are welcome and
-will be dual-licensed under the project's terms — see the License section
-below.
+will be dual-licensed under the project's terms.
 
 ## License
 
 Licensed under either of
 
-- Apache License, Version 2.0 ([LICENSE-APACHE](./LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
-- MIT License ([LICENSE-MIT](./LICENSE-MIT) or https://opensource.org/license/mit)
+- Apache License, Version 2.0 ([LICENSE-APACHE](./LICENSE-APACHE) or <https://www.apache.org/licenses/LICENSE-2.0>)
+- MIT License ([LICENSE-MIT](./LICENSE-MIT) or <https://opensource.org/license/mit>)
 
 at your option.
 
