@@ -12,7 +12,7 @@ use glam::Vec3;
 ///
 /// Dotted progression — unlit faces render as `·` (middle dot, visible but
 /// subtle) rather than blank space, so a cube's back face is still legible.
-pub const DEFAULT_RAMP: &[char] = &['·', '.', ':', ';', 'o', 'O', '●', '█'];
+pub const DEFAULT_RAMP: &[char] = &['·', '.', ':', ';', '+', 'o', 'O', '●', '█'];
 
 /// Maps the dot product of a face normal and light direction to an ASCII character.
 #[derive(Debug, Clone)]
@@ -58,10 +58,10 @@ mod tests {
 
     #[test]
     fn default_ramp_is_dotted_progression() {
-        assert_eq!(DEFAULT_RAMP.len(), 8);
+        assert_eq!(DEFAULT_RAMP.len(), 9);
         assert_eq!(
             DEFAULT_RAMP,
-            &['·', '.', ':', ';', 'o', 'O', '●', '█']
+            &['·', '.', ':', ';', '+', 'o', 'O', '●', '█']
         );
     }
 
