@@ -93,7 +93,7 @@ Requirements for the public v1 release — everything up to and including Python
 ### Milestone 1 Demo Exit
 
 - [ ] **DEMO-01**: `examples/spinning-cube/` is a single Rust file under 100 LOC that renders a signal-rotated cube with one tachyonfx effect (e.g., vignette), running at 30fps, no visible flicker, no memory growth over a 10-minute run
-- [ ] **DEMO-02**: Project root `README.md` shows the spinning cube with an animated GIF/asciicast + the ≤25-line hello-world
+- [x] **DEMO-02**: Project root `README.md` shows the spinning cube with an animated GIF/asciicast + the ≤25-line hello-world
 - [ ] **DEMO-03**: Ctrl-C during the demo leaves the terminal in a clean state on every platform in the verification matrix
 - [ ] **DEMO-04**: One-cell-change output test: mutating one signal produces approximately one cell of ANSI change (bytes order-of-magnitude sane, not a full-buffer repaint)
 

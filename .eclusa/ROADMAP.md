@@ -351,7 +351,7 @@ Plans:
 
 Plans:
 - [ ] 01.5-01-PLAN.md — Integration wiring (run_scene, spinning cube example, bytes test)
-- [ ] 01.5-02-PLAN.md — README update with spinning cube showcase
+- [x] 01.5-02-PLAN.md — README update with spinning cube showcase
 - [ ] 01.5-03-PLAN.md — Cross-terminal verification matrix (HUMAN-UAT)
 
 **UI hint**: yes
