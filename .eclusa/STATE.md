@@ -5,8 +5,8 @@
 See: `.eclusa/PROJECT.md` (updated 2026-04-14)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Milestone 0 — Workspace Cleanup (Phase 0) — blocker for everything else.
-**Next command:** `/eclusa:plan-phase 0`
+**Current focus:** Milestone 0 — COMPLETE (Phase 0 shipped 2026-04-14). Next: Milestone 1 — Spinning Cube Demo, starting with Phase 1.0 (Reactive Core).
+**Next command:** `/eclusa:plan-phase 1.0`
 
 ---
 
@@ -33,8 +33,8 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-14)
 
 | Milestone | Status | Phases | Exit |
 |-----------|--------|--------|------|
-| **M0** Workspace Cleanup | **In planning next** | Phase 0 | HYG-01 … HYG-09 satisfied |
-| M1 Spinning Cube Demo | Not started | 1.0 → 1.5 | `examples/spinning-cube/` <100 LOC, cross-terminal verified, 1-cell → ~10 bytes |
+| **M0** Workspace Cleanup | **COMPLETE (2026-04-14)** | Phase 0 | HYG-01..05, 07..09 satisfied (HYG-06 deferred) |
+| **M1 Spinning Cube Demo** | **Next — Phase 1.0** | 1.0 → 1.5 | `examples/spinning-cube/` <100 LOC, cross-terminal verified, 1-cell → ~10 bytes |
 | M2 Renderer Depth | Not started | 2.1–2.4 | OBJ + color pipeline + particles + resize hardening |
 | M3 Compositor + JSON + Release | Not started | 3.1–3.5 | Transitions + JSON recipes + 7 crates published |
 | M4 Python Bindings (**FINAL**) | Not started | 4.1–4.4 | `pip install happyterminals` cross-platform |
