@@ -152,6 +152,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::cast_precision_loss)]
     fn vertices_centered_at_origin() {
         let sum: Vec3 = Cube::VERTICES.iter().copied().sum();
         let center = sum / Cube::VERTICES.len() as f32;
