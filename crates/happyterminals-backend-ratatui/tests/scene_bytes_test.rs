@@ -11,7 +11,7 @@ use std::rc::Rc;
 
 use happyterminals_core::{Grid, Signal, create_root};
 use happyterminals_dsl::scene;
-use happyterminals_renderer::{OrbitCamera, Projection, Renderer, ShadingRamp};
+use happyterminals_renderer::{Cube, Mesh, OrbitCamera, Projection, Renderer, ShadingRamp};
 use happyterminals_scene::node::{NodeKind, SceneNode};
 use happyterminals_scene::CameraConfig;
 use ratatui::Terminal;
@@ -51,6 +51,7 @@ fn render_scene_nodes(
     camera: &mut OrbitCamera,
     projection: &Projection,
     shading: &ShadingRamp<'_>,
+    cube_mesh: &Mesh,
 ) {
     for node in nodes {
         match &node.kind {
@@ -60,10 +61,10 @@ fn render_scene_nodes(
                         camera.azimuth = angle;
                     }
                 }
-                renderer.draw(grid, camera, projection, shading);
+                renderer.draw(grid, cube_mesh, camera, projection, shading);
             }
             NodeKind::Layer { .. } | NodeKind::Group => {
-                render_scene_nodes(&node.children, grid, renderer, camera, projection, shading);
+                render_scene_nodes(&node.children, grid, renderer, camera, projection, shading, cube_mesh);
             }
             NodeKind::Custom(_) => {}
         }
@@ -93,6 +94,7 @@ fn scene_one_cell_change_minimal_bytes() {
             ..Projection::default()
         };
         let shading = ShadingRamp::default();
+        let cube_mesh = Cube::mesh();
 
         let buf = SharedBuf::new();
         let backend = CrosstermBackend::new(buf.clone());
@@ -109,6 +111,7 @@ fn scene_one_cell_change_minimal_bytes() {
                     &mut camera,
                     &projection,
                     &shading,
+                    &cube_mesh,
                 );
                 *frame.buffer_mut() = grid.deref().clone();
             })
@@ -130,6 +133,7 @@ fn scene_one_cell_change_minimal_bytes() {
                     &mut camera,
                     &projection,
                     &shading,
+                    &cube_mesh,
                 );
                 *frame.buffer_mut() = grid.deref().clone();
             })

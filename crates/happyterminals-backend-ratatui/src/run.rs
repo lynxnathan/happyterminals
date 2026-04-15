@@ -18,7 +18,7 @@ use tokio::time::{interval, MissedTickBehavior};
 
 use happyterminals_core::grid::Grid;
 use happyterminals_core::Rect;
-use happyterminals_renderer::{OrbitCamera, Projection, Renderer, ShadingRamp};
+use happyterminals_renderer::{Cube, Mesh, OrbitCamera, Projection, Renderer, ShadingRamp};
 use happyterminals_scene::node::{NodeKind, SceneNode};
 use happyterminals_scene::{CameraConfig, Scene, SceneIr};
 
@@ -163,6 +163,10 @@ where
     let CameraConfig::Orbit(mut camera) = camera_config;
     let mut renderer = Renderer::new();
     let shading = ShadingRamp::default();
+    // Build the cube mesh ONCE (heap-allocates) so the per-frame hot path
+    // borrows it instead of rebuilding. Preserves REND-09 zero-alloc
+    // discipline for `NodeKind::Cube` nodes.
+    let cube_mesh = Cube::mesh();
     let dt = spec.frame_duration();
 
     loop {
@@ -179,7 +183,7 @@ where
                         ..Projection::default()
                     };
 
-                    walk_and_render(&ir, &mut grid, &mut renderer, &mut camera, &projection, &shading);
+                    walk_and_render(&ir, &mut grid, &mut renderer, &mut camera, &projection, &shading, &cube_mesh);
 
                     if let Some(ref mut pipe) = pipeline {
                         pipe.run_frame(&mut grid, dt);
@@ -231,9 +235,10 @@ fn walk_and_render(
     camera: &mut OrbitCamera,
     projection: &Projection,
     shading: &ShadingRamp<'_>,
+    cube_mesh: &Mesh,
 ) {
     for node in ir.nodes() {
-        render_node(node, grid, renderer, camera, projection, shading);
+        render_node(node, grid, renderer, camera, projection, shading, cube_mesh);
     }
 }
 
@@ -245,6 +250,7 @@ fn render_node(
     camera: &mut OrbitCamera,
     projection: &Projection,
     shading: &ShadingRamp<'_>,
+    cube_mesh: &Mesh,
 ) {
     match &node.kind {
         NodeKind::Cube => {
@@ -254,11 +260,12 @@ fn render_node(
                     camera.azimuth = angle;
                 }
             }
-            renderer.draw(grid, camera, projection, shading);
+            // Pass the pre-built cube mesh — no per-frame allocation.
+            renderer.draw(grid, cube_mesh, camera, projection, shading);
         }
         NodeKind::Layer { .. } | NodeKind::Group => {
             for child in &node.children {
-                render_node(child, grid, renderer, camera, projection, shading);
+                render_node(child, grid, renderer, camera, projection, shading, cube_mesh);
             }
         }
         NodeKind::Custom(_) => {}

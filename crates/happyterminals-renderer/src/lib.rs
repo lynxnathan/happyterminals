@@ -35,16 +35,17 @@ use glam::Vec3;
 use happyterminals_core::Grid;
 use ratatui_core::layout::Position;
 
-/// Bounding radius of the unit cube: sqrt(3)/2.
-const CUBE_BOUNDING_RADIUS: f32 = 0.866_025_4;
-
-/// Compute a scene-fit near plane distance for the given camera.
+/// Compute a scene-fit near plane distance for the given camera and mesh.
 ///
 /// Returns the distance from the camera eye to the near edge of the
-/// cube's bounding sphere, clamped to a minimum of 0.01.
+/// mesh's bounding sphere, clamped to a minimum of 0.01. Using the mesh's
+/// own bounding radius (instead of a hardcoded cube constant) means the
+/// near plane adapts to meshes of arbitrary scale — required once the
+/// rasterizer accepts any [`Mesh`], not just [`Cube`].
 #[must_use]
-fn scene_fit_near(camera: &OrbitCamera) -> f32 {
-    (camera.distance - CUBE_BOUNDING_RADIUS).max(0.01)
+fn scene_fit_near(camera: &OrbitCamera, mesh: &Mesh) -> f32 {
+    let (_, radius) = mesh.bounding_sphere();
+    (camera.distance - radius).max(0.01)
 }
 
 /// ASCII 3D renderer with pre-allocated z-buffer and staging character buffer.
@@ -74,16 +75,23 @@ impl Renderer {
         }
     }
 
-    /// Render a shaded, z-buffered cube into the given grid.
+    /// Render a shaded, z-buffered [`Mesh`] into the given grid.
     ///
     /// Orchestrates the full pipeline: backface culling, vertex projection,
     /// triangle rasterization with reversed-Z depth testing, ASCII shading,
-    /// and writing characters into the grid.
+    /// and writing characters into the grid. Works for any [`Mesh`] — cube,
+    /// loaded OBJ, or procedurally generated — unified under a single hot
+    /// path (REND-06).
+    ///
+    /// If `mesh.shading` is `Some`, that ramp overrides `shading` for this
+    /// mesh. Otherwise the scene-provided `shading` applies.
     ///
     /// # Zero-allocation guarantee
     ///
     /// After the first call (warmup), this method performs zero heap allocations
-    /// as long as the grid dimensions do not change between frames.
+    /// as long as the grid dimensions do not change between frames. Holds for
+    /// meshes of any triangle count — the hot loop borrows `mesh.indices` and
+    /// `mesh.normals` without cloning (REND-09).
     #[allow(
         clippy::cast_possible_truncation,
         clippy::cast_sign_loss,
@@ -92,6 +100,7 @@ impl Renderer {
     pub fn draw(
         &mut self,
         grid: &mut Grid,
+        mesh: &Mesh,
         camera: &OrbitCamera,
         projection: &Projection,
         shading: &ShadingRamp<'_>,
@@ -114,7 +123,7 @@ impl Renderer {
 
         // Compute matrices
         let view = camera.view_matrix();
-        let z_near = scene_fit_near(camera);
+        let z_near = scene_fit_near(camera, mesh);
         let pixel_aspect = f32::from(projection.viewport_w) / f32::from(projection.viewport_h);
         let effective_aspect = pixel_aspect / projection.cell_aspect;
         let proj = glam::Mat4::perspective_infinite_reverse_rh(
@@ -136,43 +145,57 @@ impl Renderer {
             );
         let camera_dir = (camera.target - eye).normalize();
 
-        // Rasterize each face (2 triangles per face)
         let grid_w = w as usize;
         let grid_h = h as usize;
 
-        for face in 0..6 {
-            let face_normal = Cube::FACE_NORMALS[face];
+        // Per-mesh shading override (999.x scaffold): borrow, no allocation.
+        let effective_ramp: &ShadingRamp<'_> = mesh.shading.as_ref().unwrap_or(shading);
+
+        // Rasterize each triangle (one normal per triangle — cube's 6 shared
+        // face normals are baked into `Cube::mesh()` at 12 entries, and
+        // loaded meshes compute flat normals at load time).
+        for (tri_idx, &[i0, i1, i2]) in mesh.indices.iter().enumerate() {
+            // `mesh.normals.len() == mesh.indices.len()` by Mesh invariant.
+            let face_normal = mesh.normals[tri_idx];
 
             // Backface cull
             if rasterizer::backface_cull(face_normal, camera_dir) {
                 continue;
             }
 
-            let shade_char = shading.shade(face_normal);
+            let shade_char = effective_ramp.shade(face_normal);
 
-            for tri_offset in 0..2 {
-                let tri_idx = face * 2 + tri_offset;
-                let indices = Cube::INDICES[tri_idx];
-
-                // Project all 3 vertices; skip triangle if any is behind camera
-                let v0 = rasterizer::project_vertex(Cube::VERTICES[indices[0]], &mvp, half_w, half_h);
-                let v1 = rasterizer::project_vertex(Cube::VERTICES[indices[1]], &mvp, half_w, half_h);
-                let v2 = rasterizer::project_vertex(Cube::VERTICES[indices[2]], &mvp, half_w, half_h);
-
-                let (Some(sv0), Some(sv1), Some(sv2)) = (v0, v1, v2) else {
-                    continue;
-                };
-
-                let sv = [sv0, sv1, sv2];
-                rasterizer::rasterize_triangle(
-                    &sv,
-                    &mut self.z_buffer,
-                    grid_w,
-                    grid_h,
-                    shade_char,
-                    &mut self.cell_chars,
-                );
+            let vi0 = i0 as usize;
+            let vi1 = i1 as usize;
+            let vi2 = i2 as usize;
+            // Defensive bounds check: loaded meshes can technically carry
+            // stale indices if constructed manually. load_obj() already
+            // filters these, but the rasterizer stays safe anyway.
+            if vi0 >= mesh.vertices.len()
+                || vi1 >= mesh.vertices.len()
+                || vi2 >= mesh.vertices.len()
+            {
+                continue;
             }
+
+            // Project all 3 vertices; skip triangle if any is behind camera
+            let v0 = rasterizer::project_vertex(mesh.vertices[vi0], &mvp, half_w, half_h);
+            let v1 = rasterizer::project_vertex(mesh.vertices[vi1], &mvp, half_w, half_h);
+            let v2 = rasterizer::project_vertex(mesh.vertices[vi2], &mvp, half_w, half_h);
+
+            let (Some(sv0), Some(sv1), Some(sv2)) = (v0, v1, v2) else {
+                continue;
+            };
+
+            let sv = [sv0, sv1, sv2];
+            rasterizer::rasterize_triangle(
+                &sv,
+                &mut self.z_buffer,
+                grid_w,
+                grid_h,
+                shade_char,
+                &mut self.cell_chars,
+            );
         }
 
         // Write cell_chars into Grid
@@ -346,6 +369,9 @@ mod tests {
     /// scaffolding field on `Mesh`.
     #[test]
     fn draw_respects_per_mesh_shading_override() {
+        // Custom ramp made entirely of characters that are NOT in DEFAULT_RAMP.
+        static CUSTOM_RAMP: &[char] = &['X', 'Y', 'Z', 'W', 'V'];
+
         let mut grid = Grid::new(Rect::new(0, 0, 80, 24));
         let camera = OrbitCamera {
             azimuth: std::f32::consts::FRAC_PI_4,
@@ -361,8 +387,6 @@ mod tests {
         // Scene-default ramp uses DEFAULT_RAMP characters ('.', ',', ...).
         let scene_shading = ShadingRamp::default();
 
-        // Custom ramp made entirely of characters that are NOT in DEFAULT_RAMP.
-        static CUSTOM_RAMP: &[char] = &['X', 'Y', 'Z', 'W', 'V'];
         let custom = ShadingRamp {
             ramp: CUSTOM_RAMP,
             light_dir: Vec3::new(1.0, 1.0, 1.0).normalize(),

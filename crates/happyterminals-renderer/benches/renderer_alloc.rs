@@ -5,7 +5,7 @@
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use happyterminals_core::{Grid, Rect};
-use happyterminals_renderer::{OrbitCamera, Projection, Renderer, ShadingRamp};
+use happyterminals_renderer::{Cube, OrbitCamera, Projection, Renderer, ShadingRamp};
 
 fn bench_draw(c: &mut Criterion) {
     let mut grid = Grid::new(Rect::new(0, 0, 80, 24));
@@ -22,13 +22,14 @@ fn bench_draw(c: &mut Criterion) {
     };
     let shading = ShadingRamp::default();
     let mut renderer = Renderer::new();
+    let cube_mesh = Cube::mesh();
 
     // Warmup: allocate buffers once
-    renderer.draw(&mut grid, &camera, &projection, &shading);
+    renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &shading);
 
     c.bench_function("renderer_draw_80x24", |b| {
         b.iter(|| {
-            renderer.draw(&mut grid, &camera, &projection, &shading);
+            renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &shading);
         });
     });
 }

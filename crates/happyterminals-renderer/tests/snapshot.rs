@@ -3,7 +3,7 @@
 //! Uses insta to capture and verify the rendered output at known camera poses.
 
 use happyterminals_core::{Grid, Rect};
-use happyterminals_renderer::{OrbitCamera, Projection, Renderer, ShadingRamp};
+use happyterminals_renderer::{Cube, OrbitCamera, Projection, Renderer, ShadingRamp};
 use ratatui_core::layout::Position;
 use std::f32::consts::{FRAC_PI_4, FRAC_PI_6};
 
@@ -46,8 +46,9 @@ fn snapshot_cube_default_ramp() {
     };
     let shading = ShadingRamp::default();
     let mut renderer = Renderer::new();
+    let cube_mesh = Cube::mesh();
 
-    renderer.draw(&mut grid, &camera, &projection, &shading);
+    renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &shading);
 
     let output = grid_to_string(&grid, 80, 24);
     insta::assert_snapshot!(output);
@@ -73,8 +74,9 @@ fn snapshot_cube_custom_ramp() {
         light_dir: glam::Vec3::new(1.0, 1.0, 1.0).normalize(),
     };
     let mut renderer = Renderer::new();
+    let cube_mesh = Cube::mesh();
 
-    renderer.draw(&mut grid, &camera, &projection, &shading);
+    renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &shading);
 
     let output = grid_to_string(&grid, 80, 24);
 
