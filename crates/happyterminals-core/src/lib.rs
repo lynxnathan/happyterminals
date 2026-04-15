@@ -36,9 +36,11 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 pub mod batch;
+pub mod cell;
 pub mod clock;
 pub mod effect;
 pub mod error;
+pub mod grid;
 pub mod memo;
 pub mod owner;
 pub mod rng;
@@ -50,10 +52,16 @@ mod runtime; // private helpers
 // See VERIFICATION.md §"BLOCK 1" for why this is a dedicated plan.
 
 pub use batch::batch;
+pub use cell::Cell;
 pub use clock::{Clock, SystemClock};
 pub use effect::Effect;
 pub use error::CoreError;
+pub use grid::Grid;
 pub use memo::Memo;
 pub use owner::{Owner, create_root, on_cleanup};
 pub use rng::{Rng, ThreadRng};
 pub use signal::{Signal, SignalSetter};
+
+// Re-export ratatui style types for convenience
+pub use ratatui_core::layout::Rect;
+pub use ratatui_core::style::{Color, Modifier, Style};

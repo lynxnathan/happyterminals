@@ -23,7 +23,10 @@ rand           = { workspace = true }
 # payload for ImmediateEffect::new_mut_scoped). reactive_graph 0.2.13 uses this
 # internally but does NOT re-export it at `send_wrapper_ext::SendWrapper`, so we
 # depend on it directly. Version matches reactive_graph's transitive choice.
-send_wrapper = "0.6"
+send_wrapper         = "0.6"
+ratatui-core         = { workspace = true }
+unicode-segmentation = { workspace = true }
+unicode-width        = { workspace = true }
 
 [dev-dependencies]
 insta             = { workspace = true }
