@@ -87,10 +87,19 @@ impl Grid {
         self.inner = Buffer::empty(area);
     }
 
+    /// Mutable access to the underlying ratatui Buffer for effect processing.
+    ///
+    /// Used by the pipeline crate's `TachyonAdapter` to pass the buffer to
+    /// tachyonfx shaders. Prefer [`put_str`](Self::put_str) for text writes.
+    pub fn buffer_mut(&mut self) -> &mut Buffer {
+        &mut self.inner
+    }
+
     /// Backend access to the underlying buffer for blit operations.
     ///
     /// Used by the backend crate to blit the grid into the terminal.
-    #[allow(dead_code)] // consumed by happyterminals-backend-ratatui in Phase 1.1-02
+    #[deprecated(note = "use buffer_mut()")]
+    #[allow(dead_code)]
     pub(crate) fn inner_mut(&mut self) -> &mut Buffer {
         &mut self.inner
     }
@@ -222,6 +231,22 @@ mod tests {
         // Content is fresh (empty)
         let c0 = grid.cell(Position::new(0, 0)).unwrap();
         assert_eq!(c0.symbol(), " "); // default empty cell
+    }
+
+    #[test]
+    fn test_buffer_mut_access() {
+        let mut grid = Grid::new(Rect::new(0, 0, 10, 5));
+        // Write through buffer_mut and read back
+        let buf = grid.buffer_mut();
+        let pos = Position::new(0, 0);
+        if let Some(cell) = buf.cell_mut(pos) {
+            cell.set_symbol("X");
+            cell.set_style(Style::default().fg(Color::Green));
+        }
+        // Read back via Deref (read-only)
+        let cell = grid.cell(Position::new(0, 0)).unwrap();
+        assert_eq!(cell.symbol(), "X");
+        assert_eq!(cell.fg, Color::Green);
     }
 
     #[test]

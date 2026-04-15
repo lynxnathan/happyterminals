@@ -13,7 +13,18 @@ categories.workspace   = true
 readme                 = "README.md"
 
 [dependencies]
-# Empty during Phase 0 — stubs have no call sites yet.
+happyterminals-core = { workspace = true }
+tachyonfx           = { workspace = true }
+ratatui-core        = { workspace = true }
+thiserror           = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+proptest  = { workspace = true }
+
+[[bench]]
+name    = "pipeline_overhead"
+harness = false
 
 [lints]
 workspace = true
