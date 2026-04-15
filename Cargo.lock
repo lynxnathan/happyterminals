@@ -813,7 +813,12 @@ version = "0.0.0"
 dependencies = [
  "crossterm",
  "futures",
+ "glam",
  "happyterminals-core",
+ "happyterminals-dsl",
+ "happyterminals-pipeline",
+ "happyterminals-renderer",
+ "happyterminals-scene",
  "ratatui",
  "ratatui-crossterm",
  "tokio",
