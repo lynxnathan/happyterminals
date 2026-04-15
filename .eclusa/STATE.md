@@ -120,9 +120,17 @@ From `.eclusa/config.json`:
 ---
 ## Session Continuity
 
-Last session: 2026-04-15T10:46:22.865Z
-Stopped at: Completed 01.1-01-PLAN.md
-Resume file: None
+Last session: 2026-04-15
+Stopped at: Wave 1 complete (01.1-01 + 01.1-02), proceeding to Wave 2
+Resume file: n/a
 
 ---
-*Last updated: 2026-04-15 — Phase 1.1 planned (3 plans, 2 waves, verification passed). Ready to execute.*
+
+## Performance Metrics
+
+| Phase | Plan | Duration | Tasks | Files |
+|-------|------|----------|-------|-------|
+| 01.1 | 02 | 3min | 2 | 6 |
+
+---
+*Last updated: 2026-04-15 — Plan 01.1-02 complete. TerminalGuard RAII, InputEvent mapping, FrameSpec shipped.*

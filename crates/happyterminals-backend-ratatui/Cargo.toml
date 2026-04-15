@@ -13,7 +13,15 @@ categories.workspace   = true
 readme                 = "README.md"
 
 [dependencies]
-# Empty during Phase 0 — stubs have no call sites yet.
+happyterminals-core = { workspace = true }
+ratatui             = { workspace = true }
+ratatui-crossterm   = { workspace = true }
+crossterm           = { workspace = true }
+tokio               = { workspace = true }
+tracing             = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt", "time", "macros", "test-util"] }
 
 [lints]
 workspace = true
