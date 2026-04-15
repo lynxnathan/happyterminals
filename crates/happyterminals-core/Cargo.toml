@@ -13,11 +13,26 @@ categories.workspace   = true
 readme                 = "README.md"
 
 [dependencies]
-# Empty during Phase 0 — stubs have no call sites yet.
-# Real deps added in Phase 1.0 when the reactive graph lands:
-#   reactive_graph = { workspace = true }
-#   any_spawner    = { workspace = true }
-#   thiserror      = { workspace = true }
+reactive_graph = { workspace = true }
+thiserror      = { workspace = true }
+rand           = { workspace = true }
+# send_wrapper: direct dep for `runtime::wrap_local_fnmut` (SendWrapper<RefCell<FnMut>>
+# payload for ImmediateEffect::new_mut_scoped). reactive_graph 0.2.13 uses this
+# internally but does NOT re-export it at `send_wrapper_ext::SendWrapper`, so we
+# depend on it directly. Version matches reactive_graph's transitive choice.
+send_wrapper = "0.6"
+
+[dev-dependencies]
+insta     = { workspace = true }
+proptest  = { workspace = true }
+criterion = { workspace = true }
+
+[features]
+test-util = []
+
+[[bench]]
+name    = "memo_eq_skip"
+harness = false
 
 [lints]
 workspace = true
