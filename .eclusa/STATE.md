@@ -3,8 +3,8 @@ eclusa_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01.4-02-PLAN.md
-last_updated: "2026-04-15T18:33:21.714Z"
+stopped_at: Phase 1.5 context gathered
+last_updated: "2026-04-15T18:39:14.518Z"
 progress:
   total_phases: 8
   completed_phases: 4
@@ -120,9 +120,9 @@ From `.eclusa/config.json`:
 ---
 ## Session Continuity
 
-Last session: 2026-04-15T18:29:53.124Z
-Stopped at: Completed 01.4-02-PLAN.md
-Resume file: None
+Last session: 2026-04-15T18:39:14.515Z
+Stopped at: Phase 1.5 context gathered
+Resume file: .eclusa/phases/01.5-spinning-cube-demo-cross-terminal-matrix-m1-exit/01.5-CONTEXT.md
 
 ---
 
