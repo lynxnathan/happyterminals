@@ -15,6 +15,7 @@ readme                 = "README.md"
 [dependencies]
 glam = { workspace = true }
 happyterminals-core = { path = "../happyterminals-core" }
+ratatui-core = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
