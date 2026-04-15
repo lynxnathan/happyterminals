@@ -253,7 +253,11 @@ Plans:
 
 **Parallelization:** Can run **in parallel with Phase 1.2**.
 
-**Plans:** TBD
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [ ] 01.3-01-PLAN.md — Crate setup + projection, cube, shading, camera modules
+- [ ] 01.3-02-PLAN.md — Rasterizer + Renderer::draw() + snapshot test + criterion bench
 **UI hint**: yes
 
 ---
