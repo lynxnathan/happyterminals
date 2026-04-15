@@ -20,21 +20,77 @@ impl Grid {
     /// Creates a new empty grid with the given dimensions.
     #[must_use]
     pub fn new(area: Rect) -> Self {
-        todo!("implement Grid::new")
+        Self {
+            inner: Buffer::empty(area),
+        }
     }
 
     /// Writes a styled string at `(x, y)`, handling grapheme clusters,
     /// wide characters, and silent out-of-bounds clipping.
+    ///
+    /// Each grapheme cluster is placed at the appropriate column position.
+    /// Wide characters (CJK, emoji, ZWJ sequences) occupy 2 columns: the
+    /// primary cell gets the symbol + style, and the continuation cell is
+    /// reset with `skip = true`. Zero-width graphemes (combining marks)
+    /// are silently skipped (they attach to the preceding character via the
+    /// grapheme iterator). Out-of-bounds writes are silently clipped.
     pub fn put_str(&mut self, x: u16, y: u16, s: &str, style: Style) {
-        todo!("implement put_str")
+        // Clip: y out of range
+        if y < self.inner.area.y || y >= self.inner.area.y + self.inner.area.height {
+            return;
+        }
+
+        let max_x = self.inner.area.x + self.inner.area.width;
+        let mut col = x;
+
+        for grapheme in s.graphemes(true) {
+            let Some(width) = u16::try_from(grapheme.width()).ok() else {
+                continue;
+            };
+
+            // Zero-width graphemes (combining marks) are absorbed by the
+            // preceding grapheme cluster in the iterator -- skip them.
+            if width == 0 {
+                continue;
+            }
+
+            // Clip: starting column beyond right edge
+            if col >= max_x {
+                break;
+            }
+
+            // Clip: wide character would extend past right edge
+            if col + width > max_x {
+                break;
+            }
+
+            // Write primary cell
+            if let Some(cell) = self.inner.cell_mut(Position::new(col, y)) {
+                cell.set_symbol(grapheme);
+                cell.set_style(style);
+            }
+
+            // Write continuation (skip) cells for wide characters
+            for offset in 1..width {
+                if let Some(cell) = self.inner.cell_mut(Position::new(col + offset, y)) {
+                    cell.reset();
+                    cell.skip = true;
+                }
+            }
+
+            col += width;
+        }
     }
 
     /// Replaces the grid with a fresh empty buffer of the given dimensions.
     pub fn resize(&mut self, area: Rect) {
-        todo!("implement resize")
+        self.inner = Buffer::empty(area);
     }
 
     /// Backend access to the underlying buffer for blit operations.
+    ///
+    /// Used by the backend crate to blit the grid into the terminal.
+    #[allow(dead_code)] // consumed by happyterminals-backend-ratatui in Phase 1.1-02
     pub(crate) fn inner_mut(&mut self) -> &mut Buffer {
         &mut self.inner
     }

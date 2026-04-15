@@ -23,7 +23,7 @@ impl Cell {
     /// - Combining marks (zero-width) return 0
     #[must_use]
     pub fn display_width(s: &str) -> usize {
-        todo!("implement display_width")
+        s.width()
     }
 
     /// Iterates over extended grapheme clusters in `s`.
