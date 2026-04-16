@@ -25,7 +25,7 @@ pub mod projection;
 pub mod rasterizer;
 pub mod shading;
 
-pub use camera::OrbitCamera;
+pub use camera::{Camera, FreeLookCamera, FpsCamera, OrbitCamera};
 pub use cube::Cube;
 pub use mesh::{LoadStats, Mesh, MeshError, load_obj};
 pub use projection::Projection;

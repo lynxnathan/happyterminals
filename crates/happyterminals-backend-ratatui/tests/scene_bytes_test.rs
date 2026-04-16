@@ -86,7 +86,9 @@ fn scene_one_cell_change_minimal_bytes() {
             .unwrap();
 
         let (ir, camera_config, _pipeline) = built_scene.into_parts();
-        let CameraConfig::Orbit(mut camera) = camera_config;
+        let CameraConfig::Orbit(mut camera) = camera_config else {
+            panic!("expected Orbit camera config");
+        };
         let mut renderer = Renderer::new();
         let projection = Projection {
             viewport_w: 80,

@@ -89,6 +89,7 @@ fn camera_config_orbit_wraps_orbit_camera() {
         CameraConfig::Orbit(inner) => {
             assert!((inner.distance - 5.0).abs() < f32::EPSILON);
         }
+        _ => panic!("expected Orbit variant"),
     }
 }
 

@@ -481,8 +481,8 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [x] 02.3-01-PLAN.md -- Input crate: core types, drag state machine, modifiers, InputMap dispatch engine
-- [ ] 02.3-02-PLAN.md -- Camera trait, FreeLookCamera, FpsCamera, CameraConfig extension
+- [ ] 02.3-01-PLAN.md -- Input crate: core types, drag state machine, modifiers, InputMap dispatch engine
+- [x] 02.3-02-PLAN.md -- Camera trait, FreeLookCamera, FpsCamera, CameraConfig extension
 - [ ] 02.3-03-PLAN.md -- TerminalGuard focus change, run.rs integration, prelude re-exports, model-viewer upgrade
 - [ ] 02.3-04-PLAN.md -- Human verification of model-viewer interactive controls
 
