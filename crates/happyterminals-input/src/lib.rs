@@ -17,4 +17,6 @@ pub use action::{ActionEntry, ActionState, ActionValue, ActionValueType};
 pub use binding::{Binding, DragAxis, ScrollDirection};
 pub use context::{FiredAction, InputContext};
 pub use drag::{DragOutput, DragState, DragStateMachine};
+pub use defaults::default_viewer_context;
+pub use input_map::InputMap;
 pub use modifier::InputModifier;
