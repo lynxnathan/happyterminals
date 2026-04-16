@@ -478,7 +478,13 @@ Plans:
 
 **Pitfalls addressed:** §6 (Send/Sync for action signals — trivially satisfied by Copy types).
 
-**Plans:** TBD (planner decomposes)
+**Plans:** 4 plans
+
+Plans:
+- [ ] 02.3-01-PLAN.md -- Input crate: core types, drag state machine, modifiers, InputMap dispatch engine
+- [ ] 02.3-02-PLAN.md -- Camera trait, FreeLookCamera, FpsCamera, CameraConfig extension
+- [ ] 02.3-03-PLAN.md -- TerminalGuard focus change, run.rs integration, prelude re-exports, model-viewer upgrade
+- [ ] 02.3-04-PLAN.md -- Human verification of model-viewer interactive controls
 
 ---
 
@@ -772,7 +778,7 @@ The sections above (Milestone 0, Milestone 1 phases 1.0–1.5, Milestone 2 sketc
 | 1.5 Spinning Cube Demo | 3/3 | Complete — M1 EXIT | 2026-04-15 |
 | 2.1 OBJ Mesh Loading | 3/3 | Complete | 2026-04-15 |
 | 2.2 Color-Mode Pipeline | 3/3 | Complete | 2026-04-16 |
-| 2.3 Input Action System + Camera Modes | 0/? | Not started | - |
+| 2.3 Input Action System + Camera Modes | 0/4 | Planned | - |
 | 2.4 Particles + Per-Frame Alloc Bench | 0/? | Not started | - |
 | 2.5 Resize Hardening + MSRV + STL | 0/? | Not started | - |
 | M3 (sketch) | — | Re-plan at M2 exit | - |
