@@ -833,6 +833,7 @@ dependencies = [
  "happyterminals-pipeline",
  "happyterminals-renderer",
  "happyterminals-scene",
+ "insta",
  "ratatui",
  "ratatui-crossterm",
  "tokio",

@@ -27,6 +27,7 @@ tracing                 = { workspace = true }
 
 [dev-dependencies]
 happyterminals-dsl = { workspace = true }
+insta = { workspace = true }
 tokio = { workspace = true, features = ["rt", "time", "macros", "test-util"] }
 
 [lints]
