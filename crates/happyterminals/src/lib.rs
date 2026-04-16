@@ -29,6 +29,9 @@ pub mod prelude {
     pub use happyterminals_backend_ratatui::{run, run_scene, FrameSpec, InputEvent, InputSignals};
     pub use happyterminals_backend_ratatui::{TerminalGuard, install_panic_hook};
 
+    // Color-mode control surface (from Phase 2.2)
+    pub use happyterminals_backend_ratatui::ColorMode;
+
     // Scene types (from Phase 1.4, Plan 01)
     pub use happyterminals_scene::{
         Scene, SceneIr, SceneNode, SceneGraph, SceneError,
@@ -79,6 +82,7 @@ mod tests {
             let _ = std::any::type_name::<LoadStats>();
             let _ = std::any::type_name::<MeshError>();
             let _ = std::any::type_name::<Cube>();
+            let _ = std::any::type_name::<ColorMode>();
         }
     }
 }

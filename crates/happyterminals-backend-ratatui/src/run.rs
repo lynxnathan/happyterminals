@@ -22,6 +22,7 @@ use happyterminals_renderer::{Cube, Mesh, OrbitCamera, Projection, Renderer, Sha
 use happyterminals_scene::node::{NodeKind, SceneNode};
 use happyterminals_scene::{CameraConfig, Scene, SceneIr};
 
+use crate::color::{detect_color_mode_from_real_env, downsample};
 use crate::event::{is_quit_event, map_event, InputEvent, InputSignals};
 use crate::frame_spec::FrameSpec;
 use crate::guard::{install_panic_hook, TerminalGuard};
@@ -32,7 +33,8 @@ use crate::guard::{install_panic_hook, TerminalGuard};
 /// including panics). Drives a `tokio::select!` loop between:
 ///
 /// - **Frame tick:** calls `render_fn`, copies the [`Grid`] into ratatui's
-///   frame buffer, and lets ratatui diff + flush only changed cells.
+///   frame buffer, applies flush-time color downsampling, and lets ratatui
+///   diff + flush only changed cells.
 /// - **Event stream:** maps crossterm events into [`InputEvent`] and writes
 ///   them into [`InputSignals`] so the render callback can observe them.
 ///
@@ -48,7 +50,11 @@ where
 {
     install_panic_hook();
 
-    let _guard = TerminalGuard::acquire()?;
+    // Detect once at entry. Per CONTEXT + RESEARCH: no per-frame env reads.
+    let color_mode = detect_color_mode_from_real_env(spec.color_mode);
+    tracing::debug!(?color_mode, "color-mode detected");
+
+    let _guard = TerminalGuard::acquire_with_color_mode(color_mode)?;
 
     // Best-effort window title
     if let Some(ref title) = spec.title {
@@ -74,7 +80,9 @@ where
                 terminal.draw(|frame| {
                     grid.resize(frame.area());
                     render_fn(&mut grid, &input_signals);
-                    *frame.buffer_mut() = grid.deref().clone();
+                    let mut out = grid.deref().clone();
+                    downsample(&mut out, color_mode);
+                    *frame.buffer_mut() = out;
                 })?;
             }
             maybe_event = events.next() => {
@@ -139,7 +147,11 @@ where
 {
     install_panic_hook();
 
-    let _guard = TerminalGuard::acquire()?;
+    // Detect once at entry. Per CONTEXT + RESEARCH: no per-frame env reads.
+    let color_mode = detect_color_mode_from_real_env(spec.color_mode);
+    tracing::debug!(?color_mode, "color-mode detected");
+
+    let _guard = TerminalGuard::acquire_with_color_mode(color_mode)?;
 
     // Best-effort window title
     if let Some(ref title) = spec.title {
@@ -189,7 +201,9 @@ where
                         pipe.run_frame(&mut grid, dt);
                     }
 
-                    *frame.buffer_mut() = grid.deref().clone();
+                    let mut out = grid.deref().clone();
+                    downsample(&mut out, color_mode);
+                    *frame.buffer_mut() = out;
                 })?;
             }
             maybe_event = events.next() => {
