@@ -160,7 +160,7 @@ impl InputMap {
     /// - Other states are unchanged.
     pub fn tick_update(&mut self, dt: Duration) {
         for entry in self.actions.values() {
-            let current = entry.state.get();
+            let current = entry.state.untracked();
             match current {
                 ActionState::JustPressed => {
                     entry.state.set(ActionState::Held(Duration::ZERO));
@@ -248,7 +248,7 @@ mod tests {
             map.dispatch(&make_key_event(KeyCode::Char('q'), KeyModifiers::NONE));
 
             let state = map.action_state("quit").expect("quit action should exist");
-            assert_eq!(state.get(), ActionState::JustPressed);
+            assert_eq!(state.untracked(), ActionState::JustPressed);
         });
     }
 
@@ -277,13 +277,13 @@ mod tests {
             let top_state = map
                 .action_state("top_action")
                 .expect("top_action should exist");
-            assert_eq!(top_state.get(), ActionState::JustPressed);
+            assert_eq!(top_state.untracked(), ActionState::JustPressed);
 
             // Bottom context should NOT have fired
             let bottom_state = map
                 .action_state("bottom_action")
                 .expect("bottom_action should exist");
-            assert_eq!(bottom_state.get(), ActionState::Inactive);
+            assert_eq!(bottom_state.untracked(), ActionState::Inactive);
         });
     }
 
@@ -304,7 +304,7 @@ mod tests {
             map.dispatch(&make_key_event(KeyCode::Char('q'), KeyModifiers::NONE));
 
             let state = map.action_state("quit").expect("quit should exist");
-            assert_eq!(state.get(), ActionState::JustPressed);
+            assert_eq!(state.untracked(), ActionState::JustPressed);
         });
     }
 
@@ -353,12 +353,12 @@ mod tests {
             let axis = map
                 .action_axis1d("zoom")
                 .expect("zoom axis1d should exist");
-            assert!((axis.get() - 0.0).abs() < f32::EPSILON);
+            assert!((axis.untracked() - 0.0).abs() < f32::EPSILON);
 
             // New binding should fire
             map.dispatch(&make_key_event(KeyCode::Char('+'), KeyModifiers::NONE));
             let state = map.action_state("zoom").expect("zoom should exist");
-            assert_eq!(state.get(), ActionState::JustPressed);
+            assert_eq!(state.untracked(), ActionState::JustPressed);
         });
     }
 
@@ -396,7 +396,7 @@ mod tests {
             let axis = map
                 .action_axis2d("orbit")
                 .expect("orbit axis2d should exist");
-            let val = axis.get();
+            let val = axis.untracked();
             assert!((val.x - 5.0).abs() < f32::EPSILON);
             assert!((val.y - 3.0).abs() < f32::EPSILON);
         });
@@ -422,7 +422,7 @@ mod tests {
                 .action_axis1d("zoom")
                 .expect("zoom axis1d should exist");
             // ScrollDown raw=1.0, Negate -> -1.0
-            assert!((axis.get() - (-1.0)).abs() < f32::EPSILON);
+            assert!((axis.untracked() - (-1.0)).abs() < f32::EPSILON);
         });
     }
 
@@ -438,21 +438,21 @@ mod tests {
 
             map.dispatch(&make_key_event(KeyCode::Char('t'), KeyModifiers::NONE));
             assert_eq!(
-                map.action_state("test").expect("exists").get(),
+                map.action_state("test").expect("exists").untracked(),
                 ActionState::JustPressed
             );
 
             // First tick: JustPressed -> Held(ZERO)
             map.tick_update(Duration::from_millis(16));
             assert_eq!(
-                map.action_state("test").expect("exists").get(),
+                map.action_state("test").expect("exists").untracked(),
                 ActionState::Held(Duration::ZERO)
             );
 
             // Second tick: Held(ZERO) -> Held(16ms)
             map.tick_update(Duration::from_millis(16));
             assert_eq!(
-                map.action_state("test").expect("exists").get(),
+                map.action_state("test").expect("exists").untracked(),
                 ActionState::Held(Duration::from_millis(16))
             );
         });
@@ -476,11 +476,11 @@ mod tests {
             map.reset_axes();
 
             assert_eq!(
-                map.action_axis2d("orbit").expect("exists").get(),
+                map.action_axis2d("orbit").expect("exists").untracked(),
                 Vec2::ZERO
             );
             assert!(
-                (map.action_axis1d("zoom").expect("exists").get() - 0.0).abs() < f32::EPSILON
+                (map.action_axis1d("zoom").expect("exists").untracked() - 0.0).abs() < f32::EPSILON
             );
         });
     }

@@ -191,7 +191,7 @@ where
 
                         // Check InputMap quit action
                         if let Some(quit_sig) = input_map.action_state("quit") {
-                            if quit_sig.get() == ActionState::JustPressed {
+                            if quit_sig.untracked() == ActionState::JustPressed {
                                 break;
                             }
                         }

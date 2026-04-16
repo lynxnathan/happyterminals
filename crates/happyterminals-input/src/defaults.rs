@@ -222,7 +222,7 @@ mod tests {
             map.dispatch(&ev);
 
             let state = map.action_state("quit").expect("quit should exist");
-            assert_eq!(state.get(), ActionState::JustPressed);
+            assert_eq!(state.untracked(), ActionState::JustPressed);
         });
     }
 }

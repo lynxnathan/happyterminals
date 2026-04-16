@@ -92,7 +92,7 @@ mod tests {
         let (_result, _owner) = create_root(|| {
             let entry = ActionEntry::new(ActionValueType::Bool);
             assert_eq!(entry.value_type, ActionValueType::Bool);
-            assert_eq!(entry.state.get(), ActionState::Inactive);
+            assert_eq!(entry.state.untracked(), ActionState::Inactive);
             assert!(entry.axis1d.is_none());
             assert!(entry.axis2d.is_none());
         });
@@ -103,11 +103,11 @@ mod tests {
         let (_result, _owner) = create_root(|| {
             let entry = ActionEntry::new(ActionValueType::Axis1D);
             assert_eq!(entry.value_type, ActionValueType::Axis1D);
-            assert_eq!(entry.state.get(), ActionState::Inactive);
+            assert_eq!(entry.state.untracked(), ActionState::Inactive);
             assert!(entry.axis1d.is_some());
             assert!(entry.axis2d.is_none());
             let sig = entry.axis1d.as_ref().expect("axis1d should be Some");
-            assert!((sig.get() - 0.0).abs() < f32::EPSILON);
+            assert!((sig.untracked() - 0.0).abs() < f32::EPSILON);
         });
     }
 
@@ -116,11 +116,11 @@ mod tests {
         let (_result, _owner) = create_root(|| {
             let entry = ActionEntry::new(ActionValueType::Axis2D);
             assert_eq!(entry.value_type, ActionValueType::Axis2D);
-            assert_eq!(entry.state.get(), ActionState::Inactive);
+            assert_eq!(entry.state.untracked(), ActionState::Inactive);
             assert!(entry.axis1d.is_none());
             assert!(entry.axis2d.is_some());
             let sig = entry.axis2d.as_ref().expect("axis2d should be Some");
-            assert_eq!(sig.get(), Vec2::ZERO);
+            assert_eq!(sig.untracked(), Vec2::ZERO);
         });
     }
 
