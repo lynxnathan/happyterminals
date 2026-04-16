@@ -437,7 +437,12 @@ Plans:
 
 **Pitfalls addressed:** §8 (color regression across terminals).
 
-**Plans:** TBD (planner decomposes)
+**Plans:** 3 plans in 3 waves
+
+Plans:
+- [ ] 02.2-01-PLAN.md — color module + palette + env-cascade tests (Wave 1)
+- [ ] 02.2-02-PLAN.md — FrameSpec/TerminalGuard/run.rs wiring + prelude re-export (Wave 2)
+- [ ] 02.2-03-PLAN.md — 8-fixture insta snapshot matrix + color-test example + README §Terminal Color Support (Wave 3)
 
 ---
 
