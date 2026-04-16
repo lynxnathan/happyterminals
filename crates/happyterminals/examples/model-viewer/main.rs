@@ -1,79 +1,143 @@
-//! Model viewer -- Phase 2.1 exit artifact.
+//! Model viewer -- Phase 2.3 upgrade.
 //!
-//! Loads bunny / cow / teapot at startup, cycles them with Left / Right
-//! arrow keys, renders each with bounding-sphere auto-fit camera distance.
-//! Ctrl-C exits cleanly (`TerminalGuard` restores the terminal).
+//! Loads bunny / cow / teapot at startup. Controls:
+//! - Left-drag: orbit (azimuth + elevation)
+//! - Scroll: zoom (adjust camera distance)
+//! - WASD: pan camera target
+//! - Left/Right arrows: cycle model
+//! - Ctrl-C or Q: quit
+//!
+//! All input is routed through the InputMap action system.
 //!
 //! Run from the workspace root:
 //!
 //!     cargo run --example model-viewer -p happyterminals
-//!
-//! Uses the low-level `run(render_fn, spec)` entry point rather than
-//! `run_scene` -- the viewer manages its own 3-model state outside the
-//! scene graph (Path A per phase 2.1 CONTEXT / RESEARCH).
 
-use crossterm::event::KeyCode;
 use happyterminals::prelude::*;
 use happyterminals_renderer::Renderer;
 
-// CARGO_MANIFEST_DIR is the crate root (crates/happyterminals), so the models
-// directory lives two levels up. Using concat! keeps these paths resolved at
-// compile time, independent of the cwd the example is launched from.
 const MODELS: &[(&str, &str)] = &[
-    ("bunny", concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/models/bunny.obj")),
-    ("cow", concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/models/cow.obj")),
-    ("teapot", concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/models/teapot.obj")),
+    (
+        "bunny",
+        concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/models/bunny.obj"
+        ),
+    ),
+    (
+        "cow",
+        concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/models/cow.obj"
+        ),
+    ),
+    (
+        "teapot",
+        concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/models/teapot.obj"
+        ),
+    ),
 ];
 
-const ROTATION_SPEED: f32 = 1.0; // rad/s -- gentler than spinning-cube
+const ORBIT_SENSITIVITY: f32 = 0.02;
+const ZOOM_SENSITIVITY: f32 = 0.5;
+const PAN_SENSITIVITY: f32 = 0.05;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Pre-load all three meshes once up front. Loading in the render loop
-    // would violate the zero-per-frame-alloc discipline (see REND-09).
     let meshes: Vec<(String, Mesh)> = MODELS
         .iter()
         .map(|(name, path)| load_obj(path).map(|(m, _stats)| ((*name).to_string(), m)))
         .collect::<Result<_, _>>()?;
 
     let (result, _owner) = create_root(|| {
-        let rotation = Signal::new(0.0_f32);
         let current = Signal::new(0_usize);
-        (rotation, current)
+        current
     });
-    let (rotation, current) = result;
+    let current = result;
+
+    // Set up InputMap with default viewer bindings (orbit, pan, zoom, quit)
+    let mut input_map = InputMap::new();
+    register_default_actions(&mut input_map);
+
+    // Register model cycling actions
+    input_map.register_action("cycle_next", ActionValueType::Bool);
+    input_map.register_action("cycle_prev", ActionValueType::Bool);
+
+    // Build default context and add model cycling bindings
+    let mut ctx = default_viewer_context();
+    ctx.bind(
+        "cycle_next",
+        Binding::Key(crossterm::event::KeyCode::Right),
+        vec![],
+    );
+    ctx.bind(
+        "cycle_prev",
+        Binding::Key(crossterm::event::KeyCode::Left),
+        vec![],
+    );
+    input_map.push_context(ctx);
 
     let mut renderer = Renderer::new();
     let shading = ShadingRamp::default();
-    let start = std::time::Instant::now();
 
-    run(
-        move |grid, input| {
-            // Advance rotation from wall-clock for smooth motion across resizes.
-            let elapsed = start.elapsed().as_secs_f32();
-            rotation.set(elapsed * ROTATION_SPEED);
+    // Camera state: orbit driven by input actions
+    let mut camera = OrbitCamera {
+        elevation: 0.4,
+        ..OrbitCamera::default()
+    };
+    let mut last_idx: usize = 0;
 
-            // Consume-and-reset debounce: without the `set(None)` a held key
-            // would re-cycle on every frame (PITFALLS §8).
-            if let Some(InputEvent::Key { code, .. }) = input.last_key.untracked() {
-                let len = MODELS.len();
-                match code {
-                    KeyCode::Right => current.set((current.untracked() + 1) % len),
-                    KeyCode::Left => current.set((current.untracked() + len - 1) % len),
-                    _ => {}
+    run_with_input(
+        move |grid, _input_signals, imap| {
+            // Read orbit delta from action signal (accumulated since last tick)
+            if let Some(orbit_sig) = imap.action_axis2d("orbit") {
+                let delta = orbit_sig.untracked();
+                camera.azimuth += delta.x * ORBIT_SENSITIVITY;
+                camera.elevation += delta.y * ORBIT_SENSITIVITY;
+            }
+
+            // Read zoom delta
+            if let Some(zoom_sig) = imap.action_axis1d("zoom") {
+                let delta = zoom_sig.untracked();
+                camera.distance = (camera.distance - delta * ZOOM_SENSITIVITY).max(0.5);
+            }
+
+            // Read pan delta
+            if let Some(pan_sig) = imap.action_axis2d("pan") {
+                let delta = pan_sig.untracked();
+                let right =
+                    glam::Vec3::new(camera.azimuth.cos(), 0.0, -camera.azimuth.sin());
+                let up = glam::Vec3::Y;
+                camera.target +=
+                    right * delta.x * PAN_SENSITIVITY + up * (-delta.y) * PAN_SENSITIVITY;
+            }
+
+            // Model cycling (consume-on-read pattern via JustPressed)
+            if let Some(next_sig) = imap.action_state("cycle_next") {
+                if next_sig.untracked() == ActionState::JustPressed {
+                    let len = MODELS.len();
+                    current.set((current.untracked() + 1) % len);
                 }
-                input.last_key.set(None);
+            }
+            if let Some(prev_sig) = imap.action_state("cycle_prev") {
+                if prev_sig.untracked() == ActionState::JustPressed {
+                    let len = MODELS.len();
+                    current.set((current.untracked() + len - 1) % len);
+                }
             }
 
             let idx = current.untracked();
             let (name, mesh) = &meshes[idx];
-            let (_center, radius) = mesh.bounding_sphere();
-            let camera = OrbitCamera {
-                azimuth: rotation.untracked(),
-                elevation: 0.4,
-                distance: radius * 2.5,
-                ..OrbitCamera::default()
-            };
+
+            // Auto-fit camera distance when model changes
+            if idx != last_idx {
+                let (_center, radius) = mesh.bounding_sphere();
+                camera.distance = radius * 2.5;
+                last_idx = idx;
+            }
+
             let projection = Projection {
                 viewport_w: grid.area.width,
                 viewport_h: grid.area.height,
@@ -82,15 +146,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             renderer.draw(grid, mesh, &camera, &projection, &shading);
 
-            // In-grid overlay for the current model name. Using a static
-            // FrameSpec.title keeps us out of run.rs (constraint #7).
-            let label = format!(" Model: {name}  (Left/Right to cycle, Ctrl-C to exit) ");
+            let label = format!(
+                " Model: {name}  (Drag=orbit, Scroll=zoom, WASD=pan, Arrows=cycle, Q=quit) "
+            );
             grid.put_str(0, 0, &label, Style::default());
         },
         FrameSpec {
             title: Some("happyterminals - Model Viewer".into()),
             ..FrameSpec::default()
         },
+        input_map,
     )
     .await
 }

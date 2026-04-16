@@ -72,7 +72,7 @@ pub fn map_event(ev: &CrosstermEvent) -> Option<InputEvent> {
     }
 }
 
-/// Returns `true` if the event is Ctrl+C (the conventional quit signal).
+/// Returns `true` if the event is Ctrl+C or plain Q (the conventional quit signals).
 #[must_use]
 pub fn is_quit_event(ev: &InputEvent) -> bool {
     matches!(
@@ -81,6 +81,12 @@ pub fn is_quit_event(ev: &InputEvent) -> bool {
             code: KeyCode::Char('c'),
             modifiers,
         } if modifiers.contains(KeyModifiers::CONTROL)
+    ) || matches!(
+        ev,
+        InputEvent::Key {
+            code: KeyCode::Char('q'),
+            modifiers,
+        } if *modifiers == KeyModifiers::NONE
     )
 }
 
@@ -205,6 +211,15 @@ mod tests {
         let ev = InputEvent::Key {
             code: KeyCode::Char('q'),
             modifiers: KeyModifiers::NONE,
+        };
+        assert!(is_quit_event(&ev));
+    }
+
+    #[test]
+    fn test_is_not_quit_key_q_with_modifiers() {
+        let ev = InputEvent::Key {
+            code: KeyCode::Char('q'),
+            modifiers: KeyModifiers::CONTROL,
         };
         assert!(!is_quit_event(&ev));
     }

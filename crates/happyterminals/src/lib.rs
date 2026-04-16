@@ -26,11 +26,23 @@ pub mod prelude {
     pub use happyterminals_core::{Color, Modifier, Style, Rect};
 
     // Backend (from Phase 1.1, Plan 02-03)
-    pub use happyterminals_backend_ratatui::{run, run_scene, FrameSpec, InputEvent, InputSignals};
+    pub use happyterminals_backend_ratatui::{run, run_scene, run_with_input, FrameSpec, InputEvent, InputSignals};
     pub use happyterminals_backend_ratatui::{TerminalGuard, install_panic_hook};
 
     // Color-mode control surface (from Phase 2.2)
     pub use happyterminals_backend_ratatui::ColorMode;
+
+    // Input action system (from Phase 2.3)
+    pub use happyterminals_input::{
+        InputMap, InputContext, Binding, DragAxis, ScrollDirection,
+        ActionValue, ActionValueType, ActionState,
+        InputModifier,
+        default_viewer_context,
+    };
+    pub use happyterminals_input::defaults::register_default_actions;
+
+    // Camera types (from Phase 2.3)
+    pub use happyterminals_renderer::{Camera, FreeLookCamera, FpsCamera};
 
     // Scene types (from Phase 1.4, Plan 01)
     pub use happyterminals_scene::{
@@ -83,6 +95,9 @@ mod tests {
             let _ = std::any::type_name::<MeshError>();
             let _ = std::any::type_name::<Cube>();
             let _ = std::any::type_name::<ColorMode>();
+            let _ = std::any::type_name::<InputMap>();
+            let _ = std::any::type_name::<FreeLookCamera>();
+            let _ = std::any::type_name::<FpsCamera>();
         }
     }
 }

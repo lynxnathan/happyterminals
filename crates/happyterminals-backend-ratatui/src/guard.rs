@@ -11,7 +11,7 @@ use std::io::{self, Stdout, Write};
 
 use crossterm::{
     cursor,
-    event::{DisableMouseCapture, EnableMouseCapture},
+    event::{DisableFocusChange, DisableMouseCapture, EnableFocusChange, EnableMouseCapture},
     execute,
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -57,6 +57,7 @@ impl TerminalGuard {
             stdout,
             EnterAlternateScreen,
             EnableMouseCapture,
+            EnableFocusChange,
             cursor::Hide
         )?;
         Ok(Self {
@@ -87,7 +88,7 @@ impl TerminalGuard {
     ///
     /// Idempotent: safe to call multiple times (duplicate restores are harmless).
     pub fn restore(stdout: &mut Stdout) {
-        let _ = execute!(stdout, cursor::Show, DisableMouseCapture, LeaveAlternateScreen);
+        let _ = execute!(stdout, cursor::Show, DisableMouseCapture, DisableFocusChange, LeaveAlternateScreen);
         let _ = terminal::disable_raw_mode();
         // SGR reset prevents color leakage into the shell after exit.
         let _ = stdout.write_all(b"\x1b[0m");
