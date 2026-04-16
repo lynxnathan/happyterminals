@@ -446,26 +446,60 @@ Plans:
 
 ---
 
-### Phase 2.3: Particles + Camera Modes
+### Phase 2.3: Input Action System + Camera Modes
 
-**Goal:** Grow the renderer from "static meshes orbited" to "particles + multiple camera paradigms" so the demo surface can show non-rigid motion and richer navigation — and mature the per-frame allocation bench into full-coverage regression enforcement.
+**Goal:** Build a Godot/Unreal-inspired input action system as a first-class architectural layer where **actions are reactive signals** (not polled). Named actions with multi-binding (keyboard, mouse, scroll, drag), input context push/pop stack, edge detection, modifiers. Camera modes (orbit enhanced with mouse drag, free-look, FPS) are the first consumers. Model-viewer upgraded with proper interactive controls.
 
 **Scope:**
-- Particle system: emitter + gravity + lifetime + color-over-time + spawn/despawn without heap churn.
-- At least one particle example (snow, sparks, or similar) runs on top of an existing mesh.
-- Camera modes: free-look (fly-through) + FPS-style + orbit (shipped in M1).
-- `Camera` trait polymorphic over modes; signal-driven like orbit.
-- **Interactive pan/zoom controls in `model-viewer` example** — carried from Phase 2.1 UAT feedback (2026-04-15, user: "preciso de pan/zoom controls"). Keyboard (WASD + `+`/`-`) and/or mouse wheel scroll. Wire into the same signal-bindable-prop pattern the orbit camera already uses. **Also resolves:** bunny-orientation quirk observed during Phase 2.1 UAT (user reported seeing only the bottom of the bunny while cow and teapot framed correctly — Stanford bunny's canonical axis differs from Spot/teapot, and the fixed orbit default azimuth/elevation lands on the wrong side). User-controlled pan/rotate eliminates the need for per-model default-pose overrides.
-- Per-frame allocation criterion bench expanded: every renderer path (cube, OBJ, particles) gets allocation assertions.
+- **New crate: `happyterminals-input`** — InputMap, Action, Binding, ActionValue (Bool/Axis1D/Axis2D), ActionState (JustPressed/Held/Released), InputContext stack, Modifier (Negate/Scale/Deadzone).
+- **Actions are Signals** — each registered action gets a `Signal<ActionState>` or `Signal<f32>` or `Signal<Vec2>`. Reactive graph dispatches, no polling.
+- **Mouse drag state machine** — Idle → Pressed(button, start_pos) → Dragging(button, delta) → Released. Left-drag → orbit, middle-drag → pan, scroll → zoom. 3D viewport convention (Blender/Unity).
+- **InputContext push/pop stack** — `"default"` at bottom with orbit/pan/zoom/quit; mode-specific contexts pushed on top. Top context consumes matching events first.
+- **TerminalGuard enables mouse capture + focus events** via crossterm (`EnableMouseCapture`, `EnableFocusChange`).
+- **`run.rs` event dispatch** — replace per-key match with `input_map.dispatch(event)`.
+- **`Camera` trait** — `fn view_matrix(&self) -> Mat4; fn update(&mut self, actions: &InputActions)`. OrbitCamera, FreeLookCamera, FpsCamera implement.
+- **CameraConfig enum** extended with `FreeLook(FreeLookCamera)`, `Fps(FpsCamera)` variants.
+- **FreeLookCamera** — WASD translate + mouse-drag look (yaw/pitch), free flight.
+- **FpsCamera** — WASD on XZ plane + mouse-drag look, pitch clamped, ground-plane constrained.
+- **Model-viewer upgrade** — hardcoded arrows → InputMap + Actions. Mouse drag orbit, scroll zoom, WASD pan. Bunny-orientation fix comes free via user-controlled rotation.
+- **Default bindings shipped with library** — orbit (left-drag), pan (middle-drag or Shift+left-drag), zoom (scroll), quit (Ctrl-C or Q). Users override by pushing custom context.
+- Runtime rebinding via `InputMap::rebind()`. Persistence (save to file) deferred to M3 JSON recipes.
 
-**Requirements covered:** REND-07, REND-09 (matures to full coverage).
+**Requirements covered:** REND-07 (partial — camera modes), REND-05 (orbit enhanced with mouse drag + rebinding).
+
+**Success criteria (observable):**
+1. `cargo run --example model-viewer` supports mouse-drag orbit, scroll zoom, WASD pan — all through the InputMap action system, not hardcoded keys.
+2. Switching camera modes (orbit → freelook → FPS) mid-session via key shortcut produces no visual artifacts.
+3. Pushing/popping an InputContext at runtime correctly overrides bindings (e.g., freelook context overrides WASD from pan to translate).
+4. `InputMap::rebind("default", "zoom", Binding::Key(KeyCode::Plus))` at runtime works — zoom now responds to `+` key instead of scroll.
+5. Model-viewer bunny is fully rotatable via mouse drag — bunny-orientation issue from 2.1 UAT resolved by user control.
+
+**Dependencies:** Phase 2.1 (OBJ meshes, bounding_sphere), Phase 2.2 (ColorMode integration in run.rs flush path), Phase 1.0 (Signal/Effect).
+
+**Pitfalls addressed:** §6 (Send/Sync for action signals — trivially satisfied by Copy types).
+
+**Plans:** TBD (planner decomposes)
+
+---
+
+### Phase 2.4: Particles + Per-Frame Allocation Bench
+
+**Goal:** Add a particle system (emitter + gravity + lifetime + color-over-time) and mature the per-frame allocation bench to full-coverage enforcement. Particles consume the input action system from Phase 2.3 for play/pause/reset controls.
+
+**Scope:**
+- Particle system: emitter + gravity + lifetime + color-over-time + spawn/despawn without heap churn (pre-allocated pool).
+- At least one particle example (snow, sparks, or similar) runs on top of an existing mesh.
+- Per-frame allocation criterion bench expanded: every renderer path (cube, OBJ, particles) gets allocation assertions.
+- Particle emitter controls via InputMap actions (play/pause/reset).
+
+**Requirements covered:** REND-07 (completes — particle portion), REND-09 (matures to full coverage).
 
 **Success criteria (observable):**
 1. A particle example runs at 60fps on a 200×60 Grid with zero heap allocations per frame (criterion + `dhat` or equivalent).
-2. Switching camera modes mid-session via keys produces no visual artifacts.
+2. Particle emitter responds to play/pause/reset actions via the input system.
 3. The per-frame alloc bench fails CI if any renderer path regresses.
 
-**Dependencies:** Phase 2.1 (OBJ meshes, camera trait extension hook).
+**Dependencies:** Phase 2.3 (Input action system), Phase 2.1 (Mesh + renderer).
 
 **Pitfalls addressed:** §11 (per-frame allocation), §30 (composition cost re-validated with particles).
 
@@ -473,7 +507,7 @@ Plans:
 
 ---
 
-### Phase 2.4: Resize Hardening + MSRV + STL
+### Phase 2.5: Resize Hardening + MSRV + STL
 
 **Goal:** Close the M2 milestone by hardening the resize race on Windows Terminal, pinning MSRV in CI, and adding STL mesh support — finishing the "renderer depth" story so M3 (compositor + release) can start from a known-stable base.
 
@@ -499,6 +533,7 @@ Plans:
 **Milestone 2 exit criteria:**
 - Arbitrary OBJ + STL meshes load without panics.
 - Non-truecolor terminals and `NO_COLOR` environments render legibly.
+- Input action system with rebindable mouse/keyboard bindings and context stack.
 - Particle example demonstrates non-rigid motion with zero per-frame allocation.
 - Windows Terminal resize stress passes.
 - MSRV 1.86 pinned and CI-enforced.
@@ -714,8 +749,9 @@ Highest-value parallelization opportunities inside M1:
 - [x] **Phase 1.5: Spinning Cube Demo** — <100 LOC example, README + GIF, cross-terminal matrix, soak test, 1-cell-bytes hard gate → **M1 EXIT**. (completed 2026-04-15)
 - [x] **Phase 2.1: OBJ Mesh Loading** — `tobj 4.0` + triangulation + winding normalization + flat-normal fallback + 11-file corpus + 256-case proptest; `Result<Mesh, MeshError>` no panics; model-viewer ships bunny/cow/teapot with auto-fit camera. (completed 2026-04-15)
 - [x] **Phase 2.2: Color-Mode Pipeline** — ColorMode detection cascade + flush-time downsample (RGB→256→16→mono); `NO_COLOR` + `FrameSpec.color_mode` override; 8-fixture insta snapshot matrix; color-test example; README §Terminal Color Support with tmux `Tc` docs. (completed 2026-04-16)
-- [ ] **Phase 2.3: Particles + Camera Modes** — Emitter + gravity + lifetime + color-over-time; free + FPS camera modes; full per-frame alloc coverage.
-- [ ] **Phase 2.4: Resize Hardening + MSRV + STL** — Resize-race hardening on Windows Terminal; STL loader via `stl_io 0.11`; MSRV 1.86 pinned and CI-enforced.
+- [ ] **Phase 2.3: Input Action System + Camera Modes** — Godot/Unreal-style InputMap with signal-driven actions, mouse drag orbit/pan, InputContext push/pop, FreeLook/FPS cameras, model-viewer upgrade.
+- [ ] **Phase 2.4: Particles + Per-Frame Alloc Bench** — Emitter + gravity + lifetime + color-over-time; particle controls via input actions; full per-frame alloc coverage.
+- [ ] **Phase 2.5: Resize Hardening + MSRV + STL** — Resize-race hardening on Windows Terminal; STL loader via `stl_io 0.11`; MSRV 1.86 pinned and CI-enforced.
 - [ ] **Milestone 3 (sketch)** — Transitions, JSON recipes, 5+ examples, crates.io v1 publish.
 - [ ] **Milestone 4 (sketch)** — Python bindings. FINAL.
 
@@ -736,8 +772,9 @@ The sections above (Milestone 0, Milestone 1 phases 1.0–1.5, Milestone 2 sketc
 | 1.5 Spinning Cube Demo | 3/3 | Complete — M1 EXIT | 2026-04-15 |
 | 2.1 OBJ Mesh Loading | 3/3 | Complete | 2026-04-15 |
 | 2.2 Color-Mode Pipeline | 3/3 | Complete | 2026-04-16 |
-| 2.3 Particles + Camera Modes | 0/? | Not started | - |
-| 2.4 Resize Hardening + MSRV | 0/? | Not started | - |
+| 2.3 Input Action System + Camera Modes | 0/? | Not started | - |
+| 2.4 Particles + Per-Frame Alloc Bench | 0/? | Not started | - |
+| 2.5 Resize Hardening + MSRV + STL | 0/? | Not started | - |
 | M3 (sketch) | — | Re-plan at M2 exit | - |
 | M4 (sketch) | — | Re-plan at M3 exit | - |
 
