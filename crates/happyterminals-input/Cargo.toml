@@ -1,0 +1,17 @@
+[package]
+name = "happyterminals-input"
+version.workspace = true
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Godot/Unreal-style input action system with reactive signals for happyterminals"
+
+[dependencies]
+happyterminals-core.workspace = true
+crossterm.workspace = true
+glam.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+
+[lints]
+workspace = true
