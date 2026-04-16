@@ -1,6 +1,9 @@
-//! Frame configuration — [`FrameSpec`] controls fps, title, and mouse capture.
+//! Frame configuration — [`FrameSpec`] controls fps, title, mouse capture,
+//! and color-mode override.
 
 use std::time::Duration;
+
+use crate::color::ColorMode;
 
 /// Configuration for the render loop.
 pub struct FrameSpec {
@@ -10,6 +13,13 @@ pub struct FrameSpec {
     pub title: Option<String>,
     /// Whether to capture mouse events (default: `true`).
     pub mouse_capture: bool,
+    /// Programmatic color-mode override.
+    ///
+    /// - `None` (default) → runtime auto-detection via
+    ///   [`crate::color::detect_color_mode_from_real_env`].
+    /// - `Some(mode)` → hard override; beaten only by `NO_COLOR=<non-empty>`
+    ///   per the no-color.org spec.
+    pub color_mode: Option<ColorMode>,
 }
 
 impl Default for FrameSpec {
@@ -18,6 +28,7 @@ impl Default for FrameSpec {
             fps: 30,
             title: None,
             mouse_capture: true,
+            color_mode: None,
         }
     }
 }
@@ -56,5 +67,19 @@ mod tests {
         let spec = FrameSpec { fps: 60, ..Default::default() };
         // 1000 / 60 = 16ms (integer division)
         assert_eq!(spec.frame_duration(), Duration::from_millis(16));
+    }
+
+    #[test]
+    fn test_default_color_mode() {
+        assert_eq!(FrameSpec::default().color_mode, None);
+    }
+
+    #[test]
+    fn test_explicit_color_mode() {
+        let spec = FrameSpec {
+            color_mode: Some(ColorMode::Ansi16),
+            ..Default::default()
+        };
+        assert_eq!(spec.color_mode, Some(ColorMode::Ansi16));
     }
 }

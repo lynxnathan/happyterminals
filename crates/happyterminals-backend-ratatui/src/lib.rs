@@ -13,6 +13,7 @@ pub mod frame_spec;
 pub mod guard;
 pub mod run;
 
+pub use color::{detect_color_mode, detect_color_mode_from_real_env, ColorMode, EnvProvider, RealEnv};
 pub use event::{InputEvent, InputSignals};
 pub use frame_spec::FrameSpec;
 pub use guard::{install_panic_hook, TerminalGuard};
