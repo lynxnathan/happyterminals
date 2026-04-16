@@ -71,6 +71,7 @@ fn scene_wraps_ir_and_camera() {
         CameraConfig::Orbit(cam) => {
             assert!((cam.distance - 5.0).abs() < f32::EPSILON);
         }
+        _ => panic!("expected Orbit variant"),
     }
 }
 

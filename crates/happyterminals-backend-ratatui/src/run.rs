@@ -18,7 +18,7 @@ use tokio::time::{interval, MissedTickBehavior};
 
 use happyterminals_core::grid::Grid;
 use happyterminals_core::Rect;
-use happyterminals_renderer::{Cube, Mesh, OrbitCamera, Projection, Renderer, ShadingRamp};
+use happyterminals_renderer::{Cube, Mesh, Projection, Renderer, ShadingRamp};
 use happyterminals_scene::node::{NodeKind, SceneNode};
 use happyterminals_scene::{CameraConfig, Scene, SceneIr};
 
@@ -172,7 +172,7 @@ where
 
     // Extract scene parts for mutable access
     let (ir, camera_config, mut pipeline) = scene.into_parts();
-    let CameraConfig::Orbit(mut camera) = camera_config;
+    let mut camera_config = camera_config;
     let mut renderer = Renderer::new();
     let shading = ShadingRamp::default();
     // Build the cube mesh ONCE (heap-allocates) so the per-frame hot path
@@ -195,7 +195,7 @@ where
                         ..Projection::default()
                     };
 
-                    walk_and_render(&ir, &mut grid, &mut renderer, &mut camera, &projection, &shading, &cube_mesh);
+                    walk_and_render(&ir, &mut grid, &mut renderer, &mut camera_config, &projection, &shading, &cube_mesh);
 
                     if let Some(ref mut pipe) = pipeline {
                         pipe.run_frame(&mut grid, dt);
@@ -246,13 +246,13 @@ fn walk_and_render(
     ir: &SceneIr,
     grid: &mut Grid,
     renderer: &mut Renderer,
-    camera: &mut OrbitCamera,
+    camera_config: &mut CameraConfig,
     projection: &Projection,
     shading: &ShadingRamp<'_>,
     cube_mesh: &Mesh,
 ) {
     for node in ir.nodes() {
-        render_node(node, grid, renderer, camera, projection, shading, cube_mesh);
+        render_node(node, grid, renderer, camera_config, projection, shading, cube_mesh);
     }
 }
 
@@ -261,7 +261,7 @@ fn render_node(
     node: &SceneNode,
     grid: &mut Grid,
     renderer: &mut Renderer,
-    camera: &mut OrbitCamera,
+    camera_config: &mut CameraConfig,
     projection: &Projection,
     shading: &ShadingRamp<'_>,
     cube_mesh: &Mesh,
@@ -271,15 +271,29 @@ fn render_node(
             // Read reactive rotation prop without subscribing (REACT-07)
             if let Some(prop) = node.props.get("rotation") {
                 if let Some(angle) = prop.read_untracked::<f32>() {
-                    camera.azimuth = angle;
+                    if let Some(cam) = camera_config.as_orbit_mut() {
+                        cam.azimuth = angle;
+                    }
                 }
             }
-            // Pass the pre-built cube mesh — no per-frame allocation.
-            renderer.draw(grid, cube_mesh, camera, projection, shading);
+            // Build a temporary OrbitCamera from the config's view matrix for
+            // the renderer (which currently takes &OrbitCamera). This is a
+            // transitional shim until the renderer accepts &dyn Camera.
+            let orbit_cam = match camera_config {
+                CameraConfig::Orbit(cam) => cam.clone(),
+                _ => {
+                    // For non-orbit cameras, create a dummy orbit camera whose
+                    // view matrix won't be used — the renderer needs the struct
+                    // for scene_fit_near. TODO: refactor Renderer::draw to
+                    // accept &dyn Camera in a future plan.
+                    happyterminals_renderer::OrbitCamera::default()
+                }
+            };
+            renderer.draw(grid, cube_mesh, &orbit_cam, projection, shading);
         }
         NodeKind::Layer { .. } | NodeKind::Group => {
             for child in &node.children {
-                render_node(child, grid, renderer, camera, projection, shading, cube_mesh);
+                render_node(child, grid, renderer, camera_config, projection, shading, cube_mesh);
             }
         }
         NodeKind::Custom(_) => {}
