@@ -31,9 +31,10 @@ pub(crate) const SYSTEM_16: [(u8, u8, u8); 16] = [
 /// - `232..256`: 24 greyscale steps, `v = 8 + 10 * (i - 232)`
 pub const PALETTE_256: [(u8, u8, u8); 256] = build_palette();
 
-/// Compile-time 256→16 quantization LUT (sRGB-nearest over [`SYSTEM_16`]).
+/// Compile-time 256→16 quantization LUT (sRGB-nearest over the xterm
+/// system-16 palette).
 ///
-/// `PALETTE_16_LUT[i]` yields the index into [`SYSTEM_16`] whose RGB triple
+/// `PALETTE_16_LUT[i]` yields the system-16 index (0..16) whose RGB triple
 /// is closest (squared sRGB) to `PALETTE_256[i]`.
 pub const PALETTE_16_LUT: [u8; 256] = build_16_lut();
 
@@ -191,9 +192,9 @@ mod tests {
         let target = (100u8, 150u8, 200u8);
         let idx = nearest_256(target);
         let (r, g, b) = PALETTE_256[idx as usize];
-        let dr = (r as i32 - target.0 as i32).unsigned_abs();
-        let dg = (g as i32 - target.1 as i32).unsigned_abs();
-        let db = (b as i32 - target.2 as i32).unsigned_abs();
+        let dr = (i32::from(r) - i32::from(target.0)).unsigned_abs();
+        let dg = (i32::from(g) - i32::from(target.1)).unsigned_abs();
+        let db = (i32::from(b) - i32::from(target.2)).unsigned_abs();
         assert!(dr <= 40, "dr={dr}");
         assert!(dg <= 40, "dg={dg}");
         assert!(db <= 40, "db={db}");
