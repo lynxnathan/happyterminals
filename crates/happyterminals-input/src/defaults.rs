@@ -33,14 +33,25 @@ pub fn default_viewer_context() -> InputContext {
         vec![InputModifier::Deadzone(1.0)],
     );
 
-    // Pan: middle-drag
+    // Pan: right-drag (raw pixels — callback applies zoom-aware scaling)
+    // Deadzone(2.0) filters right-click micro-jitter
+    ctx.bind(
+        "pan",
+        Binding::Drag {
+            button: MouseButton::Right,
+            axis: DragAxis::Both,
+        },
+        vec![InputModifier::Deadzone(2.0)],
+    );
+
+    // Pan: also middle-drag
     ctx.bind(
         "pan",
         Binding::Drag {
             button: MouseButton::Middle,
             axis: DragAxis::Both,
         },
-        vec![InputModifier::Deadzone(1.0)],
+        vec![InputModifier::Deadzone(2.0)],
     );
 
     // Zoom: scroll down (negated = zoom out) and scroll up (zoom in)

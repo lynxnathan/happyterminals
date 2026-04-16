@@ -40,9 +40,10 @@ const MODELS: &[(&str, &str)] = &[
     ),
 ];
 
-const ORBIT_SENSITIVITY: f32 = 0.02;
+/// Shared drag sensitivity — orbit and pan use the same value so they
+/// feel like the same "grab and move" gesture at the same speed.
+const DRAG_SENSITIVITY: f32 = 0.01;
 const ZOOM_SENSITIVITY: f32 = 0.5;
-const PAN_SENSITIVITY: f32 = 0.05;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -61,11 +62,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut input_map = InputMap::new();
     register_default_actions(&mut input_map);
 
-    // Register model cycling actions
+    // Register model cycling + WASD pan actions
     input_map.register_action("cycle_next", ActionValueType::Bool);
     input_map.register_action("cycle_prev", ActionValueType::Bool);
+    input_map.register_action("pan_left", ActionValueType::Bool);
+    input_map.register_action("pan_right", ActionValueType::Bool);
+    input_map.register_action("pan_up", ActionValueType::Bool);
+    input_map.register_action("pan_down", ActionValueType::Bool);
 
-    // Build default context and add model cycling bindings
+    // Build default context and add model cycling + WASD bindings
     let mut ctx = default_viewer_context();
     ctx.bind(
         "cycle_next",
@@ -75,6 +80,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ctx.bind(
         "cycle_prev",
         Binding::Key(crossterm::event::KeyCode::Left),
+        vec![],
+    );
+    ctx.bind(
+        "pan_left",
+        Binding::Key(crossterm::event::KeyCode::Char('a')),
+        vec![],
+    );
+    ctx.bind(
+        "pan_right",
+        Binding::Key(crossterm::event::KeyCode::Char('d')),
+        vec![],
+    );
+    ctx.bind(
+        "pan_up",
+        Binding::Key(crossterm::event::KeyCode::Char('w')),
+        vec![],
+    );
+    ctx.bind(
+        "pan_down",
+        Binding::Key(crossterm::event::KeyCode::Char('s')),
         vec![],
     );
     input_map.push_context(ctx);
@@ -91,27 +116,55 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     run_with_input(
         move |grid, _input_signals, imap| {
-            // Read orbit delta from action signal (accumulated since last tick)
+            // Orbit (left-drag) and pan (right-drag) share DRAG_SENSITIVITY
+            // so they feel like the same "grab" gesture at the same speed.
+            let sens = DRAG_SENSITIVITY * camera.distance;
+
             if let Some(orbit_sig) = imap.action_axis2d("orbit") {
                 let delta = orbit_sig.untracked();
-                camera.azimuth += delta.x * ORBIT_SENSITIVITY;
-                camera.elevation += delta.y * ORBIT_SENSITIVITY;
+                camera.azimuth -= delta.x * sens;
+                camera.elevation += delta.y * sens;
             }
 
-            // Read zoom delta
             if let Some(zoom_sig) = imap.action_axis1d("zoom") {
                 let delta = zoom_sig.untracked();
                 camera.distance = (camera.distance - delta * ZOOM_SENSITIVITY).max(0.5);
             }
 
-            // Read pan delta
             if let Some(pan_sig) = imap.action_axis2d("pan") {
                 let delta = pan_sig.untracked();
                 let right =
                     glam::Vec3::new(camera.azimuth.cos(), 0.0, -camera.azimuth.sin());
                 let up = glam::Vec3::Y;
-                camera.target +=
-                    right * delta.x * PAN_SENSITIVITY + up * (-delta.y) * PAN_SENSITIVITY;
+                camera.target -= (right * delta.x + up * (-delta.y)) * sens;
+            }
+
+            // WASD keyboard pan (supplementary)
+            {
+                let right =
+                    glam::Vec3::new(camera.azimuth.cos(), 0.0, -camera.azimuth.sin());
+                let up = glam::Vec3::Y;
+                let step = sens;
+                if let Some(s) = imap.action_state("pan_left") {
+                    if matches!(s.untracked(), ActionState::JustPressed | ActionState::Held(_)) {
+                        camera.target -= right * step;
+                    }
+                }
+                if let Some(s) = imap.action_state("pan_right") {
+                    if matches!(s.untracked(), ActionState::JustPressed | ActionState::Held(_)) {
+                        camera.target += right * step;
+                    }
+                }
+                if let Some(s) = imap.action_state("pan_up") {
+                    if matches!(s.untracked(), ActionState::JustPressed | ActionState::Held(_)) {
+                        camera.target += up * step;
+                    }
+                }
+                if let Some(s) = imap.action_state("pan_down") {
+                    if matches!(s.untracked(), ActionState::JustPressed | ActionState::Held(_)) {
+                        camera.target -= up * step;
+                    }
+                }
             }
 
             // Model cycling (consume-on-read pattern via JustPressed)
@@ -147,7 +200,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             renderer.draw(grid, mesh, &camera, &projection, &shading);
 
             let label = format!(
-                " Model: {name}  (Drag=orbit, Scroll=zoom, WASD=pan, Arrows=cycle, Q=quit) "
+                " Model: {name}  (L-drag=orbit, R-drag=pan, Scroll=zoom, WASD=pan, Arrows=cycle, Q=quit) "
             );
             grid.put_str(0, 0, &label, Style::default());
         },

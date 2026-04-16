@@ -173,7 +173,6 @@ where
         tokio::select! {
             _ = tick.tick() => {
                 let _span = tracing::trace_span!("frame").entered();
-                input_map.tick_update(dt);
                 terminal.draw(|frame| {
                     grid.resize(frame.area());
                     render_fn(&mut grid, &input_signals, &input_map);
@@ -181,6 +180,9 @@ where
                     downsample(&mut out, color_mode);
                     *frame.buffer_mut() = out;
                 })?;
+                // tick_update AFTER render so callback sees JustPressed
+                // before it transitions to Held. reset_axes zeros deltas.
+                input_map.tick_update(dt);
                 input_map.reset_axes();
             }
             maybe_event = events.next() => {

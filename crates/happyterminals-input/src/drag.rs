@@ -41,10 +41,19 @@ pub struct DragOutput {
     pub delta: Vec2,
 }
 
+/// Minimum distance (in terminal cells) the mouse must travel from the
+/// press point before a drag gesture is recognised. Prevents micro-jitter
+/// during a click from being interpreted as a drag.
+const DRAG_THRESHOLD: f32 = 3.0;
+
 /// Tracks mouse drag gestures and produces position deltas.
 ///
 /// Feed mouse events via [`DragStateMachine::update`]. When a drag gesture
 /// is active, it returns [`DragOutput`] with the movement delta.
+///
+/// The state machine requires the mouse to move at least [`DRAG_THRESHOLD`]
+/// cells from the press point before transitioning to `Dragging`. This
+/// prevents accidental panning from right-click micro-jitter.
 pub struct DragStateMachine {
     state: DragState,
 }
@@ -63,7 +72,9 @@ impl DragStateMachine {
     ///
     /// State transitions:
     /// - `(Idle, Down(btn))` -> `Pressed`, returns `None`
-    /// - `(Pressed, Drag(btn))` -> `Dragging`, returns `Some(delta from start)`
+    /// - `(Pressed, Drag(btn))` -> stays `Pressed` if distance < threshold;
+    ///   transitions to `Dragging` and returns `Some(delta)` once threshold
+    ///   is exceeded
     /// - `(Dragging, Drag(btn))` -> `Dragging`, returns `Some(delta from last)`
     /// - `(*, Up(_))` -> `Idle`, returns `None`
     pub fn update(&mut self, mouse: &MouseEvent) -> Option<DragOutput> {
@@ -88,6 +99,12 @@ impl DragStateMachine {
                     f32::from(mouse.column) - f32::from(*start_col),
                     f32::from(mouse.row) - f32::from(*start_row),
                 );
+                // Stay in Pressed until the mouse moves far enough from the
+                // click point. This prevents micro-jitter during a click
+                // from triggering a drag.
+                if delta.length() < DRAG_THRESHOLD {
+                    return None;
+                }
                 let out_button = *button;
                 self.state = DragState::Dragging {
                     button: out_button,
@@ -258,6 +275,60 @@ mod tests {
             5,
         ));
         assert!(result.is_none());
+        assert!(matches!(sm.state(), DragState::Idle));
+    }
+
+    #[test]
+    fn micro_jitter_below_threshold_stays_pressed() {
+        let mut sm = DragStateMachine::new();
+        sm.update(&mouse_event(MouseEventKind::Down(MouseButton::Right), 50, 20));
+        // Move 1 cell — well below DRAG_THRESHOLD (3.0)
+        let result = sm.update(&mouse_event(
+            MouseEventKind::Drag(MouseButton::Right),
+            51,
+            20,
+        ));
+        assert!(result.is_none(), "sub-threshold drag should produce no output");
+        assert!(matches!(sm.state(), DragState::Pressed { .. }));
+    }
+
+    #[test]
+    fn exceeding_threshold_transitions_to_dragging() {
+        let mut sm = DragStateMachine::new();
+        sm.update(&mouse_event(MouseEventKind::Down(MouseButton::Right), 50, 20));
+        // Move 1 cell — below threshold
+        let r1 = sm.update(&mouse_event(
+            MouseEventKind::Drag(MouseButton::Right),
+            51,
+            20,
+        ));
+        assert!(r1.is_none());
+        // Move 4 cells total from start — above threshold
+        let r2 = sm.update(&mouse_event(
+            MouseEventKind::Drag(MouseButton::Right),
+            54,
+            20,
+        ));
+        let output = r2.expect("above-threshold drag should produce output");
+        assert_eq!(output.button, MouseButton::Right);
+        assert!((output.delta.x - 4.0).abs() < f32::EPSILON);
+        assert!(matches!(sm.state(), DragState::Dragging { .. }));
+    }
+
+    #[test]
+    fn right_click_release_without_drag_produces_nothing() {
+        let mut sm = DragStateMachine::new();
+        sm.update(&mouse_event(MouseEventKind::Down(MouseButton::Right), 50, 20));
+        // Tiny jitter during click
+        let r1 = sm.update(&mouse_event(
+            MouseEventKind::Drag(MouseButton::Right),
+            50,
+            21,
+        ));
+        assert!(r1.is_none());
+        // Release
+        let r2 = sm.update(&mouse_event(MouseEventKind::Up(MouseButton::Right), 50, 21));
+        assert!(r2.is_none());
         assert!(matches!(sm.state(), DragState::Idle));
     }
 }

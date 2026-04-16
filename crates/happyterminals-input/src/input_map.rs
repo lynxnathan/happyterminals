@@ -122,13 +122,15 @@ impl InputMap {
             }
             ActionValue::Axis1D(v) => {
                 if let Some(sig) = &entry.axis1d {
-                    sig.set(v);
+                    // Accumulate between frames (reset_axes zeros after render)
+                    sig.set(sig.untracked() + v);
                 }
                 entry.state.set(ActionState::JustPressed);
             }
             ActionValue::Axis2D(v) => {
                 if let Some(sig) = &entry.axis2d {
-                    sig.set(v);
+                    // Accumulate between frames (reset_axes zeros after render)
+                    sig.set(sig.untracked() + v);
                 }
                 entry.state.set(ActionState::JustPressed);
             }
@@ -168,7 +170,10 @@ impl InputMap {
                 ActionState::Held(d) => {
                     entry.state.set(ActionState::Held(d + dt));
                 }
-                _ => {}
+                ActionState::Released => {
+                    entry.state.set(ActionState::Inactive);
+                }
+                ActionState::Inactive => {}
             }
         }
     }

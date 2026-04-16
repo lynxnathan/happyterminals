@@ -134,6 +134,29 @@ impl InputContext {
                     }
                 }
             }
+            Event::Key(key_event) if key_event.kind == KeyEventKind::Release => {
+                for cb in &self.bindings {
+                    match &cb.binding {
+                        Binding::Key(code) if *code == key_event.code => {
+                            return Some(FiredAction {
+                                action_key: cb.action_key.clone(),
+                                raw_value: ActionValue::Bool(false),
+                                modifiers: vec![],
+                            });
+                        }
+                        Binding::KeyWithModifier { key, .. }
+                            if *key == key_event.code =>
+                        {
+                            return Some(FiredAction {
+                                action_key: cb.action_key.clone(),
+                                raw_value: ActionValue::Bool(false),
+                                modifiers: vec![],
+                            });
+                        }
+                        _ => {}
+                    }
+                }
+            }
             Event::Mouse(mouse_event) => {
                 let scroll_dir = match mouse_event.kind {
                     MouseEventKind::ScrollUp => Some(ScrollDirection::Up),
