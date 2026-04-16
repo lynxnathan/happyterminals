@@ -441,7 +441,7 @@ Plans:
 
 Plans:
 - [x] 02.2-01-PLAN.md — color module + palette + env-cascade tests (Wave 1)
-- [ ] 02.2-02-PLAN.md — FrameSpec/TerminalGuard/run.rs wiring + prelude re-export (Wave 2)
+- [x] 02.2-02-PLAN.md — FrameSpec/TerminalGuard/run.rs wiring + prelude re-export (Wave 2)
 - [ ] 02.2-03-PLAN.md — 8-fixture insta snapshot matrix + color-test example + README §Terminal Color Support (Wave 3)
 
 ---
