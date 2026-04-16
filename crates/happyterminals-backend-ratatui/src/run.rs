@@ -18,6 +18,8 @@ use tokio::time::{interval, MissedTickBehavior};
 
 use happyterminals_core::grid::Grid;
 use happyterminals_core::Rect;
+use happyterminals_input::action::ActionState;
+use happyterminals_input::InputMap;
 use happyterminals_renderer::{Cube, Mesh, Projection, Renderer, ShadingRamp};
 use happyterminals_scene::node::{NodeKind, SceneNode};
 use happyterminals_scene::{CameraConfig, Scene, SceneIr};
@@ -120,6 +122,111 @@ where
 
     Ok(())
     // _guard drops here, restoring terminal
+}
+
+/// Runs the terminal event loop with [`InputMap`] dispatch.
+///
+/// Like [`run`], creates a [`TerminalGuard`] on entry and drives a
+/// `tokio::select!` loop. In addition to legacy [`InputSignals`], events are
+/// dispatched through the provided [`InputMap`] so the render callback can
+/// read action signals (orbit, zoom, pan, etc.).
+///
+/// The render callback receives `(&mut Grid, &InputSignals, &InputMap)`.
+///
+/// # Errors
+///
+/// Returns an error if terminal acquisition fails or an I/O error occurs
+/// during rendering.
+pub async fn run_with_input<F>(
+    mut render_fn: F,
+    spec: FrameSpec,
+    mut input_map: InputMap,
+) -> Result<(), Box<dyn std::error::Error>>
+where
+    F: FnMut(&mut Grid, &InputSignals, &InputMap),
+{
+    install_panic_hook();
+
+    let color_mode = detect_color_mode_from_real_env(spec.color_mode);
+    tracing::debug!(?color_mode, "color-mode detected");
+
+    let _guard = TerminalGuard::acquire_with_color_mode(color_mode)?;
+
+    if let Some(ref title) = spec.title {
+        let _ = crossterm::execute!(io::stdout(), SetTitle(title.as_str()));
+    }
+
+    let backend = CrosstermBackend::new(io::stdout());
+    let mut terminal = Terminal::new(backend)?;
+
+    let mut events = EventStream::new();
+
+    let mut tick = interval(spec.frame_duration());
+    tick.set_missed_tick_behavior(MissedTickBehavior::Delay);
+
+    let (w, h) = crossterm::terminal::size()?;
+    let input_signals = InputSignals::new(w, h);
+    let mut grid = Grid::new(Rect::new(0, 0, w, h));
+    let dt = spec.frame_duration();
+
+    loop {
+        tokio::select! {
+            _ = tick.tick() => {
+                let _span = tracing::trace_span!("frame").entered();
+                input_map.tick_update(dt);
+                terminal.draw(|frame| {
+                    grid.resize(frame.area());
+                    render_fn(&mut grid, &input_signals, &input_map);
+                    let mut out = grid.deref().clone();
+                    downsample(&mut out, color_mode);
+                    *frame.buffer_mut() = out;
+                })?;
+                input_map.reset_axes();
+            }
+            maybe_event = events.next() => {
+                match maybe_event {
+                    Some(Ok(ev)) => {
+                        // Dispatch through InputMap FIRST (sees raw crossterm event)
+                        input_map.dispatch(&ev);
+
+                        // Check InputMap quit action
+                        if let Some(quit_sig) = input_map.action_state("quit") {
+                            if quit_sig.get() == ActionState::JustPressed {
+                                break;
+                            }
+                        }
+
+                        // Legacy signal path (backward compat)
+                        if let Some(input) = map_event(&ev) {
+                            if is_quit_event(&input) {
+                                break;
+                            }
+                            match &input {
+                                InputEvent::Key { .. } => {
+                                    input_signals.last_key.set(Some(input));
+                                }
+                                InputEvent::Mouse { .. } => {
+                                    input_signals.last_mouse.set(Some(input));
+                                }
+                                InputEvent::Resize { width, height } => {
+                                    input_signals.terminal_size.set((*width, *height));
+                                }
+                                InputEvent::FocusGained => {
+                                    input_signals.focused.set(true);
+                                }
+                                InputEvent::FocusLost => {
+                                    input_signals.focused.set(false);
+                                }
+                            }
+                        }
+                    }
+                    Some(Err(_)) | None => break,
+                }
+            }
+        }
+    }
+
+    Ok(())
 }
 
 /// Runs the terminal event loop driven by a [`Scene`].
