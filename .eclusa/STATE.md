@@ -1,17 +1,17 @@
 ---
 eclusa_state_version: 1.0
 milestone: v2.0
-milestone_name: Compositor + v1 Release
+milestone_name: exit gates
 status: executing
-stopped_at: "Completed 03.2-01-PLAN.md (JSON recipe loader)"
-last_updated: "2026-04-17T08:49:26Z"
-last_activity: 2026-04-17
+stopped_at: v2.0 roadmap created (ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated)
+last_updated: "2026-04-17T08:42:23.724Z"
+last_activity: 2026-04-17 -- Phase 03.2 execution started
 progress:
-  total_phases: 13
-  completed_phases: 10
-  total_plans: 40
-  completed_plans: 33
-  percent: 62
+  total_phases: 5
+  completed_phases: 1
+  total_plans: 5
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Phase 03.1 — Camera Refactor + Scene Transitions
+**Current focus:** Phase 03.2 — JSON Recipe Loader + Schema
 
 ## Current Position
 
-Phase: 03.2
-Plan: 01 complete
+Phase: 03.2 (JSON Recipe Loader + Schema) — EXECUTING
+Plan: 1 of 2
 Status: Executing Phase 03.2
-Last activity: 2026-04-17
+Last activity: 2026-04-17 -- Phase 03.2 execution started
 
-Progress: [============░░░░░░░░] 62% (v1.0 complete, v2.0 Phase 03.2 in progress)
+Progress: [============░░░░░░░░] 60% (v1.0 complete, v2.0 starting)
 
 ## Performance Metrics
 
@@ -57,9 +57,6 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - TransitionManager scaffold exists from Phase 1.4 (Owner disposal semantics defined)
 - Community validated z-axis spatial paradigm -- transitions are highest-value v2.0 feature
 - Camera trait with 3 implementations (Orbit/FreeLook/FPS) shipped in Phase 2.3; REND-11 refactors Renderer::draw to accept &dyn Camera
-- load_recipe returns (SceneIr, CameraConfig) tuple, not Scene -- avoids Scene validation at recipe load time
-- RecipeError kept in DSL crate, not extending SceneError
-- JSON props stored as PropValue::Static(Box<serde_json::Value>)
 
 ### Pending Todos
 
@@ -73,6 +70,6 @@ None yet for v2.0.
 ## Session Continuity
 
 Last session: 2026-04-17
-Stopped at: Completed 03.2-01-PLAN.md (JSON recipe loader)
+Stopped at: v2.0 roadmap created (ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated)
 Resume file: None
-Next command: Execute 03.2-02-PLAN.md (JSON sandbox)
+Next command: `/eclusa:plan-phase 3.1`
