@@ -916,4 +916,65 @@ mod tests {
             _ => panic!("Expected Fps camera after round-trip"),
         }
     }
+
+    // ── Additional round-trip edge cases ─────────────────────────────
+
+    #[test]
+    fn json_round_trip_empty_layer() {
+        let json = r#"{
+            "$version": "1.0",
+            "camera": { "type": "orbit", "azimuth": 0.0, "elevation": 0.0, "distance": 5.0, "target": [0,0,0] },
+            "layers": [{ "z_order": 0, "children": [] }]
+        }"#;
+        let (ir, camera) = load_recipe(json).unwrap();
+        let recipe = scene_ir_to_recipe(&ir, &camera);
+        let json_str = serde_json::to_string_pretty(&recipe).unwrap();
+        let (ir2, _) = load_recipe(&json_str).unwrap();
+        assert!(nodes_structurally_equal(ir.nodes(), ir2.nodes()));
+        assert_eq!(ir2.nodes()[0].children.len(), 0);
+    }
+
+    #[test]
+    fn json_round_trip_extreme_z_order() {
+        let json = r#"{
+            "$version": "1.0",
+            "camera": { "type": "orbit", "azimuth": 0.0, "elevation": 0.0, "distance": 5.0, "target": [0,0,0] },
+            "layers": [
+                { "z_order": -32768, "children": [{ "type": "cube" }] },
+                { "z_order": 32767, "children": [{ "type": "cube" }] }
+            ]
+        }"#;
+        let (ir, camera) = load_recipe(json).unwrap();
+        let recipe = scene_ir_to_recipe(&ir, &camera);
+        let json_str = serde_json::to_string_pretty(&recipe).unwrap();
+        let (ir2, _) = load_recipe(&json_str).unwrap();
+        assert!(nodes_structurally_equal(ir.nodes(), ir2.nodes()));
+    }
+
+    #[test]
+    fn json_round_trip_extreme_transform_values() {
+        let json = r#"{
+            "$version": "1.0",
+            "camera": { "type": "orbit", "azimuth": 0.0, "elevation": 0.0, "distance": 5.0, "target": [0,0,0] },
+            "layers": [{
+                "z_order": 0,
+                "children": [{
+                    "type": "cube",
+                    "transform": {
+                        "position": [1000.0, -1000.0, 0.001],
+                        "rotation": [3.14159, -3.14159, 0.0],
+                        "scale": [100.0, 0.01, 1.0]
+                    }
+                }]
+            }]
+        }"#;
+        let (ir, camera) = load_recipe(json).unwrap();
+        let recipe = scene_ir_to_recipe(&ir, &camera);
+        let json_str = serde_json::to_string_pretty(&recipe).unwrap();
+        let (ir2, _) = load_recipe(&json_str).unwrap();
+        assert!(
+            nodes_structurally_equal(ir.nodes(), ir2.nodes()),
+            "Extreme transform values should round-trip"
+        );
+    }
 }
