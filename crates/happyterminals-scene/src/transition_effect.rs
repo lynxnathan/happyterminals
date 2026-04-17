@@ -18,12 +18,53 @@ pub trait TransitionEffect: Send {
     fn blend(&self, a: &Buffer, b: &Buffer, progress: f32, output: &mut Buffer);
 }
 
+/// Assert that all three buffers have identical areas.
+fn assert_areas_match(a: &Buffer, b: &Buffer, output: &Buffer) {
+    assert!(
+        a.area == b.area && b.area == output.area,
+        "TransitionEffect::blend requires all buffers to have the same area; \
+         got a={:?}, b={:?}, output={:?}",
+        a.area,
+        b.area,
+        output.area,
+    );
+}
+
+/// Copy symbol and style from `src` cell at `pos` to `dst` cell at `pos`.
+fn copy_cell(src: &Buffer, dst: &mut Buffer, pos: Position) {
+    if let (Some(s), Some(d)) = (src.cell(pos), dst.cell_mut(pos)) {
+        d.set_symbol(s.symbol());
+        d.set_style(s.style());
+    }
+}
+
+/// Set the cell at `pos` to a space (black/empty).
+fn blank_cell(dst: &mut Buffer, pos: Position) {
+    if let Some(d) = dst.cell_mut(pos) {
+        d.set_symbol(" ");
+        d.set_style(ratatui_core::style::Style::default());
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Built-in effects
+// ---------------------------------------------------------------------------
+
 /// Crossfade dissolve: switches cells from A to B at the midpoint.
+///
+/// At `progress < 0.5` all cells show A; at `progress >= 0.5` all cells show B.
 pub struct Dissolve;
 
 impl TransitionEffect for Dissolve {
-    fn blend(&self, _a: &Buffer, _b: &Buffer, _progress: f32, _output: &mut Buffer) {
-        todo!()
+    fn blend(&self, a: &Buffer, b: &Buffer, progress: f32, output: &mut Buffer) {
+        assert_areas_match(a, b, output);
+        let src = if progress < 0.5 { a } else { b };
+        let area = a.area;
+        for y in area.y..area.y + area.height {
+            for x in area.x..area.x + area.width {
+                copy_cell(src, output, Position::new(x, y));
+            }
+        }
     }
 }
 
@@ -31,17 +72,66 @@ impl TransitionEffect for Dissolve {
 pub struct SlideLeft;
 
 impl TransitionEffect for SlideLeft {
-    fn blend(&self, _a: &Buffer, _b: &Buffer, _progress: f32, _output: &mut Buffer) {
-        todo!()
+    fn blend(&self, a: &Buffer, b: &Buffer, progress: f32, output: &mut Buffer) {
+        assert_areas_match(a, b, output);
+        let area = a.area;
+        let width = f32::from(area.width);
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let split_x = area.x + ((width * (1.0 - progress)) as u16).min(area.width);
+
+        for y in area.y..area.y + area.height {
+            for x in area.x..area.x + area.width {
+                let src = if x < split_x { a } else { b };
+                copy_cell(src, output, Position::new(x, y));
+            }
+        }
     }
 }
 
-/// Fade through black: scene A fades to black, then scene B fades in.
+/// Fade through black: scene A fades to black left-to-right, then scene B
+/// fades in left-to-right.
 pub struct FadeToBlack;
 
 impl TransitionEffect for FadeToBlack {
-    fn blend(&self, _a: &Buffer, _b: &Buffer, _progress: f32, _output: &mut Buffer) {
-        todo!()
+    fn blend(&self, a: &Buffer, b: &Buffer, progress: f32, output: &mut Buffer) {
+        assert_areas_match(a, b, output);
+        let area = a.area;
+        let width = f32::from(area.width);
+
+        if progress < 0.5 {
+            // Phase 1: fade A to black, left-to-right
+            let p = progress / 0.5; // sub-progress 0..1
+            for y in area.y..area.y + area.height {
+                for x in area.x..area.x + area.width {
+                    let col_ratio = f32::from(x - area.x) / width;
+                    if col_ratio < p {
+                        blank_cell(output, Position::new(x, y));
+                    } else {
+                        copy_cell(a, output, Position::new(x, y));
+                    }
+                }
+            }
+        } else if (progress - 1.0).abs() < f32::EPSILON {
+            // Exactly 1.0: all B
+            for y in area.y..area.y + area.height {
+                for x in area.x..area.x + area.width {
+                    copy_cell(b, output, Position::new(x, y));
+                }
+            }
+        } else {
+            // Phase 2: fade in B from black, left-to-right
+            let p = (progress - 0.5) / 0.5; // sub-progress 0..1
+            for y in area.y..area.y + area.height {
+                for x in area.x..area.x + area.width {
+                    let col_ratio = f32::from(x - area.x) / width;
+                    if col_ratio < p {
+                        copy_cell(b, output, Position::new(x, y));
+                    } else {
+                        blank_cell(output, Position::new(x, y));
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -106,8 +196,6 @@ mod tests {
         let b = make_buffer("B");
         let mut out = Buffer::empty(Rect::new(0, 0, 4, 2));
         Dissolve.blend(&a, &b, 0.5, &mut out);
-        // At exactly 0.5, the spec says "progress < 0.5 => A, else B"
-        // so progress=0.5 should yield B
         assert!(all_cells_eq(&out, "B"));
     }
 
@@ -137,8 +225,6 @@ mod tests {
         let b = make_buffer("B");
         let mut out = Buffer::empty(Rect::new(0, 0, 4, 2));
         SlideLeft.blend(&a, &b, 0.5, &mut out);
-        // At 0.5: split_x = 0 + (4 * 0.5) = 2
-        // x < 2 => A, x >= 2 => B
         for y in 0..2 {
             assert_eq!(out.cell(Position::new(0, y)).unwrap().symbol(), "A");
             assert_eq!(out.cell(Position::new(1, y)).unwrap().symbol(), "A");
@@ -164,10 +250,6 @@ mod tests {
         let b = make_buffer("B");
         let mut out = Buffer::empty(Rect::new(0, 0, 4, 2));
         FadeToBlack.blend(&a, &b, 0.25, &mut out);
-        // sub-progress p = 0.25 / 0.5 = 0.5
-        // Cells where (x / width) < p become black (space)
-        // x=0: 0.0 < 0.5 => space; x=1: 0.25 < 0.5 => space
-        // x=2: 0.5 < 0.5 => false => A; x=3: 0.75 < 0.5 => false => A
         let has_space = (0..4).any(|x| out.cell(Position::new(x, 0)).unwrap().symbol() == " ");
         let has_a = (0..4).any(|x| out.cell(Position::new(x, 0)).unwrap().symbol() == "A");
         assert!(has_space, "should have some faded cells at progress=0.25");
@@ -180,8 +262,6 @@ mod tests {
         let b = make_buffer("B");
         let mut out = Buffer::empty(Rect::new(0, 0, 4, 2));
         FadeToBlack.blend(&a, &b, 0.75, &mut out);
-        // sub-progress p = (0.75 - 0.5) / 0.5 = 0.5
-        // Cells where (x / width) < p show B, else space
         let has_b = (0..4).any(|x| out.cell(Position::new(x, 0)).unwrap().symbol() == "B");
         assert!(has_b, "should have B cells emerging at progress=0.75");
     }

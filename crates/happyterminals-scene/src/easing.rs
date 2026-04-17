@@ -3,18 +3,25 @@
 //! Each function maps `t` in `[0.0, 1.0]` to an output in `[0.0, 1.0]`.
 
 /// Linear interpolation (identity).
+#[must_use]
 pub fn linear(t: f32) -> f32 {
-    todo!()
+    t
 }
 
 /// Cubic ease-in-out: slow start, fast middle, slow end.
+#[must_use]
 pub fn ease_in_out(t: f32) -> f32 {
-    todo!()
+    if t < 0.5 {
+        4.0 * t * t * t
+    } else {
+        1.0 - (-2.0 * t + 2.0).powi(3) / 2.0
+    }
 }
 
 /// Cubic ease-out: fast start, decelerating to a stop.
+#[must_use]
 pub fn ease_out_cubic(t: f32) -> f32 {
-    todo!()
+    1.0 - (1.0 - t).powi(3)
 }
 
 #[cfg(test)]
