@@ -26,7 +26,13 @@ pub use happyterminals_renderer::{OrbitCamera, Projection, ShadingRamp};
 pub use happyterminals_pipeline::{Pipeline, Fx};
 
 // JSON recipe loader
-pub use crate::json::{load_recipe, recipe_schema, scene_ir_to_recipe, RecipeError};
+pub use crate::json::{
+    load_recipe, load_recipe_sandboxed, recipe_schema, scene_ir_to_recipe, RecipeError,
+    SandboxConfig,
+};
+
+// JSON sandbox primitives
+pub use crate::sandbox::EffectRegistry;
 
 // Math
 pub use glam::vec3;

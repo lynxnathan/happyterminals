@@ -6,6 +6,7 @@
 
 use std::collections::HashMap;
 use std::fmt;
+use std::path::PathBuf;
 
 use glam::Vec3;
 use happyterminals_renderer::camera::{FpsCamera, FreeLookCamera, OrbitCamera};
@@ -14,6 +15,8 @@ use happyterminals_scene::prop::PropValue;
 use happyterminals_scene::{CameraConfig, SceneIr};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+use crate::sandbox::{sanitize_path, strip_ansi, EffectRegistry};
 
 /// The current recipe format version.
 const RECIPE_VERSION: &str = "1.0";
@@ -251,6 +254,193 @@ pub fn load_recipe(json: &str) -> Result<(SceneIr, CameraConfig), RecipeError> {
         .collect();
 
     Ok((SceneIr::new(layer_nodes), camera))
+}
+
+// ── Sandboxed recipe loading ────────────────────────────────────────────
+
+/// Configuration for [`load_recipe_sandboxed`].
+///
+/// Carries the asset directory mesh paths are constrained to, and the allow-
+/// list of effect names recipes may reference.
+///
+/// Use [`SandboxConfig::default`] for the safe default: asset root `"."` and
+/// the built-in transition-effect registry.
+#[derive(Debug, Clone)]
+pub struct SandboxConfig {
+    /// Directory that relative mesh paths in recipes resolve against.
+    ///
+    /// A recipe path like `"bunny.obj"` is checked and then joined onto
+    /// `asset_root`. Absolute paths, `..`, and `.` components are rejected
+    /// before any file I/O.
+    pub asset_root: PathBuf,
+    /// Allow-list of transition-effect names recipes may reference.
+    pub effect_registry: EffectRegistry,
+}
+
+impl Default for SandboxConfig {
+    fn default() -> Self {
+        Self {
+            asset_root: PathBuf::from("."),
+            effect_registry: EffectRegistry::default(),
+        }
+    }
+}
+
+/// Parse and validate a JSON recipe with security sandboxing applied.
+///
+/// Applies three hardening passes to the deserialized recipe before it is
+/// converted into a [`SceneIr`]:
+///
+/// 1. **ANSI stripping on strings.** Every string value in every node's
+///    props map is passed through [`crate::sandbox::strip_ansi`] so recipe
+///    content cannot inject terminal escapes when rendered.
+/// 2. **ANSI stripping on mesh paths.** The mesh `path` field is stripped
+///    first so an attacker cannot hide `..` behind escape noise.
+/// 3. **Path sandboxing.** Each mesh path is validated by
+///    [`crate::sandbox::sanitize_path`] against `config.asset_root`. Any
+///    traversal attempt (`..`), absolute path, or Windows drive letter
+///    fails the load with [`RecipeError::PathTraversal`] before the mesh
+///    is opened.
+///
+/// The [`EffectRegistry`] in the config is validated at load time against
+/// known recipe fields; future recipe fields that carry effect names will
+/// route through `config.effect_registry.resolve()` and surface
+/// [`RecipeError::UnknownEffect`] for unregistered names. (The current
+/// recipe schema has no effect-name field yet, but the config and error
+/// path exist so the sandbox is plumbed end-to-end.)
+///
+/// The recipe payload is left structurally identical to what
+/// [`load_recipe`] would produce -- the sanitized mesh path is the
+/// **relative** path (not the joined absolute path) so downstream code can
+/// continue to treat `node.props["path"]` as an asset-root-relative
+/// lookup.
+///
+/// # Errors
+///
+/// Same variants as [`load_recipe`], plus:
+/// - [`RecipeError::PathTraversal`] for rejected mesh paths.
+/// - [`RecipeError::UnknownEffect`] for unregistered effect names (future
+///   recipe fields).
+pub fn load_recipe_sandboxed(
+    json: &str,
+    config: &SandboxConfig,
+) -> Result<(SceneIr, CameraConfig), RecipeError> {
+    // Step 1-3: parse, schema-validate, deserialize, version-check.
+    // Reuse the same pipeline as load_recipe to keep behavior aligned.
+    let value: serde_json::Value =
+        serde_json::from_str(json).map_err(|e| RecipeError::Deserialize(e.to_string()))?;
+
+    let schema_value = recipe_schema();
+    let validator = jsonschema::validator_for(&schema_value)
+        .map_err(|e| RecipeError::SchemaValidation(e.to_string()))?;
+
+    let errors: Vec<String> = validator
+        .iter_errors(&value)
+        .map(|e| {
+            let path = e.instance_path().to_string();
+            if path.is_empty() {
+                e.to_string()
+            } else {
+                format!("{path}: {e}")
+            }
+        })
+        .collect();
+
+    if !errors.is_empty() {
+        return Err(RecipeError::SchemaValidation(errors.join("; ")));
+    }
+
+    let mut recipe: Recipe =
+        serde_json::from_value(value).map_err(|e| RecipeError::Deserialize(e.to_string()))?;
+
+    if recipe.version != RECIPE_VERSION {
+        return Err(RecipeError::UnsupportedVersion {
+            found: recipe.version,
+        });
+    }
+
+    // Step 4 (new): walk the tree and apply sandbox passes in place. Any
+    // failure short-circuits before SceneIr construction.
+    for layer in &mut recipe.layers {
+        for node in &mut layer.children {
+            sandbox_recipe_node(node, config)?;
+        }
+    }
+
+    // Step 5: convert to SceneIr (same as load_recipe).
+    let camera = recipe_camera_to_config(&recipe.camera);
+    let layer_nodes: Vec<SceneNode> = recipe
+        .layers
+        .into_iter()
+        .map(|layer| recipe_layer_to_node(layer))
+        .collect();
+
+    Ok((SceneIr::new(layer_nodes), camera))
+}
+
+/// Recursively apply sandbox passes to a single [`RecipeNode`] in place.
+///
+/// - Strips ANSI from any string value in `props`.
+/// - For meshes: strips ANSI from `path` then validates against the sandbox.
+///   The stored path is the sanitized *relative* path (not the joined one)
+///   so downstream consumers still see asset-root-relative lookup keys.
+/// - Recurses into group children.
+fn sandbox_recipe_node(node: &mut RecipeNode, config: &SandboxConfig) -> Result<(), RecipeError> {
+    match node {
+        RecipeNode::Cube { props, .. } => {
+            sandbox_props(props.as_mut());
+        }
+        RecipeNode::Mesh { path, props, .. } => {
+            // Strip ANSI first so hidden ".." after a CSI cannot slip past
+            // the path validator.
+            *path = strip_ansi(path);
+            // Validate; we discard the joined PathBuf and keep the
+            // now-clean relative path in the node. Downstream mesh loaders
+            // are expected to re-join against their configured asset root.
+            sanitize_path(path, &config.asset_root)?;
+            sandbox_props(props.as_mut());
+        }
+        RecipeNode::Group { children, .. } => {
+            for child in children {
+                sandbox_recipe_node(child, config)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Strip ANSI escapes from every string value in a recipe props map.
+///
+/// Non-string JSON values (numbers, bools, arrays, nested objects) are
+/// left untouched -- ANSI sequences only reach terminal output through
+/// strings.
+fn sandbox_props(props: Option<&mut HashMap<String, serde_json::Value>>) {
+    let Some(map) = props else { return };
+    for value in map.values_mut() {
+        sandbox_json_value(value);
+    }
+}
+
+/// Recursively strip ANSI from every string found inside a [`serde_json::Value`].
+///
+/// Arrays and objects are walked; all other variants are left alone.
+fn sandbox_json_value(value: &mut serde_json::Value) {
+    match value {
+        serde_json::Value::String(s) => {
+            *s = strip_ansi(s);
+        }
+        serde_json::Value::Array(items) => {
+            for item in items {
+                sandbox_json_value(item);
+            }
+        }
+        serde_json::Value::Object(map) => {
+            for v in map.values_mut() {
+                sandbox_json_value(v);
+            }
+        }
+        _ => {}
+    }
 }
 
 // ── Conversion helpers ──────────────────────────────────────────────────
@@ -1029,5 +1219,187 @@ mod tests {
             nodes_structurally_equal(ir.nodes(), ir2.nodes()),
             "Extreme transform values should round-trip"
         );
+    }
+
+    // ── Sandbox tests (03.3-01) ─────────────────────────────────────
+
+    /// Recipe containing a mesh whose path is interpolated. Lets each
+    /// test target a different path without re-writing the JSON scaffold.
+    fn recipe_with_mesh_path(path: &str) -> String {
+        format!(
+            r#"{{
+                "$version": "1.0",
+                "camera": {{ "type": "orbit", "azimuth": 0.0, "elevation": 0.0, "distance": 5.0, "target": [0,0,0] }},
+                "layers": [{{
+                    "z_order": 0,
+                    "children": [{{ "type": "mesh", "path": {path:?} }}]
+                }}]
+            }}"#
+        )
+    }
+
+    #[test]
+    fn sandbox_default_config() {
+        let cfg = SandboxConfig::default();
+        assert_eq!(cfg.asset_root, PathBuf::from("."));
+        assert_eq!(
+            cfg.effect_registry.len(),
+            3,
+            "default registry should hold 3 built-in effects"
+        );
+    }
+
+    #[test]
+    fn sandbox_rejects_path_traversal() {
+        let json = recipe_with_mesh_path("../../etc/passwd");
+        let cfg = SandboxConfig::default();
+        let result = load_recipe_sandboxed(&json, &cfg);
+        assert!(
+            matches!(result, Err(RecipeError::PathTraversal { .. })),
+            "expected PathTraversal error, got: {result:?}"
+        );
+    }
+
+    #[test]
+    fn sandbox_rejects_absolute_mesh_path() {
+        let json = recipe_with_mesh_path("/etc/passwd");
+        let cfg = SandboxConfig::default();
+        let result = load_recipe_sandboxed(&json, &cfg);
+        assert!(matches!(result, Err(RecipeError::PathTraversal { .. })));
+    }
+
+    #[test]
+    fn sandbox_accepts_valid_mesh_path() {
+        let json = recipe_with_mesh_path("bunny.obj");
+        let cfg = SandboxConfig::default();
+        let (ir, _) = load_recipe_sandboxed(&json, &cfg).expect("clean path should load");
+        // The node should still be a mesh and still carry the cleaned path.
+        let node = &ir.nodes()[0].children[0];
+        assert!(matches!(&node.kind, NodeKind::Custom(name) if name == "mesh"));
+        let stored = node.props.get("path").unwrap().get::<String>().unwrap();
+        assert_eq!(stored, "bunny.obj");
+    }
+
+    #[test]
+    fn sandbox_strips_ansi_from_props() {
+        let json = r#"{
+            "$version": "1.0",
+            "camera": { "type": "orbit", "azimuth": 0.0, "elevation": 0.0, "distance": 5.0, "target": [0,0,0] },
+            "layers": [{
+                "z_order": 0,
+                "children": [{
+                    "type": "cube",
+                    "props": { "color": "\u001b[31mred\u001b[0m" }
+                }]
+            }]
+        }"#;
+        let cfg = SandboxConfig::default();
+        let (ir, _) = load_recipe_sandboxed(json, &cfg).expect("cube with ANSI prop should load");
+        let cube = &ir.nodes()[0].children[0];
+        let color = cube
+            .props
+            .get("color")
+            .unwrap()
+            .get::<serde_json::Value>()
+            .unwrap();
+        assert_eq!(color, &serde_json::Value::String("red".into()));
+    }
+
+    #[test]
+    fn sandbox_strips_ansi_from_mesh_path() {
+        // Hidden ".." behind a CSI sequence must not slip past the path
+        // validator: strip_ansi runs first, then the cleaned string is
+        // validated -- which exposes the "..".  JSON strings encode ESC
+        // as the \u001b escape so serde_json accepts the literal.
+        let json = r#"{
+            "$version": "1.0",
+            "camera": { "type": "orbit", "azimuth": 0.0, "elevation": 0.0, "distance": 5.0, "target": [0,0,0] },
+            "layers": [{
+                "z_order": 0,
+                "children": [{ "type": "mesh", "path": "\u001b[2J../etc/passwd" }]
+            }]
+        }"#;
+        let cfg = SandboxConfig::default();
+        let result = load_recipe_sandboxed(json, &cfg);
+        assert!(
+            matches!(result, Err(RecipeError::PathTraversal { .. })),
+            "ANSI-hidden traversal must be rejected, got: {result:?}"
+        );
+
+        // And a benign path with leading ANSI cruft should clean to a valid
+        // path and load successfully.
+        let json_ok = r#"{
+            "$version": "1.0",
+            "camera": { "type": "orbit", "azimuth": 0.0, "elevation": 0.0, "distance": 5.0, "target": [0,0,0] },
+            "layers": [{
+                "z_order": 0,
+                "children": [{ "type": "mesh", "path": "\u001b[2Jbunny.obj" }]
+            }]
+        }"#;
+        let (ir, _) = load_recipe_sandboxed(json_ok, &cfg)
+            .expect("ANSI-prefixed clean path should load after stripping");
+        let node = &ir.nodes()[0].children[0];
+        let stored = node.props.get("path").unwrap().get::<String>().unwrap();
+        assert_eq!(stored, "bunny.obj", "ANSI must be stripped from stored path");
+    }
+
+    #[test]
+    fn sandbox_load_recipe_unchanged_by_sandbox_addition() {
+        // Regression: load_recipe must keep working on paths that the
+        // sandbox would reject. The non-sandboxed loader is for trusted
+        // recipes and must stay permissive.
+        let json = recipe_with_mesh_path("../../etc/passwd");
+        let result = load_recipe(&json);
+        assert!(
+            result.is_ok(),
+            "load_recipe should remain unchanged; got: {result:?}"
+        );
+    }
+
+    #[test]
+    fn sandbox_rejects_traversal_inside_group() {
+        // A bad mesh nested inside a group node must still be caught.
+        let json = r#"{
+            "$version": "1.0",
+            "camera": { "type": "orbit", "azimuth": 0.0, "elevation": 0.0, "distance": 5.0, "target": [0,0,0] },
+            "layers": [{
+                "z_order": 0,
+                "children": [{
+                    "type": "group",
+                    "children": [{ "type": "mesh", "path": "../../etc/passwd" }]
+                }]
+            }]
+        }"#;
+        let cfg = SandboxConfig::default();
+        let result = load_recipe_sandboxed(json, &cfg);
+        assert!(matches!(result, Err(RecipeError::PathTraversal { .. })));
+    }
+
+    #[test]
+    fn sandbox_strips_ansi_from_nested_prop_array() {
+        // Props can hold any JSON value; arrays of strings should also be
+        // sanitized so recipes can't smuggle escapes through a list.
+        let json = r#"{
+            "$version": "1.0",
+            "camera": { "type": "orbit", "azimuth": 0.0, "elevation": 0.0, "distance": 5.0, "target": [0,0,0] },
+            "layers": [{
+                "z_order": 0,
+                "children": [{
+                    "type": "cube",
+                    "props": { "tags": ["\u001b[31mred\u001b[0m", "plain"] }
+                }]
+            }]
+        }"#;
+        let cfg = SandboxConfig::default();
+        let (ir, _) = load_recipe_sandboxed(json, &cfg).unwrap();
+        let cube = &ir.nodes()[0].children[0];
+        let tags = cube
+            .props
+            .get("tags")
+            .unwrap()
+            .get::<serde_json::Value>()
+            .unwrap();
+        let expected = serde_json::json!(["red", "plain"]);
+        assert_eq!(tags, &expected);
     }
 }
