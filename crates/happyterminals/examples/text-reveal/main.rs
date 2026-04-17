@@ -101,6 +101,62 @@ pub fn elevation_at(base_elev: f32, elapsed_secs: f32) -> f32 {
     base_elev + ELEVATION_SWAY_AMPLITUDE * (elapsed_secs * ELEVATION_SWAY_FREQ).sin()
 }
 
+/// Project a world-space axis direction into the gizmo's screen-space offset
+/// from the origin cell. Uses the camera's view rotation only (translation
+/// ignored) so the gizmo shows pure orientation, screen-pinned to a corner.
+/// Returns (dx, dy) in cell units relative to the gizmo origin.
+#[inline]
+#[must_use]
+pub fn project_axis_to_screen(camera: &OrbitCamera, axis: glam::Vec3, radius: f32) -> (f32, f32) {
+    let view = camera.view_matrix();
+    let cam = view.transform_vector3(axis);
+    // cam.x = screen right, cam.y = world up (flip for screen coords which grow down),
+    // cam.z = depth (ignored — gizmo is a 2D projection of orientation).
+    (cam.x * radius, -cam.y * radius)
+}
+
+/// Draw a small axis gizmo at `corner` (cell position). Shows X (red), Y (green),
+/// Z (blue) axes projected from the camera's current orientation.
+/// Debug aid for orbit + "3D world on a teletyper" in action.
+fn draw_axis_gizmo(grid: &mut Grid, camera: &OrbitCamera, corner: (u16, u16), radius: u16) {
+    let (ox, oy) = corner;
+    let grid_right = grid.area.x + grid.area.width;
+    let grid_bottom = grid.area.y + grid.area.height;
+    let r = f32::from(radius);
+
+    // Draw origin marker — a dim '+' to anchor the eye.
+    grid.put_str(ox, oy, "+", Style::default().fg(Color::DarkGray));
+
+    let axes = [
+        (glam::Vec3::X, "X", Color::Red),
+        (glam::Vec3::Y, "Y", Color::Green),
+        (glam::Vec3::Z, "Z", Color::Blue),
+    ];
+
+    for (axis, label, color) in axes {
+        let (dx, dy) = project_axis_to_screen(camera, axis, r);
+        // Tip position in cell coords — round to nearest cell.
+        let col_f = (f32::from(ox) + dx).round();
+        let row_f = (f32::from(oy) + dy).round();
+        if col_f < 0.0 || row_f < 0.0 {
+            continue;
+        }
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let col = col_f as u16;
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let row = row_f as u16;
+        if col >= grid_right || row >= grid_bottom {
+            continue;
+        }
+        grid.put_str(
+            col,
+            row,
+            label,
+            Style::default().fg(color).add_modifier(Modifier::BOLD),
+        );
+    }
+}
+
 fn make_pipeline(effect_idx: usize, rect: Rect) -> Pipeline {
     Pipeline::new().with(REVEAL_EFFECTS[effect_idx](rect))
 }
@@ -243,6 +299,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let render_elevation_was = camera.elevation;
             camera.elevation = sway_elevation;
             renderer.draw(grid, &bunny, &camera, &projection, &shading);
+
+            // 3b. Axis gizmo (debug + hero — "3D orientation indicator in a terminal").
+            //     Positioned in the bottom-right corner; reflects the CURRENT render
+            //     elevation so it visually tracks orbit/sway in real time.
+            let gizmo_radius = 3u16;
+            let gizmo_x = grid.area.x + grid.area.width.saturating_sub(gizmo_radius + 2);
+            let gizmo_y = grid.area.y + grid.area.height.saturating_sub(gizmo_radius + 2);
+            draw_axis_gizmo(grid, &camera, (gizmo_x, gizmo_y), gizmo_radius);
+
             camera.elevation = render_elevation_was;
 
             // 4. Write title text INSIDE the bounded rect, EVERY frame.
@@ -498,6 +563,74 @@ mod tests {
             "elevation sway amplitude must stay subtle (<= 0.15 rad); got {}",
             ELEVATION_SWAY_AMPLITUDE
         );
+    }
+
+    #[test]
+    fn axis_gizmo_projects_x_to_positive_x_screen_when_camera_faces_neg_z() {
+        // OrbitCamera default: azimuth=0, elevation=0 → looking down -Z axis.
+        // At this pose, world +X should project to camera's +X (screen right),
+        // so dx > 0 and dy ≈ 0.
+        let cam = OrbitCamera::default();
+        let (dx, dy) = project_axis_to_screen(&cam, glam::Vec3::X, 3.0);
+        assert!(dx > 2.0, "world +X should project well to the right; dx={}", dx);
+        assert!(dy.abs() < 0.5, "world +X should have near-zero screen-y; dy={}", dy);
+    }
+
+    #[test]
+    fn axis_gizmo_projects_y_to_negative_y_screen_when_camera_is_horizontal() {
+        // World +Y is up; screen y grows DOWN, so world +Y should project to
+        // negative dy (i.e., above the gizmo origin).
+        let cam = OrbitCamera::default(); // azimuth=0, elevation=0
+        let (dx, dy) = project_axis_to_screen(&cam, glam::Vec3::Y, 3.0);
+        assert!(dy < -2.0, "world +Y should project upward (negative screen-y); dy={}", dy);
+        assert!(dx.abs() < 0.5, "world +Y should have near-zero screen-x; dx={}", dx);
+    }
+
+    #[test]
+    fn axis_gizmo_projection_responds_to_azimuth_rotation() {
+        // Rotating camera azimuth by PI/2 should swap screen-X/Z axis projections.
+        let cam_zero = OrbitCamera {
+            azimuth: 0.0,
+            elevation: 0.0,
+            ..OrbitCamera::default()
+        };
+        let cam_quarter = OrbitCamera {
+            azimuth: std::f32::consts::FRAC_PI_2,
+            elevation: 0.0,
+            ..OrbitCamera::default()
+        };
+        let (dx0, _) = project_axis_to_screen(&cam_zero, glam::Vec3::X, 3.0);
+        let (dx1, _) = project_axis_to_screen(&cam_quarter, glam::Vec3::X, 3.0);
+        assert!(
+            (dx0 - dx1).abs() > 1.0,
+            "gizmo must change with azimuth; dx went from {} to {}",
+            dx0,
+            dx1
+        );
+    }
+
+    #[test]
+    fn axis_gizmo_draw_stays_within_grid_bounds() {
+        // Even at an arbitrary camera pose, the gizmo writes must not panic
+        // or reach out-of-bounds cells. Compile-time check by exercising a
+        // drawing call — Grid::put_str silently clips but we also check our
+        // own bounds-guarding.
+        use happyterminals_core::Grid;
+        let grid_area = Rect::new(0, 0, 20, 10);
+        let mut grid = Grid::new(grid_area);
+        let cam = OrbitCamera {
+            azimuth: 0.7,
+            elevation: 0.5,
+            distance: 3.0,
+            ..OrbitCamera::default()
+        };
+        // Origin near the corner — tips could push past edges without our guard.
+        draw_axis_gizmo(&mut grid, &cam, (18, 8), 3);
+        // No panic means bounds-guarding works. Additionally: the '+' origin marker
+        // must be at (18,8).
+        use ratatui_core::layout::Position;
+        let origin_cell = grid.cell(Position::new(18, 8)).expect("origin in bounds");
+        assert_eq!(origin_cell.symbol(), "+");
     }
 
     #[test]

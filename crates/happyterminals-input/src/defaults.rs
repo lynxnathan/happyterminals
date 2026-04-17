@@ -41,7 +41,7 @@ pub fn default_viewer_context() -> InputContext {
             button: MouseButton::Right,
             axis: DragAxis::Both,
         },
-        vec![InputModifier::Deadzone(2.0)],
+        vec![InputModifier::Deadzone(1.0)],
     );
 
     // Pan: also middle-drag
@@ -51,7 +51,7 @@ pub fn default_viewer_context() -> InputContext {
             button: MouseButton::Middle,
             axis: DragAxis::Both,
         },
-        vec![InputModifier::Deadzone(2.0)],
+        vec![InputModifier::Deadzone(1.0)],
     );
 
     // Zoom: scroll down (negated = zoom out) and scroll up (zoom in)
