@@ -3,14 +3,14 @@ eclusa_state_version: 1.0
 milestone: v2.0
 milestone_name: exit gates
 status: executing
-stopped_at: Completed 03.4-03-PLAN.md (json-loader example)
-last_updated: "2026-04-17T22:15:01.238Z"
+stopped_at: Completed 03.4-04-PLAN.md (DEMO-05 header polish)
+last_updated: "2026-04-17T22:21:07.159Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
   percent: 82
 ---
 
@@ -26,7 +26,7 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 ## Current Position
 
 Phase: 03.4 (examples-library) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-04-17
 
@@ -71,6 +71,8 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - [Phase 03.4]: Phase 03.4 Plan 02: tachyonfx added as happyterminals dev-dependency — raw tachyonfx::fx constructors needed for bounded effects; Rust transitive-dep names not exposed, so direct dep is required. Scoped to [dev-dependencies] keeps library surface unchanged.
 - [Phase 03.4]: Phase 03.4 Plan 03: json-loader headline example ships — 102 LOC, load_recipe_sandboxed with pinned asset_root, Scene::new + run_scene, commented-out RecipeError::PathTraversal demo, single happyterminals::prelude::* import validates Plan 01 end-to-end.
 - [Phase 03.4]: Phase 03.4 Plan 03: Workspace-wide rustfmt drift across 6 unrelated files (model-viewer, color-test, particles, transitions, static_grid, lib.rs) deferred to Phase 03.5 pre-publish lint cleanup (SCOPE BOUNDARY).
+- [Phase 03.4]: Phase 03.4 Plan 04: all 6 pre-existing example headers (spinning-cube, model-viewer, particles, transitions, color-test, static_grid) brought to DEMO-05 canonical 5-section shape; particles gains zero-per-frame-allocation brag per D-10; color-test and static_grid carry verbatim 'Developer utility — not a demo' marker per D-02; zero non-header code changed (D-09 honored).
+- [Phase 03.4]: Phase 03.4 Plan 04: workspace clippy/fmt drift (88 pre-existing errors in happyterminals-scene, 168 fmt diffs) confirmed neutral via git-stash baseline and routed to Phase 03.5 pre-publish lint plan (SCOPE BOUNDARY — D-09 forbids refactoring non-header code).
 
 ### Pending Todos
 
@@ -83,7 +85,7 @@ None yet for v2.0.
 
 ## Session Continuity
 
-Last session: 2026-04-17T22:15:01.234Z
-Stopped at: Completed 03.4-03-PLAN.md (json-loader example)
+Last session: 2026-04-17T22:21:07.155Z
+Stopped at: Completed 03.4-04-PLAN.md (DEMO-05 header polish)
 Resume file: None
 Next command: Execute 03.4-04-PLAN.md
