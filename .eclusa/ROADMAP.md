@@ -74,7 +74,11 @@ Plans:
   2. A JSON schema generated via `schemars` is published alongside the loader, and `jsonschema` validation rejects malformed recipes with human-readable error messages before any scene construction begins
   3. Every JSON recipe includes a `$version` field; loading a recipe with an unsupported version produces a clear error (not a silent misparse)
   4. An LLM (or human) given only the JSON schema can author a valid scene recipe without reading Rust source code
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 03.2-01-PLAN.md -- Recipe serde types, schema generation, jsonschema validation, load_recipe(), round-trip tests (TDD)
+- [ ] 03.2-02-PLAN.md -- Prelude wiring, sample recipe file, integration test, human verification
+**UI hint**: yes
 
 ### Phase 3.3: JSON Sandbox
 **Goal**: JSON recipes execute in a security sandbox where effect resolution is static, file paths are constrained, and user-provided strings cannot inject ANSI escapes
@@ -183,7 +187,7 @@ Phase 3.5 (crates.io publish) --> v2.0 EXIT
 | 2.4 Particles | v1.0 | 2/2 | Complete | 2026-04-16 |
 | 2.5 Resize + MSRV + STL | v1.0 | 2/2 | Complete -- v1.0 EXIT | 2026-04-17 |
 | 3.1 Camera Refactor + Transitions | v2.0 | 3/3 | Complete   | 2026-04-17 |
-| 3.2 JSON Recipe Loader + Schema | v2.0 | 0/? | Not started | - |
+| 3.2 JSON Recipe Loader + Schema | v2.0 | 0/2 | Planned | - |
 | 3.3 JSON Sandbox | v2.0 | 0/? | Not started | - |
 | 3.4 Examples Library | v2.0 | 0/? | Not started | - |
 | 3.5 crates.io Publish | v2.0 | 0/? | Not started | - |
