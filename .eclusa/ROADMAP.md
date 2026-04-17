@@ -88,7 +88,9 @@ Plans:
   1. Effect names in JSON recipes resolve through a static registry -- attempting to reference an unregistered effect name returns an error (no eval, no shell-out, no dynamic loading)
   2. Mesh file paths in JSON recipes are sandboxed to a configurable asset directory -- a path like `../../etc/passwd` is rejected before any file I/O occurs
   3. User-provided strings that land in Grid cells have ANSI escape sequences stripped -- a JSON recipe containing `\x1b[2J` in a text field renders the literal characters, not a screen clear
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 03.3-01-PLAN.md -- Sandbox module (effect registry, path sandboxing, ANSI stripping) + load_recipe_sandboxed integration
 
 ### Phase 3.4: Examples Library
 **Goal**: New users can learn the library through 5+ self-contained, documented examples covering the major feature areas
@@ -188,7 +190,7 @@ Phase 3.5 (crates.io publish) --> v2.0 EXIT
 | 2.5 Resize + MSRV + STL | v1.0 | 2/2 | Complete -- v1.0 EXIT | 2026-04-17 |
 | 3.1 Camera Refactor + Transitions | v2.0 | 3/3 | Complete   | 2026-04-17 |
 | 3.2 JSON Recipe Loader + Schema | v2.0 | 0/2 | Planned | - |
-| 3.3 JSON Sandbox | v2.0 | 0/? | Not started | - |
+| 3.3 JSON Sandbox | v2.0 | 0/1 | Planned | - |
 | 3.4 Examples Library | v2.0 | 0/? | Not started | - |
 | 3.5 crates.io Publish | v2.0 | 0/? | Not started | - |
 
