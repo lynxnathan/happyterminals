@@ -33,7 +33,7 @@ pub use projection::Projection;
 pub use particle::{Particle, ParticleEmitter, lerp_color};
 pub use shading::ShadingRamp;
 
-use glam::Vec3;
+use glam::{Mat4, Vec3};
 use happyterminals_core::Grid;
 use ratatui_core::layout::Position;
 use ratatui_core::style::{Color, Style};
@@ -46,9 +46,12 @@ use ratatui_core::style::{Color, Style};
 /// near plane adapts to meshes of arbitrary scale — required once the
 /// rasterizer accepts any [`Mesh`], not just [`Cube`].
 #[must_use]
-fn scene_fit_near(camera: &OrbitCamera, mesh: &Mesh) -> f32 {
-    let (_, radius) = mesh.bounding_sphere();
-    (camera.distance - radius).max(0.01)
+fn scene_fit_near(view: &Mat4, mesh: &Mesh) -> f32 {
+    let inv = view.inverse();
+    let eye: Vec3 = inv.col(3).truncate();
+    let (center, radius) = mesh.bounding_sphere();
+    let distance = (eye - center).length();
+    (distance - radius).max(0.01)
 }
 
 /// ASCII 3D renderer with pre-allocated z-buffer and staging character buffer.
@@ -124,7 +127,7 @@ impl Renderer {
         &mut self,
         grid: &mut Grid,
         mesh: &Mesh,
-        camera: &OrbitCamera,
+        camera: &dyn Camera,
         projection: &Projection,
         shading: &ShadingRamp<'_>,
     ) {
@@ -146,7 +149,7 @@ impl Renderer {
 
         // Compute matrices
         let view = camera.view_matrix();
-        let z_near = scene_fit_near(camera, mesh);
+        let z_near = scene_fit_near(&view, mesh);
         let pixel_aspect = f32::from(projection.viewport_w) / f32::from(projection.viewport_h);
         let effective_aspect = pixel_aspect / projection.cell_aspect;
         let proj = glam::Mat4::perspective_infinite_reverse_rh(
@@ -159,14 +162,11 @@ impl Renderer {
         let half_w = f32::from(w) / 2.0;
         let half_h = f32::from(h) / 2.0;
 
-        // Camera direction (from eye toward target) for backface culling
-        let eye = camera.target
-            + Vec3::new(
-                camera.distance * camera.elevation.cos() * camera.azimuth.sin(),
-                camera.distance * camera.elevation.sin(),
-                camera.distance * camera.elevation.cos() * camera.azimuth.cos(),
-            );
-        let camera_dir = (camera.target - eye).normalize();
+        // Camera direction for backface culling: extract forward from the
+        // view matrix inverse (works for any Camera type).
+        // In RH coordinates, the camera looks down -Z in its local space.
+        let inv = view.inverse();
+        let camera_dir = -Vec3::new(inv.col(2).x, inv.col(2).y, inv.col(2).z);
 
         let grid_w = w as usize;
         let grid_h = h as usize;
@@ -262,7 +262,7 @@ impl Renderer {
         &mut self,
         grid: &mut Grid,
         emitter: &ParticleEmitter,
-        camera: &OrbitCamera,
+        camera: &dyn Camera,
         projection: &Projection,
         shading: &ShadingRamp<'_>,
     ) {
@@ -570,8 +570,9 @@ mod tests {
             distance: 0.5,
             ..OrbitCamera::default()
         };
+        let view = cam.view_matrix();
         let cube_mesh = Cube::mesh();
-        let near = scene_fit_near(&cam, &cube_mesh);
+        let near = scene_fit_near(&view, &cube_mesh);
         assert!(
             (near - 0.01).abs() < f32::EPSILON,
             "Near plane should clamp to 0.01 for close camera, got {near}"
@@ -581,8 +582,9 @@ mod tests {
     #[test]
     fn scene_fit_near_at_default_distance() {
         let cam = OrbitCamera::default(); // distance = 5.0
+        let view = cam.view_matrix();
         let cube_mesh = Cube::mesh();
-        let near = scene_fit_near(&cam, &cube_mesh);
+        let near = scene_fit_near(&view, &cube_mesh);
         // sqrt(3)/2 ≈ 0.8660254 — bounding radius of the unit cube.
         let expected = 5.0 - cube_mesh.bounding_sphere().1;
         assert!(
@@ -707,10 +709,11 @@ mod tests {
     #[test]
     fn draw_with_freelook_camera_produces_output() {
         let mut grid = Grid::new(Rect::new(0, 0, 80, 24));
+        // Position at (0, 0, 5) looking toward origin (yaw=0 => forward is -Z)
         let camera = FreeLookCamera {
-            position: Vec3::new(3.0, 2.0, 5.0),
-            yaw: 0.3,
-            pitch: -0.2,
+            position: Vec3::new(0.0, 0.0, 5.0),
+            yaw: 0.0,
+            pitch: 0.0,
             speed: 5.0,
         };
         let projection = Projection {
