@@ -4,7 +4,7 @@ milestone: v2.0
 milestone_name: exit gates
 status: verifying
 stopped_at: Completed 03.3-01-PLAN.md (JSON sandbox — EffectRegistry, sanitize_path, strip_ansi, load_recipe_sandboxed)
-last_updated: "2026-04-17T20:52:50.530Z"
+last_updated: "2026-04-17T20:56:44.021Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 5
@@ -25,8 +25,8 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 
 ## Current Position
 
-Phase: 03.3 (json-sandbox) — EXECUTING
-Plan: 1 of 1
+Phase: 3.4
+Plan: Not started
 Status: Phase complete — ready for verification
 Last activity: 2026-04-17
 
