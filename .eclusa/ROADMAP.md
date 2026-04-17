@@ -69,7 +69,11 @@
   3. At least 3 named transition effects (dissolve, slide-left, fade-to-black) are available and visually distinct when triggered
   4. A transition can be triggered both programmatically (`transition_to()`) and via an InputMap action (e.g., pressing a key bound to "next_scene")
   5. After a transition completes, the new scene's signals and effects are fully operational -- reactive updates continue without interruption
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 03.1-01-PLAN.md -- Camera trait migration: Renderer::draw() and draw_particles() accept &dyn Camera
+- [ ] 03.1-02-PLAN.md -- TransitionEffect trait, 3 effects, easing functions, full TransitionManager
+- [ ] 03.1-03-PLAN.md -- run_scenes() integration, transitions example, visual verification
 **UI hint**: yes
 
 ### Phase 3.2: JSON Recipe Loader + Schema
@@ -189,7 +193,7 @@ Phase 3.5 (crates.io publish) --> v2.0 EXIT
 | 2.3 Input Action System | v1.0 | 4/4 | Complete | 2026-04-16 |
 | 2.4 Particles | v1.0 | 2/2 | Complete | 2026-04-16 |
 | 2.5 Resize + MSRV + STL | v1.0 | 2/2 | Complete -- v1.0 EXIT | 2026-04-17 |
-| 3.1 Camera Refactor + Transitions | v2.0 | 0/? | Not started | - |
+| 3.1 Camera Refactor + Transitions | v2.0 | 0/3 | Planning complete | - |
 | 3.2 JSON Recipe Loader + Schema | v2.0 | 0/? | Not started | - |
 | 3.3 JSON Sandbox | v2.0 | 0/? | Not started | - |
 | 3.4 Examples Library | v2.0 | 0/? | Not started | - |
