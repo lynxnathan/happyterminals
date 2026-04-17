@@ -54,22 +54,23 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| SCENE-04 | TBD | Pending |
-| SCENE-06 | TBD | Pending |
-| SCENE-07 | TBD | Pending |
-| DSL-04 | TBD | Pending |
-| DSL-05 | TBD | Pending |
-| DSL-06 | TBD | Pending |
-| DSL-07 | TBD | Pending |
-| DSL-08 | TBD | Pending |
-| REL-01 | TBD | Pending |
-| REL-02 | TBD | Pending |
-| REL-04 | TBD | Pending |
-| REL-05 | TBD | Pending |
-| REL-06 | TBD | Pending |
-| REL-07 | TBD | Pending |
-| DEMO-05 | TBD | Pending |
-| REND-11 | TBD | Pending |
+| REND-11 | Phase 3.1 | Pending |
+| SCENE-04 | Phase 3.1 | Pending |
+| SCENE-06 | Phase 3.1 | Pending |
+| SCENE-07 | Phase 3.1 | Pending |
+| DSL-04 | Phase 3.2 | Pending |
+| DSL-06 | Phase 3.2 | Pending |
+| DSL-07 | Phase 3.2 | Pending |
+| DSL-05 | Phase 3.3 | Pending |
+| DSL-08 | Phase 3.3 | Pending |
+| REL-04 | Phase 3.4 | Pending |
+| DEMO-05 | Phase 3.4 | Pending |
+| REL-01 | Phase 3.5 | Pending |
+| REL-02 | Phase 3.5 | Pending |
+| REL-05 | Phase 3.5 | Pending |
+| REL-06 | Phase 3.5 | Pending |
+| REL-07 | Phase 3.5 | Pending |
 
 ---
 *Created: 2026-04-17 for milestone v2.0*
+*Traceability updated: 2026-04-17 by eclusa-roadmapper*
