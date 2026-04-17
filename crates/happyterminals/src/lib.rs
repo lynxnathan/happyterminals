@@ -56,6 +56,9 @@ pub mod prelude {
         CubeBuilder, GroupBuilder, LayerBuilder,
     };
 
+    // JSON recipe loader (from Phase 3.2)
+    pub use happyterminals_dsl::json::{load_recipe, recipe_schema, scene_ir_to_recipe, RecipeError};
+
     // Renderer types
     pub use happyterminals_renderer::{OrbitCamera, Projection, ShadingRamp};
     pub use happyterminals_renderer::{Cube, LoadStats, Mesh, MeshError, load_obj, load_stl};

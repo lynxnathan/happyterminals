@@ -951,6 +951,44 @@ mod tests {
         assert!(nodes_structurally_equal(ir.nodes(), ir2.nodes()));
     }
 
+    // ── Integration tests (Plan 02) ────────────────────────────────
+
+    #[test]
+    fn json_hello_recipe_loads_from_disk() {
+        let json = include_str!("../../../examples/recipes/hello.json");
+        let (ir, camera) = load_recipe(json).unwrap();
+        // hello.json has 1 layer with 1 cube
+        assert_eq!(ir.nodes().len(), 1, "Should have one layer");
+        let layer = &ir.nodes()[0];
+        assert!(matches!(layer.kind, NodeKind::Layer { z_order: 0 }));
+        assert_eq!(layer.children.len(), 1, "Layer should have one child");
+        assert!(matches!(layer.children[0].kind, NodeKind::Cube));
+        // Camera should be orbit
+        assert!(matches!(camera, CameraConfig::Orbit(_)));
+    }
+
+    #[test]
+    fn json_schema_output_is_llm_friendly() {
+        let schema = recipe_schema();
+        let pretty = serde_json::to_string_pretty(&schema).unwrap();
+        // Schema must contain the key property names an LLM needs
+        assert!(pretty.contains("$version"), "Schema should mention $version");
+        assert!(pretty.contains("camera"), "Schema should mention camera");
+        assert!(pretty.contains("layers"), "Schema should mention layers");
+        assert!(pretty.contains("orbit"), "Schema should mention orbit camera variant");
+        assert!(pretty.contains("freelook"), "Schema should mention freelook camera variant");
+        assert!(pretty.contains("fps"), "Schema should mention fps camera variant");
+        assert!(pretty.contains("cube"), "Schema should mention cube node type");
+        assert!(pretty.contains("mesh"), "Schema should mention mesh node type");
+        assert!(pretty.contains("group"), "Schema should mention group node type");
+        // Print for human inspection during checkpoint
+        println!("=== Recipe JSON Schema (first 80 lines) ===");
+        for (i, line) in pretty.lines().enumerate() {
+            if i >= 80 { break; }
+            println!("{line}");
+        }
+    }
+
     #[test]
     fn json_round_trip_extreme_transform_values() {
         let json = r#"{

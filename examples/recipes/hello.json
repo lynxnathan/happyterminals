@@ -1,0 +1,24 @@
+{
+  "$version": "1.0",
+  "camera": {
+    "type": "orbit",
+    "azimuth": 0.5,
+    "elevation": 0.3,
+    "distance": 5.0,
+    "target": [0.0, 0.0, 0.0]
+  },
+  "layers": [
+    {
+      "z_order": 0,
+      "children": [
+        {
+          "type": "cube",
+          "transform": {
+            "position": [0.0, 0.0, 0.0],
+            "scale": [1.0, 1.0, 1.0]
+          }
+        }
+      ]
+    }
+  ]
+}
