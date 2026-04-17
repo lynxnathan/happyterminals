@@ -77,7 +77,7 @@ Plans:
 **Plans:** 2 plans
 Plans:
 - [x] 03.2-01-PLAN.md -- Recipe serde types, schema generation, jsonschema validation, load_recipe(), round-trip tests (TDD)
-- [ ] 03.2-02-PLAN.md -- Prelude wiring, sample recipe file, integration test, human verification
+- [x] 03.2-02-PLAN.md -- Prelude wiring, sample recipe file, integration test, human verification
 **UI hint**: yes
 
 ### Phase 3.3: JSON Sandbox

@@ -1,16 +1,16 @@
 ---
 eclusa_state_version: 1.0
 milestone: v2.0
-milestone_name: Compositor + v1 Release
+milestone_name: exit gates
 status: executing
-stopped_at: "Completed 03.2-01-PLAN.md (JSON recipe loader)"
-last_updated: "2026-04-17T08:49:26Z"
+stopped_at: "Completed 03.2-02-PLAN.md (prelude wiring + sample recipe)"
+last_updated: "2026-04-17T08:55:00Z"
 last_activity: 2026-04-17
 progress:
-  total_phases: 13
-  completed_phases: 10
-  total_plans: 40
-  completed_plans: 33
+  total_phases: 5
+  completed_phases: 2
+  total_plans: 5
+  completed_plans: 5
   percent: 62
 ---
 
@@ -26,7 +26,7 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 ## Current Position
 
 Phase: 03.2
-Plan: 01 complete
+Plan: 02 complete (checkpoint:human-verify pending)
 Status: Executing Phase 03.2
 Last activity: 2026-04-17
 
@@ -60,6 +60,7 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - load_recipe returns (SceneIr, CameraConfig) tuple, not Scene -- avoids Scene validation at recipe load time
 - RecipeError kept in DSL crate, not extending SceneError
 - JSON props stored as PropValue::Static(Box<serde_json::Value>)
+- scene_ir_to_recipe exported in prelude alongside load_recipe for round-trip utility
 
 ### Pending Todos
 
@@ -73,6 +74,6 @@ None yet for v2.0.
 ## Session Continuity
 
 Last session: 2026-04-17
-Stopped at: Completed 03.2-01-PLAN.md (JSON recipe loader)
+Stopped at: Completed 03.2-02-PLAN.md (prelude wiring + sample recipe)
 Resume file: None
-Next command: Execute 03.2-02-PLAN.md (JSON sandbox)
+Next command: Execute 03.2-03-PLAN.md (JSON sandbox)
