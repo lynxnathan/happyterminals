@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: unknown
 stopped_at: Completed 02.4-02-PLAN.md
-last_updated: "2026-04-17T01:08:51.307Z"
+last_updated: "2026-04-17T05:39:27.519Z"
 progress:
   total_phases: 13
   completed_phases: 8
@@ -19,7 +19,7 @@ progress:
 See: `.eclusa/PROJECT.md` (updated 2026-04-14)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Phase 02.3 — Input Action System + Camera Modes
+**Current focus:** Phase 02.4 — Particles + Per-Frame Allocation Bench
 **Next command:** `/eclusa:autonomous`
 
 ---
