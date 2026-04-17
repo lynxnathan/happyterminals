@@ -702,6 +702,69 @@ mod tests {
         );
     }
 
+    // ── REND-11: &dyn Camera polymorphism tests ──────────────────────
+
+    #[test]
+    fn draw_with_freelook_camera_produces_output() {
+        let mut grid = Grid::new(Rect::new(0, 0, 80, 24));
+        let camera = FreeLookCamera {
+            position: Vec3::new(3.0, 2.0, 5.0),
+            yaw: 0.3,
+            pitch: -0.2,
+            speed: 5.0,
+        };
+        let projection = Projection {
+            viewport_w: 80,
+            viewport_h: 24,
+            ..Projection::default()
+        };
+        let shading = ShadingRamp::default();
+        let mut renderer = Renderer::new();
+        let cube_mesh = Cube::mesh();
+
+        renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &shading);
+
+        let non_space = count_non_space_cells(&grid, 80, 24);
+        assert!(
+            non_space > 0,
+            "FreeLookCamera draw should produce visible output, got {non_space}"
+        );
+    }
+
+    #[test]
+    fn draw_particles_with_freelook_camera_no_panic() {
+        let emitter = emitter_with_visible_particles();
+        let mut grid = Grid::new(Rect::new(0, 0, 80, 24));
+        let camera = FreeLookCamera::default();
+        let projection = Projection {
+            viewport_w: 80,
+            viewport_h: 24,
+            ..Projection::default()
+        };
+        let shading = ShadingRamp::default();
+        let mut renderer = Renderer::new();
+        let cube_mesh = Cube::mesh();
+
+        renderer.draw(&mut grid, &cube_mesh, &camera, &projection, &shading);
+        renderer.draw_particles(&mut grid, &emitter, &camera, &projection, &shading);
+        // No panic = pass
+    }
+
+    #[test]
+    fn scene_fit_near_with_freelook_view_matrix() {
+        let camera = FreeLookCamera {
+            position: Vec3::new(0.0, 0.0, 5.0),
+            ..FreeLookCamera::default()
+        };
+        let view = camera.view_matrix();
+        let cube_mesh = Cube::mesh();
+        let near = scene_fit_near(&view, &cube_mesh);
+        assert!(
+            near > 0.0,
+            "scene_fit_near should return positive near plane for FreeLookCamera, got {near}"
+        );
+    }
+
     #[test]
     fn renderer_capacity_stable_across_draw_and_draw_particles() {
         use rand::SeedableRng;
