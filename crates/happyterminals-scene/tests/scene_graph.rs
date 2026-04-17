@@ -120,7 +120,7 @@ fn scene_rejects_duplicate_ids() {
 #[test]
 fn transition_manager_new_has_no_scene() {
     let tm = TransitionManager::new();
-    assert!(tm.current().is_none());
+    assert!(tm.current_scene().is_none());
 }
 
 #[test]
@@ -132,7 +132,7 @@ fn transition_manager_set_scene_stores_scene() {
 
     let mut tm = TransitionManager::new();
     tm.set_scene(scene, owner);
-    assert!(tm.current().is_some());
+    assert!(tm.current_scene().is_some());
 }
 
 #[test]
@@ -176,5 +176,5 @@ fn transition_manager_take_consumes() {
     tm.set_scene(scene, owner);
     let taken = tm.take();
     assert!(taken.is_some());
-    assert!(tm.current().is_none());
+    assert!(tm.current_scene().is_none());
 }

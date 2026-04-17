@@ -71,8 +71,8 @@
   5. After a transition completes, the new scene's signals and effects are fully operational -- reactive updates continue without interruption
 **Plans:** 1/3 plans executed
 Plans:
-- [x] 03.1-01-PLAN.md -- Camera trait migration: Renderer::draw() and draw_particles() accept &dyn Camera
-- [ ] 03.1-02-PLAN.md -- TransitionEffect trait, 3 effects, easing functions, full TransitionManager
+- [ ] 03.1-01-PLAN.md -- Camera trait migration: Renderer::draw() and draw_particles() accept &dyn Camera
+- [x] 03.1-02-PLAN.md -- TransitionEffect trait, 3 effects, easing functions, full TransitionManager
 - [ ] 03.1-03-PLAN.md -- run_scenes() integration, transitions example, visual verification
 **UI hint**: yes
 
