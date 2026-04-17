@@ -538,7 +538,11 @@ Plans:
 
 **Pitfalls addressed:** §10 (resize race hardened), §15 (STL brittleness — no panics).
 
-**Plans:** TBD (planner decomposes)
+**Plans:** 2 plans in 1 wave
+
+Plans:
+- [ ] 02.5-01-PLAN.md -- STL loader + MeshError::StlParse + fixtures + tests + CI MSRV fix (Wave 1)
+- [ ] 02.5-02-PLAN.md -- Resize hardening: skip-frame flag in all run variants (Wave 1)
 
 **Milestone 2 exit criteria:**
 - Arbitrary OBJ + STL meshes load without panics.
