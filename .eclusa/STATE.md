@@ -1,32 +1,32 @@
 ---
 eclusa_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: unknown
-stopped_at: Completed 02.5-02-PLAN.md
-last_updated: "2026-04-17T06:05:20.649Z"
+milestone: v2.0
+milestone_name: Compositor + v1 Release
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-04-17T07:00:00.000Z"
 progress:
-  total_phases: 13
-  completed_phases: 9
-  total_plans: 37
-  completed_plans: 29
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # State: happyterminals
 
 ## Project Reference
 
-See: `.eclusa/PROJECT.md` (updated 2026-04-14)
+See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Phase 02.4 — Particles + Per-Frame Allocation Bench
+**Current focus:** Defining v2.0 requirements
 **Next command:** `/eclusa:autonomous`
 
 ---
 
 ## Current Milestone
 
-**M2 — Renderer Depth + Cross-Terminal Polish** (M0 and M1 complete as of 2026-04-15).
+**v2.0 — Compositor + v1 Release** (v1.0 shipped 2026-04-17, 12 phases, 365 tests, 13.6K LOC).
 
 ### Phase under planning next
 

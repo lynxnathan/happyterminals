@@ -12,26 +12,27 @@ A declarative, reactive terminal scene manager with GPU-quality visual effects r
 
 ### Validated
 
-<!-- Shipped and confirmed valuable. -->
+- ✓ Reactive core: Signal, Effect, Memo, Owner, batch, untracked, SignalSetter — v1.0
+- ✓ Grid buffer with grapheme-cluster-correct cells — v1.0
+- ✓ Pipeline executor with tachyonfx integration — v1.0
+- ✓ Ratatui backend with panic-safe TerminalGuard — v1.0
+- ✓ 3D ASCII renderer: z-buffer, projection, shading ramp, OBJ/STL loading, orbit/freelook/FPS cameras — v1.0
+- ✓ Godot/Unreal-style input action system with reactive signals — v1.0
+- ✓ Color-mode pipeline (truecolor → 256 → 16 → mono, NO_COLOR) — v1.0
+- ✓ Particle system with zero per-frame allocations — v1.0
+- ✓ Scene graph + transition manager scaffold — v1.0
+- ✓ R3F-shaped consuming-self builder DSL — v1.0
+- ✓ Spinning cube demo (43 LOC, cross-terminal matrix) — v1.0
+- ✓ Model-viewer with mouse drag orbit, right-drag pan, scroll zoom — v1.0
 
-(None yet — ship to validate)
+### Active (Milestone v2.0: Compositor + v1 Release)
 
-### Active
-
-<!-- Current scope. Building toward these. -->
-
-- [ ] Reactive core: `Signal`, `Effect`, `Memo` with fine-grained re-execution (SolidJS-style, no VDOM diffing)
-- [ ] `Grid` buffer: cells with char + fg + bg + attributes
-- [ ] `Pipeline` executor: ordered chain of `Grid → Grid` transforms, composable and nestable
-- [ ] Ratatui backend adapter: `Grid → ratatui::Buffer` → terminal I/O via crossterm
-- [ ] tachyonfx integration: all 50+ effects usable inside the Pipeline
-- [ ] 3D ASCII renderer (re-implemented fresh, voxcii-inspired): z-buffer, perspective projection, shading ramp, OBJ/STL mesh loading, camera controls
-- [ ] Scene graph + transition manager: layer objects, z-order, transition A→B with an effect
-- [ ] JSON recipe loader + validator (extends tachyonfx's Effect DSL to full scenes; LLM-generatable, hand-editable)
-- [ ] Declarative scene DSL (Rust API surface, later mirrored in Python)
-- [ ] Python bindings via PyO3 — zero-copy where possible, `asyncio` integration — this is the **final milestone**
-- [ ] Milestone 1 exit: a spinning ASCII cube demo — signal-driven rotation → 3D projection → one tachyonfx effect → ratatui output, in a single small Rust binary that proves the whole stack end-to-end
-- [ ] Public release: dual-licensed MIT OR Apache-2.0, published to crates.io (and PyPI for the Python milestone)
+- [ ] Full TransitionManager — Scene A → B via named effect (dissolve, slide, etc.) with owner disposal
+- [ ] JSON recipe loader + schemars/jsonschema validator (LLM-generatable scene files)
+- [ ] JSON sandbox — static effect registry, path sandboxing, ANSI-injection stripping
+- [ ] Examples library — 5+ runnable examples (mesh viewer, particles, transitions, JSON loader, text-reveal)
+- [ ] v1 crates.io publish — 7 crates with CHANGELOG, docs.rs, cargo-semver-checks
+- [ ] Renderer::draw accepts &dyn Camera (tech debt from v1.0)
 
 ### Out of Scope
 
@@ -92,5 +93,20 @@ This document evolves at phase transitions and milestone boundaries.
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
 
+## Current State
+
+**v1.0 shipped 2026-04-17.** 7 Rust crates, 13.6K LOC, 365 tests, MSRV 1.88. Community validated the z-axis spatial paradigm in Discord ("game changer — I can put steps in the z-axis"). Transitions are the highest-value M3 feature per community feedback.
+
+## Current Milestone: v2.0 Compositor + v1 Release
+
+**Goal:** Complete the declarative surface (scene transitions, JSON recipes, schema validation) and publish v1 to crates.io.
+
+**Target features:**
+- Full TransitionManager (Scene A → B with spatial transitions)
+- JSON recipe loader + validator
+- JSON sandbox (security)
+- Examples library (5+ examples)
+- v1 crates.io publish (7 crates)
+
 ---
-*Last updated: 2026-04-14 after initialization*
+*Last updated: 2026-04-17 after v1.0 milestone*
