@@ -59,6 +59,7 @@ pub mod prelude {
     // Renderer types
     pub use happyterminals_renderer::{OrbitCamera, Projection, ShadingRamp};
     pub use happyterminals_renderer::{Cube, LoadStats, Mesh, MeshError, load_obj};
+    pub use happyterminals_renderer::{Particle, ParticleEmitter, lerp_color};
 
     // Pipeline
     pub use happyterminals_pipeline::{Pipeline, Fx};
@@ -98,6 +99,8 @@ mod tests {
             let _ = std::any::type_name::<InputMap>();
             let _ = std::any::type_name::<FreeLookCamera>();
             let _ = std::any::type_name::<FpsCamera>();
+            let _ = std::any::type_name::<Particle>();
+            let _ = std::any::type_name::<ParticleEmitter>();
         }
     }
 }
