@@ -512,7 +512,7 @@ Plans:
 **Plans:** 2 plans in 2 waves
 
 Plans:
-- [ ] 02.4-01-PLAN.md -- Particle module + Renderer::draw_particles + criterion bench (Wave 1)
+- [x] 02.4-01-PLAN.md -- Particle module + Renderer::draw_particles + criterion bench (Wave 1)
 - [ ] 02.4-02-PLAN.md -- Snow-over-bunny example + prelude re-exports + human verify (Wave 2)
 
 ---
