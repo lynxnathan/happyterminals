@@ -61,7 +61,7 @@ Requirements for the public v1 release — everything up to and including Python
 - [x] **REND-07**: Particle system infrastructure (emitter, gravity, lifetime, color over time); at least one particle example runs
 - [x] **REND-08**: Color-mode pipeline: RGB → 256 → 16 → monochrome fallback; `NO_COLOR` env var honored; `--force-color` override; tmux `Tc` truecolor guidance in docs
 - [x] **REND-09**: Per-frame allocation budget enforced via criterion bench — reusable string buffers, cached SGR escape sequences, no heap churn in the hot path
-- [ ] **REND-10**: STL mesh loading via `stl_io` (v2 — post-OBJ)
+- [x] **REND-10**: STL mesh loading via `stl_io` (v2 — post-OBJ)
 
 ### Scene & Transitions (`happyterminals-scene`)
 
@@ -101,7 +101,7 @@ Requirements for the public v1 release — everything up to and including Python
 
 - [ ] **REL-01**: Six crates published to crates.io: `happyterminals-core`, `-pipeline`, `-renderer`, `-scene`, `-dsl`, `-backend-ratatui`, `happyterminals` (meta); all with proper `description`, `license`, `repository`, `keywords`, `categories`, `readme`
 - [ ] **REL-02**: Keep-a-Changelog `CHANGELOG.md` at root; `cargo semver-checks` runs on every PR
-- [ ] **REL-03**: MSRV policy documented (floor = Rust 1.86); CI tests MSRV + stable
+- [x] **REL-03**: MSRV policy documented (floor = Rust 1.86); CI tests MSRV + stable
 - [ ] **REL-04**: At least 5 runnable examples beyond the cube (mesh viewer, particles, transitions, JSON recipe loader, audio-reactive stub is NOT v1)
 - [ ] **REL-05**: `docs.rs` builds every crate with every feature; doc-lint CI denies broken intra-doc links and missing top-level docs
 
