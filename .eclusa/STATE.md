@@ -3,8 +3,8 @@ eclusa_state_version: 1.0
 milestone: v2.0
 milestone_name: exit gates
 status: verifying
-stopped_at: Completed 03.3-01-PLAN.md (JSON sandbox — EffectRegistry, sanitize_path, strip_ansi, load_recipe_sandboxed)
-last_updated: "2026-04-17T20:56:44.021Z"
+stopped_at: Phase 3.4 context gathered
+last_updated: "2026-04-17T21:21:03.635Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 5
@@ -77,7 +77,7 @@ None yet for v2.0.
 
 ## Session Continuity
 
-Last session: 2026-04-17T20:52:50.527Z
-Stopped at: Completed 03.3-01-PLAN.md (JSON sandbox — EffectRegistry, sanitize_path, strip_ansi, load_recipe_sandboxed)
-Resume file: None
+Last session: 2026-04-17T21:21:03.631Z
+Stopped at: Phase 3.4 context gathered
+Resume file: .eclusa/phases/03.4-examples-library/03.4-CONTEXT.md
 Next command: Execute 03.2-03-PLAN.md (JSON sandbox)
