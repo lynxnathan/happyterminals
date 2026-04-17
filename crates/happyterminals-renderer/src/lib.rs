@@ -80,6 +80,24 @@ impl Renderer {
         }
     }
 
+    /// Current capacity of the z-buffer (for allocation-stability assertions).
+    #[must_use]
+    pub fn z_buffer_capacity(&self) -> usize {
+        self.z_buffer.capacity()
+    }
+
+    /// Current capacity of the cell character buffer (for allocation-stability assertions).
+    #[must_use]
+    pub fn cell_chars_capacity(&self) -> usize {
+        self.cell_chars.capacity()
+    }
+
+    /// Current capacity of the cell color buffer (for allocation-stability assertions).
+    #[must_use]
+    pub fn cell_colors_capacity(&self) -> usize {
+        self.cell_colors.capacity()
+    }
+
     /// Render a shaded, z-buffered [`Mesh`] into the given grid.
     ///
     /// Orchestrates the full pipeline: backface culling, vertex projection,
