@@ -404,7 +404,7 @@ pub async fn run_scenes<F>(
     mut tick_fn: F,
 ) -> Result<(), Box<dyn std::error::Error>>
 where
-    F: FnMut(Duration, &InputSignals, &mut TransitionManager),
+    F: FnMut(Duration, &InputSignals, &InputMap, &mut TransitionManager),
 {
     install_panic_hook();
 
@@ -442,7 +442,7 @@ where
             _ = tick.tick() => {
                 let _span = tracing::trace_span!("frame").entered();
                 if !resize_pending {
-                    tick_fn(dt, &input_signals, &mut transition_manager);
+                    tick_fn(dt, &input_signals, &input_map, &mut transition_manager);
                     transition_manager.tick(dt);
                 }
 

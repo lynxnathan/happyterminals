@@ -66,6 +66,11 @@ impl Scene {
         &self.camera
     }
 
+    /// Returns a mutable reference to the scene's camera configuration.
+    pub fn camera_mut(&mut self) -> &mut CameraConfig {
+        &mut self.camera
+    }
+
     /// Returns a reference to the scene-level pipeline, if any.
     #[must_use]
     pub fn pipeline(&self) -> Option<&Pipeline> {

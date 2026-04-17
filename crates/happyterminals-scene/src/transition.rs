@@ -259,6 +259,19 @@ impl TransitionManager {
         }
     }
 
+    /// Returns a mutable reference to the current scene's camera config.
+    ///
+    /// In Idle state, returns the active scene's camera.
+    /// During a transition, returns the destination scene's camera (the one
+    /// the user will be looking at after the transition completes).
+    pub fn current_camera_mut(&mut self) -> Option<&mut crate::camera::CameraConfig> {
+        match &mut self.state {
+            Some(TransitionState::Idle { scene, .. }) => Some(scene.camera_mut()),
+            Some(TransitionState::Transitioning { to_scene, .. }) => Some(to_scene.camera_mut()),
+            None => None,
+        }
+    }
+
     /// Returns references to scene(s) for rendering.
     ///
     /// - If idle: returns `(Some(scene), None)`.
