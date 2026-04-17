@@ -20,3 +20,8 @@ pub use drag::{DragOutput, DragState, DragStateMachine};
 pub use defaults::default_viewer_context;
 pub use input_map::InputMap;
 pub use modifier::InputModifier;
+
+// Re-export the crossterm event types users reach for when building bindings,
+// so downstream crates (examples, Python bindings, end users) don't need a
+// direct crossterm dependency.
+pub use crossterm::event::{KeyCode, KeyModifiers, MouseButton};

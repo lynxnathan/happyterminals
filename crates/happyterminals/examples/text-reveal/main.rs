@@ -35,8 +35,6 @@
 use std::time::Duration;
 
 use happyterminals::prelude::*;
-use happyterminals_pipeline::TachyonAdapter;
-use happyterminals_renderer::Renderer;
 
 const BUNNY_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -166,12 +164,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut ctx = default_viewer_context();
     ctx.bind(
         "replay_reveal",
-        Binding::Key(crossterm::event::KeyCode::Char(' ')),
+        Binding::Key(KeyCode::Char(' ')),
         vec![],
     );
     ctx.bind(
         "swap_effect",
-        Binding::Key(crossterm::event::KeyCode::Tab),
+        Binding::Key(KeyCode::Tab),
         vec![],
     );
     input_map.push_context(ctx);
@@ -253,7 +251,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MouseEvent, MouseEventKind};
+    use crossterm::event::{Event, KeyEvent, KeyEventKind, KeyEventState, MouseEvent, MouseEventKind};
     use happyterminals_core::create_root;
 
     /// Build the input map exactly like `main()` does — the structure under test.

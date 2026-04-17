@@ -23,7 +23,6 @@
 //!     cargo run --example model-viewer -p happyterminals
 
 use happyterminals::prelude::*;
-use happyterminals_renderer::Renderer;
 
 const MODELS: &[(&str, &str)] = &[
     (
@@ -81,32 +80,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut ctx = default_viewer_context();
     ctx.bind(
         "cycle_next",
-        Binding::Key(crossterm::event::KeyCode::Right),
+        Binding::Key(KeyCode::Right),
         vec![],
     );
     ctx.bind(
         "cycle_prev",
-        Binding::Key(crossterm::event::KeyCode::Left),
+        Binding::Key(KeyCode::Left),
         vec![],
     );
     ctx.bind(
         "pan_left",
-        Binding::Key(crossterm::event::KeyCode::Char('a')),
+        Binding::Key(KeyCode::Char('a')),
         vec![],
     );
     ctx.bind(
         "pan_right",
-        Binding::Key(crossterm::event::KeyCode::Char('d')),
+        Binding::Key(KeyCode::Char('d')),
         vec![],
     );
     ctx.bind(
         "pan_up",
-        Binding::Key(crossterm::event::KeyCode::Char('w')),
+        Binding::Key(KeyCode::Char('w')),
         vec![],
     );
     ctx.bind(
         "pan_down",
-        Binding::Key(crossterm::event::KeyCode::Char('s')),
+        Binding::Key(KeyCode::Char('s')),
         vec![],
     );
     input_map.push_context(ctx);

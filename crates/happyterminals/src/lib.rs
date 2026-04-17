@@ -64,13 +64,16 @@ pub mod prelude {
     pub use happyterminals_dsl::sandbox::EffectRegistry;
 
     // Renderer types
-    pub use happyterminals_renderer::{OrbitCamera, Projection, ShadingRamp};
+    pub use happyterminals_renderer::{OrbitCamera, Projection, Renderer, ShadingRamp};
     pub use happyterminals_renderer::{Cube, LoadStats, Mesh, MeshError, load_obj, load_stl};
     pub use happyterminals_renderer::{Particle, ParticleEmitter, lerp_color};
 
     // Pipeline
-    pub use happyterminals_pipeline::{Pipeline, Fx};
+    pub use happyterminals_pipeline::{Pipeline, Fx, TachyonAdapter};
     pub use happyterminals_pipeline::effects;
+
+    // Input types re-exported so users don't have to depend on crossterm directly
+    pub use happyterminals_input::{KeyCode, KeyModifiers, MouseButton};
 
     // Math
     pub use glam::vec3;
@@ -110,6 +113,10 @@ mod tests {
             let _ = std::any::type_name::<SandboxConfig>();
             let _ = std::any::type_name::<EffectRegistry>();
             let _ = std::any::type_name::<RecipeError>();
+            let _ = std::any::type_name::<Renderer>();
+            let _ = std::any::type_name::<TachyonAdapter>();
+            let _ = std::any::type_name::<KeyCode>();
+            let _ = std::any::type_name::<MouseButton>();
         }
         let _: fn() -> Grid = || Grid::new(Rect::new(0, 0, 80, 24));
         let _: fn() -> FrameSpec = FrameSpec::default;

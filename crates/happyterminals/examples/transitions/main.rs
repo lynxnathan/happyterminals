@@ -63,7 +63,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut ctx = default_viewer_context();
     ctx.bind(
         "next_scene",
-        Binding::Key(crossterm::event::KeyCode::Tab),
+        Binding::Key(KeyCode::Tab),
         vec![],
     );
     input_map.push_context(ctx);

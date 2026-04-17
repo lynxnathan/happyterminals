@@ -24,7 +24,6 @@
 //!     cargo run --example particles -p happyterminals
 
 use happyterminals::prelude::*;
-use happyterminals_renderer::Renderer;
 use rand::rngs::SmallRng;
 use rand::SeedableRng;
 
@@ -66,8 +65,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     input_map.register_action("particle_reset", ActionValueType::Bool);
 
     let mut ctx = default_viewer_context();
-    ctx.bind("particle_toggle", Binding::Key(crossterm::event::KeyCode::Char(' ')), vec![]);
-    ctx.bind("particle_reset", Binding::Key(crossterm::event::KeyCode::Char('r')), vec![]);
+    ctx.bind("particle_toggle", Binding::Key(KeyCode::Char(' ')), vec![]);
+    ctx.bind("particle_reset", Binding::Key(KeyCode::Char('r')), vec![]);
     input_map.push_context(ctx);
 
     run_with_input(
