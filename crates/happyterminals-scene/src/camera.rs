@@ -6,7 +6,7 @@
 //! implementation.
 
 use glam::Mat4;
-use happyterminals_renderer::camera::{FreeLookCamera, FpsCamera, OrbitCamera};
+use happyterminals_renderer::camera::{Camera, FreeLookCamera, FpsCamera, OrbitCamera};
 
 /// Camera configuration wrapping a concrete camera type.
 ///
@@ -29,6 +29,19 @@ impl CameraConfig {
             Self::Orbit(cam) => cam.view_matrix(),
             Self::FreeLook(cam) => cam.view_matrix(),
             Self::Fps(cam) => cam.view_matrix(),
+        }
+    }
+
+    /// Returns a reference to the inner camera as a trait object.
+    ///
+    /// Allows passing `CameraConfig` to any function accepting `&dyn Camera`
+    /// (e.g. `Renderer::draw`).
+    #[must_use]
+    pub fn as_camera(&self) -> &dyn Camera {
+        match self {
+            Self::Orbit(cam) => cam,
+            Self::FreeLook(cam) => cam,
+            Self::Fps(cam) => cam,
         }
     }
 

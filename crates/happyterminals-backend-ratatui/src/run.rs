@@ -413,20 +413,8 @@ fn render_node(
                     }
                 }
             }
-            // Build a temporary OrbitCamera from the config's view matrix for
-            // the renderer (which currently takes &OrbitCamera). This is a
-            // transitional shim until the renderer accepts &dyn Camera.
-            let orbit_cam = match camera_config {
-                CameraConfig::Orbit(cam) => cam.clone(),
-                _ => {
-                    // For non-orbit cameras, create a dummy orbit camera whose
-                    // view matrix won't be used — the renderer needs the struct
-                    // for scene_fit_near. TODO: refactor Renderer::draw to
-                    // accept &dyn Camera in a future plan.
-                    happyterminals_renderer::OrbitCamera::default()
-                }
-            };
-            renderer.draw(grid, cube_mesh, &orbit_cam, projection, shading);
+            let cam = camera_config.as_camera();
+            renderer.draw(grid, cube_mesh, cam, projection, shading);
         }
         NodeKind::Layer { .. } | NodeKind::Group => {
             for child in &node.children {
