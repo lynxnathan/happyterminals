@@ -38,22 +38,11 @@
 
 </details>
 
-### v2.0 Compositor + v1 Release (in progress)
-
-**Milestone Goal:** Complete the declarative surface (scene transitions, JSON recipes, schema validation, security sandbox) and publish v1 to crates.io with 5+ examples.
-
 - [x] **Phase 3.1: Camera Refactor + Scene Transitions** - Polymorphic Camera trait on Renderer::draw, full TransitionManager with 3+ built-in effects (completed 2026-04-17)
 - [ ] **Phase 3.2: JSON Recipe Loader + Schema** - JSON-to-SceneIr round-trip, schemars schema generation, jsonschema validation, versioned schema
 - [ ] **Phase 3.3: JSON Sandbox** - Static effect registry, path sandboxing, ANSI-injection stripping
 - [ ] **Phase 3.4: Examples Library** - 5+ runnable examples with documentation headers
 - [ ] **Phase 3.5: crates.io Publish** - 7 crates with metadata, CHANGELOG, semver-checks, docs.rs, dry-run
-
-### v3.0 Python Bindings (planned)
-
-- [ ] **Phase 4.1: PyO3 cdylib** - happyterminals-py crate, Python API mirroring Rust builder
-- [ ] **Phase 4.2: Sync run() + GIL** - Primary Python entry point, GIL release, SignalSetter channel
-- [ ] **Phase 4.3: Wheels + PyPI** - abi3 wheels, Trusted Publishing, type stubs
-- [ ] **Phase 4.4: Python hello-world + v1 launch** - 10-line Python spinning cube, pip install
 
 ---
 
