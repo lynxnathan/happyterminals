@@ -14,9 +14,9 @@
 
 ## JSON Recipes
 
-- [ ] **DSL-04**: JSON recipe loader produces SceneIr identical to Rust builder (round-trip property test)
-- [ ] **DSL-06**: JSON schema generated via schemars, validated via jsonschema before loading
-- [ ] **DSL-07**: Versioned `$version` field in JSON schema
+- [x] **DSL-04**: JSON recipe loader produces SceneIr identical to Rust builder (round-trip property test)
+- [x] **DSL-06**: JSON schema generated via schemars, validated via jsonschema before loading
+- [x] **DSL-07**: Versioned `$version` field in JSON schema
 - [ ] **DSL-05**: Effect names resolved through static registry (no eval, no shell-out)
 - [ ] **DSL-08**: Mesh paths sandboxed; ANSI-injection stripping on user-provided strings
 
@@ -58,9 +58,9 @@
 | SCENE-04 | Phase 3.1 | Complete |
 | SCENE-06 | Phase 3.1 | Complete |
 | SCENE-07 | Phase 3.1 | Complete |
-| DSL-04 | Phase 3.2 | Pending |
-| DSL-06 | Phase 3.2 | Pending |
-| DSL-07 | Phase 3.2 | Pending |
+| DSL-04 | Phase 3.2 | Complete |
+| DSL-06 | Phase 3.2 | Complete |
+| DSL-07 | Phase 3.2 | Complete |
 | DSL-05 | Phase 3.3 | Pending |
 | DSL-08 | Phase 3.3 | Pending |
 | REL-04 | Phase 3.4 | Pending |

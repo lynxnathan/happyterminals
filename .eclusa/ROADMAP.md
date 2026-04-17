@@ -76,7 +76,7 @@ Plans:
   4. An LLM (or human) given only the JSON schema can author a valid scene recipe without reading Rust source code
 **Plans:** 2 plans
 Plans:
-- [ ] 03.2-01-PLAN.md -- Recipe serde types, schema generation, jsonschema validation, load_recipe(), round-trip tests (TDD)
+- [x] 03.2-01-PLAN.md -- Recipe serde types, schema generation, jsonschema validation, load_recipe(), round-trip tests (TDD)
 - [ ] 03.2-02-PLAN.md -- Prelude wiring, sample recipe file, integration test, human verification
 **UI hint**: yes
 

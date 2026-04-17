@@ -3,15 +3,15 @@ eclusa_state_version: 1.0
 milestone: v2.0
 milestone_name: Compositor + v1 Release
 status: executing
-stopped_at: v2.0 roadmap created (ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated)
-last_updated: "2026-04-17T08:32:51.475Z"
+stopped_at: "Completed 03.2-01-PLAN.md (JSON recipe loader)"
+last_updated: "2026-04-17T08:49:26Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 13
   completed_phases: 10
   total_plans: 40
-  completed_plans: 32
-  percent: 60
+  completed_plans: 33
+  percent: 62
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 
 ## Current Position
 
-Phase: 03.1
-Plan: Not started
-Status: Executing Phase 03.1
+Phase: 03.2
+Plan: 01 complete
+Status: Executing Phase 03.2
 Last activity: 2026-04-17
 
-Progress: [============░░░░░░░░] 60% (v1.0 complete, v2.0 starting)
+Progress: [============░░░░░░░░] 62% (v1.0 complete, v2.0 Phase 03.2 in progress)
 
 ## Performance Metrics
 
@@ -57,6 +57,9 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - TransitionManager scaffold exists from Phase 1.4 (Owner disposal semantics defined)
 - Community validated z-axis spatial paradigm -- transitions are highest-value v2.0 feature
 - Camera trait with 3 implementations (Orbit/FreeLook/FPS) shipped in Phase 2.3; REND-11 refactors Renderer::draw to accept &dyn Camera
+- load_recipe returns (SceneIr, CameraConfig) tuple, not Scene -- avoids Scene validation at recipe load time
+- RecipeError kept in DSL crate, not extending SceneError
+- JSON props stored as PropValue::Static(Box<serde_json::Value>)
 
 ### Pending Todos
 
@@ -70,6 +73,6 @@ None yet for v2.0.
 ## Session Continuity
 
 Last session: 2026-04-17
-Stopped at: v2.0 roadmap created (ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated)
+Stopped at: Completed 03.2-01-PLAN.md (JSON recipe loader)
 Resume file: None
-Next command: `/eclusa:plan-phase 3.1`
+Next command: Execute 03.2-02-PLAN.md (JSON sandbox)
