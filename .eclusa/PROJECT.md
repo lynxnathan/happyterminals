@@ -27,12 +27,12 @@ A declarative, reactive terminal scene manager with GPU-quality visual effects r
 
 ### Active (Milestone v2.0: Compositor + v1 Release)
 
-- [ ] Full TransitionManager — Scene A → B via named effect (dissolve, slide, etc.) with owner disposal
-- [ ] JSON recipe loader + schemars/jsonschema validator (LLM-generatable scene files)
-- [ ] JSON sandbox — static effect registry, path sandboxing, ANSI-injection stripping
+- [x] Full TransitionManager — validated in Phase 3.1
+- [x] JSON recipe loader + schemars/jsonschema validator — validated in Phase 3.2
+- [x] JSON sandbox — static effect registry, path sandboxing, ANSI-injection stripping — validated in Phase 3.3
+- [x] Renderer::draw accepts &dyn Camera — validated in Phase 3.1
 - [ ] Examples library — 5+ runnable examples (mesh viewer, particles, transitions, JSON loader, text-reveal)
 - [ ] v1 crates.io publish — 7 crates with CHANGELOG, docs.rs, cargo-semver-checks
-- [ ] Renderer::draw accepts &dyn Camera (tech debt from v1.0)
 
 ### Out of Scope
 
@@ -97,6 +97,8 @@ This document evolves at phase transitions and milestone boundaries.
 
 **v1.0 shipped 2026-04-17.** 7 Rust crates, 13.6K LOC, 365 tests, MSRV 1.88. Community validated the z-axis spatial paradigm in Discord ("game changer — I can put steps in the z-axis"). Transitions are the highest-value M3 feature per community feedback.
 
+**v2.0 progress (2026-04-17):** Phases 3.1 (transitions), 3.2 (JSON loader), 3.3 (JSON sandbox) complete. 449 workspace tests. Remaining: 3.4 examples library, 3.5 crates.io publish. Security surface (DSL-05, DSL-08) locked — sandbox rejects path traversal + ANSI injection before any I/O.
+
 ## Current Milestone: v2.0 Compositor + v1 Release
 
 **Goal:** Complete the declarative surface (scene transitions, JSON recipes, schema validation) and publish v1 to crates.io.
@@ -109,4 +111,4 @@ This document evolves at phase transitions and milestone boundaries.
 - v1 crates.io publish (7 crates)
 
 ---
-*Last updated: 2026-04-17 after v1.0 milestone*
+*Last updated: 2026-04-17 after Phase 3.3 (JSON Sandbox) completion*
