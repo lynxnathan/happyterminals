@@ -17,6 +17,7 @@ happyterminals-core     = { workspace = true }
 happyterminals-renderer = { workspace = true }
 happyterminals-pipeline = { workspace = true }
 glam                    = { workspace = true }
+ratatui-core            = { workspace = true }
 thiserror               = { workspace = true }
 
 [dev-dependencies]
