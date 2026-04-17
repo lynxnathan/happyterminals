@@ -20,6 +20,7 @@
 #![forbid(unsafe_code)]
 
 pub mod builder;
+pub mod json;
 pub mod node_builder;
 pub mod prelude;
 

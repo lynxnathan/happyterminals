@@ -18,6 +18,10 @@ happyterminals-core     = { workspace = true }
 happyterminals-renderer = { workspace = true }
 happyterminals-pipeline = { workspace = true }
 glam                    = { workspace = true }
+serde                   = { workspace = true }
+serde_json              = { workspace = true }
+schemars                = { workspace = true }
+jsonschema              = { workspace = true }
 
 [dev-dependencies]
 happyterminals-core = { workspace = true }
