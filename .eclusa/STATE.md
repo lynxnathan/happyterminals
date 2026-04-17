@@ -3,15 +3,15 @@ eclusa_state_version: 1.0
 milestone: v2.0
 milestone_name: exit gates
 status: executing
-stopped_at: Completed 03.4-02-PLAN.md (text-reveal hero example)
-last_updated: "2026-04-17T22:07:13.462Z"
+stopped_at: Completed 03.4-03-PLAN.md (json-loader example)
+last_updated: "2026-04-17T22:15:01.238Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 11
-  completed_plans: 8
-  percent: 73
+  completed_plans: 9
+  percent: 82
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 ## Current Position
 
 Phase: 03.4 (examples-library) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-04-17
 
-Progress: [██████████████░░░░░░] 73% (v1.0 complete, v2.0 Phase 03.4 in progress — text-reveal shipped)
+Progress: [████████████████░░░░] 82% (v1.0 complete, v2.0 Phase 03.4 in progress — json-loader shipped)
 
 ## Performance Metrics
 
@@ -69,6 +69,8 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - [Phase 03.4]: Phase 03.4 Plan 01: 5 pre-existing clippy errors in examples/model-viewer/main.rs deferred to Phase 03.5 pre-publish lint cleanup (SCOPE BOUNDARY — out of current plan scope)
 - [Phase 03.4]: Phase 03.4 Plan 02: text-reveal hero example ships — tachyonfx fade_from/sweep_in/coalesce bounded to a title rect via TachyonAdapter::with_area, over a slowly rotating bunny; Space=replay, Tab=cycle. 189 LOC, DEMO-05 header complete.
 - [Phase 03.4]: Phase 03.4 Plan 02: tachyonfx added as happyterminals dev-dependency — raw tachyonfx::fx constructors needed for bounded effects; Rust transitive-dep names not exposed, so direct dep is required. Scoped to [dev-dependencies] keeps library surface unchanged.
+- [Phase 03.4]: Phase 03.4 Plan 03: json-loader headline example ships — 102 LOC, load_recipe_sandboxed with pinned asset_root, Scene::new + run_scene, commented-out RecipeError::PathTraversal demo, single happyterminals::prelude::* import validates Plan 01 end-to-end.
+- [Phase 03.4]: Phase 03.4 Plan 03: Workspace-wide rustfmt drift across 6 unrelated files (model-viewer, color-test, particles, transitions, static_grid, lib.rs) deferred to Phase 03.5 pre-publish lint cleanup (SCOPE BOUNDARY).
 
 ### Pending Todos
 
@@ -81,7 +83,7 @@ None yet for v2.0.
 
 ## Session Continuity
 
-Last session: 2026-04-17T22:06:40.605Z
-Stopped at: Completed 03.4-02-PLAN.md (text-reveal hero example)
+Last session: 2026-04-17T22:15:01.234Z
+Stopped at: Completed 03.4-03-PLAN.md (json-loader example)
 Resume file: None
-Next command: Execute 03.4-03-PLAN.md (json-loader example)
+Next command: Execute 03.4-04-PLAN.md
