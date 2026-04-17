@@ -3,14 +3,14 @@ eclusa_state_version: 1.0
 milestone: v2.0
 milestone_name: Compositor + v1 Release
 status: executing
-stopped_at: Completed 03.1-02-PLAN.md
-last_updated: "2026-04-17T07:52:58.707Z"
-last_activity: 2026-04-17 -- Plan 02 complete (TransitionManager with effects and state machine)
+stopped_at: Completed 03.1-03-PLAN.md
+last_updated: "2026-04-17T08:06:01.899Z"
+last_activity: 2026-04-17
 progress:
   total_phases: 13
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 40
-  completed_plans: 30
+  completed_plans: 32
   percent: 33
 ---
 
@@ -26,9 +26,9 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 ## Current Position
 
 Phase: 3.1 of 3.5 (Camera Refactor + Scene Transitions) -- v2.0 milestone
-Plan: 2 of 3 in current phase
-Status: Executing
-Last activity: 2026-04-17 -- Plan 02 complete (TransitionManager with effects and state machine)
+Plan: 3 of 3 in current phase
+Status: Ready to execute
+Last activity: 2026-04-17
 
 Progress: [███░░░░░░░] 33%
 
@@ -61,6 +61,7 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - TransitionEffect trait with blend(a, b, progress, output) established as extension point
 - [Phase 03.1]: Buffer-level blending for transitions (not Grid-level) per research pitfall avoidance
 - [Phase 03.1]: TransitionEffect trait with blend(a, b, progress, output) established as extension point
+- [Phase 03.1]: run_scenes() as separate function; RenderCtx struct for param grouping; cube-only scenes pending Mesh/Particle NodeKind
 
 ### Pending Todos
 
@@ -73,7 +74,7 @@ None yet for v2.0.
 
 ## Session Continuity
 
-Last session: 2026-04-17T07:52:53.786Z
-Stopped at: Completed 03.1-02-PLAN.md
+Last session: 2026-04-17T08:06:01.896Z
+Stopped at: Completed 03.1-03-PLAN.md
 Resume file: None
 Next command: Execute 03.1-03-PLAN.md
