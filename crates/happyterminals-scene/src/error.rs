@@ -41,4 +41,18 @@ pub enum SceneError {
         /// The expected type description.
         expected: String,
     },
+
+    /// A transition was requested but the named effect is not registered.
+    #[error("unknown transition effect: '{name}'")]
+    UnknownEffect {
+        /// The effect name that was not found in the registry.
+        name: String,
+    },
+
+    /// A transition was requested but the manager is not in the Idle state.
+    #[error("cannot start transition: manager is not idle (currently {state})")]
+    NotIdle {
+        /// Description of the current state.
+        state: String,
+    },
 }

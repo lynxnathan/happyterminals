@@ -28,5 +28,5 @@ pub use node::{NodeId, NodeKind, PropMap, SceneNode, Transform};
 pub use prop::{AnyReactive, PropValue};
 pub use scene::Scene;
 pub use easing::{ease_in_out, ease_out_cubic, linear};
-pub use transition::TransitionManager;
+pub use transition::{TransitionManager, TransitionState};
 pub use transition_effect::{Dissolve, FadeToBlack, SlideLeft, TransitionEffect};
