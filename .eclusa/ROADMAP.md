@@ -120,7 +120,26 @@ Plans:
   3. `cargo semver-checks` passes on every crate with no breaking-change violations
   4. `docs.rs` builds every crate successfully with all features enabled -- no broken doc links, no missing re-exports
   5. `cargo publish --dry-run` succeeds for all 7 crates in dependency order (core first, meta last)
-**Plans**: TBD
+
+**Scope (routed from 3.4 codebase audit — see `.eclusa/codebase/` for findings):**
+
+*Blocking publish (must fix):*
+- Inter-workspace deps: add `version = "0.1.0"` to all workspace path deps (renderer → core, etc.). Raw path deps fail `cargo publish --dry-run`.
+- `happyterminals-input`: add `README.md` and inherit `repository/homepage/keywords/categories/readme` from workspace.
+- `happyterminals-renderer/Cargo.toml`: replace hand-rolled `[lints]` block with `workspace = true` so the crate inherits pedantic + overrides.
+- Workspace-wide clippy cleanup: 139 errors (dominant: `unwrap_used`/`expect_used` in tests). Target zero before publish.
+- Workspace-wide `cargo fmt --all`: 175 rustfmt diffs.
+
+*Intent polish (should fix before v1 narrative hardens):*
+- Wrap `Color` / `Style` / `Rect` as happyterminals newtypes — insulates public API from ratatui SemVer churn (flagged by `.eclusa/codebase/CONCERNS.md` §BLOCK-C1).
+- Ship `mesh()` DSL node + walker extension so JSON recipes can describe meshes, not just cubes (flagged by `CONCERNS.md` §BLOCK-C3). Today `walk_and_render` only dispatches Cube/Layer/Group.
+- Add `Scene::from_recipe(json, cfg)` top-level helper so json-loader-style flows are one line, not `load_recipe_sandboxed → create_root → Scene::new` (flagged by `CONCERNS.md` §FLAG).
+- Unified `happyterminals::Error` type that `From`-converts from `RecipeError`, `MeshError`, `SceneError` — users catch one thing.
+- Remove vestigial `__spike_*` fns in `happyterminals-core/src/runtime.rs:64-90` (flagged by `QUALITY.md`).
+- Replace `unreachable!("static scene: {e}")` in `transitions/main.rs:51` with a real error path (flagged by `QUALITY.md`).
+- Consider `TachyonAdapter::bounded(fx, rect)` as a friendlier alias for `with_area(fx, rect)`.
+
+**Plans**: TBD — the above scope implies ~4-6 plans (Cargo metadata + lints, newtype wrappers, mesh DSL node, recipe/error helpers, vestigial cleanup, CHANGELOG + dry-run).
 
 ---
 
