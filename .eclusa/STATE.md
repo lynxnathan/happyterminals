@@ -3,8 +3,8 @@ eclusa_state_version: 1.0
 milestone: v2.0
 milestone_name: exit gates
 status: executing
-stopped_at: "Completed 03.2-02-PLAN.md (prelude wiring + sample recipe)"
-last_updated: "2026-04-17T08:55:00Z"
+stopped_at: Completed 03.2-02-PLAN.md (prelude wiring + sample recipe)
+last_updated: "2026-04-17T08:55:53.817Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 5
@@ -21,14 +21,21 @@ progress:
 See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Phase 03.1 — Camera Refactor + Scene Transitions
+**Current focus:** Phase 03.2 — JSON Recipe Loader + Schema
 
 ## Current Position
 
-Phase: 03.2
-Plan: 02 complete (checkpoint:human-verify pending)
+<<<<<<< Updated upstream
+Phase: 3.3
+Plan: Not started
 Status: Executing Phase 03.2
 Last activity: 2026-04-17
+=======
+Phase: 03.2 (JSON Recipe Loader + Schema) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 03.2
+Last activity: 2026-04-17 -- Phase 03.2 execution started
+>>>>>>> Stashed changes
 
 Progress: [============░░░░░░░░] 62% (v1.0 complete, v2.0 Phase 03.2 in progress)
 
