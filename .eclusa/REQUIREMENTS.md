@@ -61,7 +61,7 @@ Requirements for the public v1 release — everything up to and including Python
 - [x] **REND-07**: Particle system infrastructure (emitter, gravity, lifetime, color over time); at least one particle example runs
 - [x] **REND-08**: Color-mode pipeline: RGB → 256 → 16 → monochrome fallback; `NO_COLOR` env var honored; `--force-color` override; tmux `Tc` truecolor guidance in docs
 - [x] **REND-09**: Per-frame allocation budget enforced via criterion bench — reusable string buffers, cached SGR escape sequences, no heap churn in the hot path
-- [ ] **REND-10**: STL mesh loading via `stl_io` (v2 — post-OBJ)
+- [x] **REND-10**: STL mesh loading via `stl_io` (v2 — post-OBJ)
 
 ### Scene & Transitions (`happyterminals-scene`)
 
