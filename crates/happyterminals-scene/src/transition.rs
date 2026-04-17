@@ -1,6 +1,6 @@
 //! [`TransitionManager`] -- scene-to-scene transitions with named effects.
 //!
-//! The transition manager maintains a state machine (`TransitionState`) that
+//! The transition manager maintains a state machine ([`TransitionState`]) that
 //! tracks whether we are idle (displaying a single scene) or transitioning
 //! between two scenes. During a transition, both scenes and their owners are
 //! held alive; the outgoing owner is disposed only when the transition
@@ -20,6 +20,7 @@ use happyterminals_core::Owner;
 use ratatui_core::buffer::Buffer;
 
 use crate::easing;
+use crate::error::SceneError;
 use crate::scene::Scene;
 use crate::transition_effect::{Dissolve, FadeToBlack, SlideLeft, TransitionEffect};
 
@@ -63,73 +64,199 @@ impl TransitionManager {
     /// Creates a new transition manager with the 3 built-in effects registered.
     #[must_use]
     pub fn new() -> Self {
-        todo!()
+        let mut registry: HashMap<String, Box<dyn TransitionEffect>> = HashMap::new();
+        registry.insert("dissolve".into(), Box::new(Dissolve));
+        registry.insert("slide-left".into(), Box::new(SlideLeft));
+        registry.insert("fade-to-black".into(), Box::new(FadeToBlack));
+        Self {
+            state: None,
+            registry,
+        }
     }
 
     /// Sets a new scene immediately (no transition). Disposes old owner if present.
-    pub fn set_scene(&mut self, _scene: Scene, _owner: Owner) {
-        todo!()
+    pub fn set_scene(&mut self, scene: Scene, owner: Owner) {
+        if let Some(old_state) = self.state.take() {
+            match old_state {
+                TransitionState::Idle {
+                    owner: old_owner, ..
+                } => {
+                    old_owner.dispose();
+                }
+                TransitionState::Transitioning {
+                    from_owner,
+                    to_owner,
+                    ..
+                } => {
+                    from_owner.dispose();
+                    to_owner.dispose();
+                }
+            }
+        }
+        self.state = Some(TransitionState::Idle { scene, owner });
     }
 
     /// Registers a named transition effect.
-    pub fn register(&mut self, _name: impl Into<String>, _effect: impl TransitionEffect + 'static) {
-        todo!()
+    pub fn register(
+        &mut self,
+        name: impl Into<String>,
+        effect: impl TransitionEffect + 'static,
+    ) {
+        self.registry.insert(name.into(), Box::new(effect));
     }
 
     /// Starts a transition to a new scene using the named effect and linear easing.
     ///
     /// # Errors
     ///
-    /// Returns `Err` if the effect name is not registered or if not in Idle state.
+    /// Returns [`SceneError::UnknownEffect`] if the effect name is not registered.
+    /// Returns [`SceneError::NotIdle`] if not in the Idle state.
     pub fn transition_to(
         &mut self,
-        _scene: Scene,
-        _owner: Owner,
-        _effect_name: &str,
-        _duration: Duration,
-    ) -> Result<(), crate::error::SceneError> {
-        todo!()
+        scene: Scene,
+        owner: Owner,
+        effect_name: &str,
+        duration: Duration,
+    ) -> Result<(), SceneError> {
+        self.transition_to_with_easing(scene, owner, effect_name, duration, easing::linear)
     }
 
     /// Starts a transition with a custom easing function.
     ///
     /// # Errors
     ///
-    /// Returns `Err` if the effect name is not registered or if not in Idle state.
+    /// Returns [`SceneError::UnknownEffect`] if the effect name is not registered.
+    /// Returns [`SceneError::NotIdle`] if not in the Idle state.
     pub fn transition_to_with_easing(
         &mut self,
-        _scene: Scene,
-        _owner: Owner,
-        _effect_name: &str,
-        _duration: Duration,
-        _easing: fn(f32) -> f32,
-    ) -> Result<(), crate::error::SceneError> {
-        todo!()
+        scene: Scene,
+        owner: Owner,
+        effect_name: &str,
+        duration: Duration,
+        easing_fn: fn(f32) -> f32,
+    ) -> Result<(), SceneError> {
+        // Validate effect exists
+        if !self.registry.contains_key(effect_name) {
+            return Err(SceneError::UnknownEffect {
+                name: effect_name.to_string(),
+            });
+        }
+
+        // Must be in Idle state
+        let current = self.state.take();
+        match current {
+            Some(TransitionState::Idle {
+                scene: from_scene,
+                owner: from_owner,
+            }) => {
+                self.state = Some(TransitionState::Transitioning {
+                    from_scene,
+                    from_owner,
+                    to_scene: scene,
+                    to_owner: owner,
+                    effect_name: effect_name.to_string(),
+                    elapsed: Duration::ZERO,
+                    duration,
+                    easing: easing_fn,
+                });
+                Ok(())
+            }
+            Some(state @ TransitionState::Transitioning { .. }) => {
+                // Put back the state
+                self.state = Some(state);
+                Err(SceneError::NotIdle {
+                    state: "transitioning".to_string(),
+                })
+            }
+            None => Err(SceneError::NotIdle {
+                state: "no scene loaded".to_string(),
+            }),
+        }
     }
 
     /// Advances the transition by `dt`. If progress reaches 1.0, the old owner
     /// is disposed and the manager returns to Idle with the new scene.
-    pub fn tick(&mut self, _dt: Duration) {
-        todo!()
+    pub fn tick(&mut self, dt: Duration) {
+        let current = self.state.take();
+        self.state = match current {
+            Some(TransitionState::Transitioning {
+                from_scene,
+                from_owner,
+                to_scene,
+                to_owner,
+                effect_name,
+                elapsed,
+                duration,
+                easing: easing_fn,
+            }) => {
+                let new_elapsed = elapsed + dt;
+                let raw_progress = new_elapsed.as_secs_f32() / duration.as_secs_f32();
+                let progress = (easing_fn)(raw_progress).clamp(0.0, 1.0);
+
+                if progress >= 1.0 {
+                    // Transition complete: dispose old owner, move to Idle
+                    from_owner.dispose();
+                    // from_scene is dropped here (no longer needed)
+                    drop(from_scene);
+                    Some(TransitionState::Idle {
+                        scene: to_scene,
+                        owner: to_owner,
+                    })
+                } else {
+                    Some(TransitionState::Transitioning {
+                        from_scene,
+                        from_owner,
+                        to_scene,
+                        to_owner,
+                        effect_name,
+                        elapsed: new_elapsed,
+                        duration,
+                        easing: easing_fn,
+                    })
+                }
+            }
+            other => other, // Idle or None: no-op
+        };
     }
 
     /// Blends the two scene buffers during a transition.
     ///
     /// Returns `true` if a blend was performed (transitioning), `false` if idle.
-    pub fn blend(&self, _buf_a: &Buffer, _buf_b: &Buffer, _output: &mut Buffer) -> bool {
-        todo!()
+    pub fn blend(&self, buf_a: &Buffer, buf_b: &Buffer, output: &mut Buffer) -> bool {
+        match &self.state {
+            Some(TransitionState::Transitioning {
+                effect_name,
+                elapsed,
+                duration,
+                easing: easing_fn,
+                ..
+            }) => {
+                let raw_progress = elapsed.as_secs_f32() / duration.as_secs_f32();
+                let progress = (easing_fn)(raw_progress).clamp(0.0, 1.0);
+
+                if let Some(effect) = self.registry.get(effect_name.as_str()) {
+                    effect.blend(buf_a, buf_b, progress, output);
+                }
+                true
+            }
+            _ => false,
+        }
     }
 
     /// Returns `true` if a transition is in progress.
     #[must_use]
     pub fn is_transitioning(&self) -> bool {
-        todo!()
+        matches!(&self.state, Some(TransitionState::Transitioning { .. }))
     }
 
     /// Returns a reference to the current scene (idle) or the target scene (transitioning).
     #[must_use]
     pub fn current_scene(&self) -> Option<&Scene> {
-        todo!()
+        match &self.state {
+            Some(TransitionState::Idle { scene, .. }) => Some(scene),
+            Some(TransitionState::Transitioning { to_scene, .. }) => Some(to_scene),
+            None => None,
+        }
     }
 
     /// Consumes the current state and returns the scene and owner, if idle.
@@ -137,7 +264,14 @@ impl TransitionManager {
     /// Returns `None` if the manager has no scene or is mid-transition.
     #[must_use]
     pub fn take(&mut self) -> Option<(Scene, Owner)> {
-        todo!()
+        match self.state.take() {
+            Some(TransitionState::Idle { scene, owner }) => Some((scene, owner)),
+            other => {
+                // Put it back if not idle
+                self.state = other;
+                None
+            }
+        }
     }
 }
 
