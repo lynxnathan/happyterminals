@@ -1,16 +1,19 @@
-//! Runtime-loaded triangle mesh + panic-free OBJ loader.
+//! Runtime-loaded triangle mesh + panic-free OBJ/STL loader.
 //!
 //! This module unifies the const [`crate::Cube`] primitive with runtime-loaded
-//! geometry via a single [`Mesh`] type. [`load_obj`] wraps `tobj 4.0` with
-//! defensive plumbing: per-triangle skip accounting for degenerate / non-finite
-//! input, flat per-face normal computation, inverted-winding detection, and
-//! `DoS` guards against pathological files.
+//! geometry via a single [`Mesh`] type. [`load_obj`] wraps `tobj 4.0` and
+//! [`load_stl`] wraps `stl_io 0.11` with defensive plumbing: per-triangle skip
+//! accounting for degenerate / non-finite input, flat per-face normal
+//! computation, inverted-winding detection (OBJ), and `DoS` guards against
+//! pathological files.
 //!
 //! All whole-file parse or I/O failures surface as [`MeshError`]; per-triangle
 //! issues are counted in [`LoadStats`] and emit warnings (capped at
-//! [`MAX_WARNINGS`]). The loader never panics on any input — the fixture corpus
-//! and proptest harness in `tests/obj_corpus.rs` enforce this invariant.
+//! [`MAX_WARNINGS`]). The loaders never panic on any input — the fixture corpus
+//! and proptest harness in `tests/obj_corpus.rs` and `tests/stl_corpus.rs`
+//! enforce this invariant.
 
+use std::fs::File;
 use std::path::Path;
 
 use glam::Vec3;
@@ -115,6 +118,11 @@ pub enum MeshError {
         /// Source line number (if known).
         line: Option<u32>,
     },
+
+    /// Structural parse failure reported by `stl_io` (invalid format, truncated
+    /// data, malformed header).
+    #[error("STL parse error: {0}")]
+    StlParse(String),
 
     /// Reserved for future opt-in strict winding rejection; 2.1 uses warnings.
     #[error("mesh has inverted winding")]
@@ -295,6 +303,138 @@ pub fn load_obj<P: AsRef<Path>>(path: P) -> Result<(Mesh, LoadStats), MeshError>
             &mut stats.warnings,
             "mesh appears to have inverted winding; normals may render inside-out".into(),
         );
+    }
+
+    let mesh = Mesh {
+        vertices,
+        indices: kept_indices,
+        normals,
+        shading: None,
+    };
+
+    Ok((mesh, stats))
+}
+
+/// Load an STL file (ASCII or binary) from disk into a renderable [`Mesh`].
+///
+/// Returns `(Mesh, LoadStats)` on success. Stats report how many triangles
+/// loaded, how many were skipped (degenerate / non-finite / out-of-bounds),
+/// and any warnings.
+///
+/// Whole-file issues (I/O failure, unparseable syntax, exceeded triangle
+/// budget) return [`MeshError`]. Per-triangle issues are counted + warned
+/// without returning `Err`.
+///
+/// Normals from the STL file are used when they are finite and non-zero;
+/// otherwise they fall back to [`flat_normal`] recomputation. If `flat_normal`
+/// also returns `None`, the triangle is skipped.
+///
+/// # Errors
+/// - [`MeshError::Io`] if the file cannot be opened or read.
+/// - [`MeshError::StlParse`] if `stl_io` reports a structural failure.
+/// - [`MeshError::Parse`] if the mesh exceeds [`MAX_TRIANGLES`].
+///
+/// # Examples
+/// ```no_run
+/// use happyterminals_renderer::mesh::load_stl;
+/// let (mesh, stats) = load_stl("models/part.stl")?;
+/// println!("loaded {} tris, skipped {}", stats.triangles_loaded, stats.triangles_skipped);
+/// # Ok::<(), happyterminals_renderer::mesh::MeshError>(())
+/// ```
+#[allow(clippy::cast_precision_loss)]
+pub fn load_stl<P: AsRef<Path>>(path: P) -> Result<(Mesh, LoadStats), MeshError> {
+    let mut file = File::open(path.as_ref())?;
+    let stl_mesh =
+        stl_io::read_stl(&mut file).map_err(|e| MeshError::StlParse(format!("{e}")))?;
+
+    // DoS guard: reject pathologically large meshes BEFORE normal computation.
+    if stl_mesh.faces.len() > MAX_TRIANGLES {
+        return Err(MeshError::Parse(format!(
+            "mesh exceeds MAX_TRIANGLES ({MAX_TRIANGLES})"
+        )));
+    }
+
+    // Convert stl_io vertices to Vec3.
+    let vertices: Vec<Vec3> = stl_mesh
+        .vertices
+        .iter()
+        .map(|v| Vec3::new(v[0], v[1], v[2]))
+        .collect();
+
+    let vertex_count = vertices.len();
+    let mut stats = LoadStats::default();
+    let mut kept_indices: Vec<[u32; 3]> = Vec::with_capacity(stl_mesh.faces.len());
+    let mut normals: Vec<Vec3> = Vec::with_capacity(stl_mesh.faces.len());
+
+    for (i, face) in stl_mesh.faces.iter().enumerate() {
+        // Bounds-check vertex indices.
+        let a_idx = face.vertices[0];
+        let b_idx = face.vertices[1];
+        let c_idx = face.vertices[2];
+
+        if a_idx >= vertex_count || b_idx >= vertex_count || c_idx >= vertex_count {
+            stats.triangles_skipped += 1;
+            push_warning_capped(
+                &mut stats.warnings,
+                format!("skipped triangle {i}: index out of bounds"),
+            );
+            continue;
+        }
+
+        // Safe u32 conversion (guard overflow on 32-bit).
+        let Ok(a_u32) = u32::try_from(a_idx) else {
+            stats.triangles_skipped += 1;
+            push_warning_capped(
+                &mut stats.warnings,
+                format!("skipped triangle {i}: index overflow u32"),
+            );
+            continue;
+        };
+        let Ok(b_u32) = u32::try_from(b_idx) else {
+            stats.triangles_skipped += 1;
+            push_warning_capped(
+                &mut stats.warnings,
+                format!("skipped triangle {i}: index overflow u32"),
+            );
+            continue;
+        };
+        let Ok(c_u32) = u32::try_from(c_idx) else {
+            stats.triangles_skipped += 1;
+            push_warning_capped(
+                &mut stats.warnings,
+                format!("skipped triangle {i}: index overflow u32"),
+            );
+            continue;
+        };
+
+        let va = vertices[a_idx];
+        let vb = vertices[b_idx];
+        let vc = vertices[c_idx];
+
+        // Try to use the STL-provided normal first.
+        let stl_normal = Vec3::new(face.normal[0], face.normal[1], face.normal[2]);
+        let normal_len = stl_normal.length();
+        let normal = if stl_normal.is_finite() && normal_len > 1e-12 {
+            stl_normal / normal_len
+        } else {
+            // Degenerate STL normal -- fall back to flat_normal recomputation.
+            if let Some(n) = flat_normal(va, vb, vc) {
+                n
+            } else {
+                stats.triangles_skipped += 1;
+                push_warning_capped(
+                    &mut stats.warnings,
+                    format!(
+                        "skipped triangle {i}: degenerate normal and flat_normal failed"
+                    ),
+                );
+                continue;
+            }
+        };
+
+        normals.push(normal);
+        kept_indices.push([a_u32, b_u32, c_u32]);
+        stats.triangles_loaded += 1;
     }
 
     let mesh = Mesh {
@@ -523,6 +663,50 @@ mod tests {
         let (c, r) = empty.bounding_sphere();
         assert_eq!(c, Vec3::ZERO);
         assert_eq!(r, 0.0);
+    }
+
+    // ── STL loader inline tests ──────────────────────────────────────────
+
+    /// Absolute path to an STL fixture file, resolved at compile time.
+    macro_rules! stl_fixture {
+        ($rel:literal) => {
+            concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/stl/", $rel)
+        };
+    }
+
+    #[test]
+    fn load_stl_cube_has_12_triangles() {
+        let (mesh, stats) = load_stl(stl_fixture!("cube.stl")).expect("cube.stl loads");
+        assert_eq!(stats.triangles_loaded, 12, "cube has 12 triangles");
+        assert_eq!(mesh.indices.len(), 12);
+        assert_eq!(mesh.normals.len(), 12);
+        assert_eq!(mesh.indices.len(), mesh.normals.len());
+    }
+
+    #[test]
+    fn load_stl_indices_normals_length_match() {
+        let (mesh, _stats) = load_stl(stl_fixture!("small_mesh.stl")).expect("loads");
+        assert_eq!(
+            mesh.indices.len(),
+            mesh.normals.len(),
+            "indices and normals must have same length"
+        );
+    }
+
+    #[test]
+    fn load_stl_nonexistent_returns_io_error() {
+        match load_stl("/nonexistent/path.stl") {
+            Err(MeshError::Io(_)) => {}
+            other => panic!("expected MeshError::Io, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn stl_parse_variant_formats_correctly() {
+        let err = MeshError::StlParse("bad header".into());
+        let msg = format!("{err}");
+        assert!(msg.contains("STL parse error"), "got: {msg}");
+        assert!(msg.contains("bad header"), "got: {msg}");
     }
 
     #[test]
