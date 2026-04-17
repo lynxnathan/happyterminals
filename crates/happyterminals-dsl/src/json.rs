@@ -250,7 +250,7 @@ pub fn load_recipe(json: &str) -> Result<(SceneIr, CameraConfig), RecipeError> {
     let layer_nodes: Vec<SceneNode> = recipe
         .layers
         .into_iter()
-        .map(|layer| recipe_layer_to_node(layer))
+        .map(recipe_layer_to_node)
         .collect();
 
     Ok((SceneIr::new(layer_nodes), camera))
@@ -372,7 +372,7 @@ pub fn load_recipe_sandboxed(
     let layer_nodes: Vec<SceneNode> = recipe
         .layers
         .into_iter()
-        .map(|layer| recipe_layer_to_node(layer))
+        .map(recipe_layer_to_node)
         .collect();
 
     Ok((SceneIr::new(layer_nodes), camera))
@@ -576,7 +576,7 @@ fn recipe_props_to_propmap(props: Option<HashMap<String, serde_json::Value>>) ->
 
 /// Convert a [`SceneIr`] and [`CameraConfig`] back into a [`Recipe`].
 ///
-/// Used for round-trip testing: Rust builder -> SceneIr -> Recipe JSON -> load_recipe.
+/// Used for round-trip testing: Rust builder -> `SceneIr` -> Recipe JSON -> `load_recipe`.
 /// Pipeline fields are not represented in JSON and are skipped.
 #[must_use]
 pub fn scene_ir_to_recipe(ir: &SceneIr, camera: &CameraConfig) -> Recipe {

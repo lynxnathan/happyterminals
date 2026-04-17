@@ -56,8 +56,12 @@ pub mod prelude {
         CubeBuilder, GroupBuilder, LayerBuilder,
     };
 
-    // JSON recipe loader (from Phase 3.2)
-    pub use happyterminals_dsl::json::{load_recipe, recipe_schema, scene_ir_to_recipe, RecipeError};
+    // JSON recipe loader (from Phase 3.2) + sandbox surface (from Phase 3.3)
+    pub use happyterminals_dsl::json::{
+        load_recipe, load_recipe_sandboxed, recipe_schema, scene_ir_to_recipe,
+        RecipeError, SandboxConfig,
+    };
+    pub use happyterminals_dsl::sandbox::EffectRegistry;
 
     // Renderer types
     pub use happyterminals_renderer::{OrbitCamera, Projection, ShadingRamp};
@@ -76,12 +80,11 @@ pub mod prelude {
 mod tests {
     #[test]
     fn prelude_reexports_compile() {
-        // Verify all prelude types are accessible
+        // Verify all prelude types are accessible. The nested helper `fn` is
+        // declared before any statements (clippy::items_after_statements).
         use crate::prelude::*;
-        let _: fn() -> Grid = || Grid::new(Rect::new(0, 0, 80, 24));
-        let _: fn() -> FrameSpec = FrameSpec::default;
         // Signal, Memo, Effect etc. require reactive runtime context
-        // so we just verify the types exist
+        // so we just verify the types exist.
         fn _check_types() {
             let _ = std::any::type_name::<Signal<i32>>();
             let _ = std::any::type_name::<Memo<i32>>();
@@ -104,6 +107,11 @@ mod tests {
             let _ = std::any::type_name::<FpsCamera>();
             let _ = std::any::type_name::<Particle>();
             let _ = std::any::type_name::<ParticleEmitter>();
+            let _ = std::any::type_name::<SandboxConfig>();
+            let _ = std::any::type_name::<EffectRegistry>();
+            let _ = std::any::type_name::<RecipeError>();
         }
+        let _: fn() -> Grid = || Grid::new(Rect::new(0, 0, 80, 24));
+        let _: fn() -> FrameSpec = FrameSpec::default;
     }
 }
