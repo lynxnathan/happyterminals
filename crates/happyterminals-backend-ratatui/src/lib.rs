@@ -17,7 +17,7 @@ pub use color::{detect_color_mode, detect_color_mode_from_real_env, ColorMode, E
 pub use event::{InputEvent, InputSignals};
 pub use frame_spec::FrameSpec;
 pub use guard::{install_panic_hook, TerminalGuard};
-pub use run::{run, run_scene, run_with_input};
+pub use run::{run, run_scene, run_scenes, run_with_input};
 
 // Re-export input types for consumers
 // Re-export input types for consumers
