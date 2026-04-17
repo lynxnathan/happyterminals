@@ -44,7 +44,7 @@ pub struct DragOutput {
 /// Minimum distance (in terminal cells) the mouse must travel from the
 /// press point before a drag gesture is recognised. Prevents micro-jitter
 /// during a click from being interpreted as a drag.
-const DRAG_THRESHOLD: f32 = 3.0;
+const DRAG_THRESHOLD: f32 = 2.0;
 
 /// Tracks mouse drag gestures and produces position deltas.
 ///

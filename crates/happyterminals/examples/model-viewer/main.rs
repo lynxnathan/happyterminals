@@ -40,10 +40,8 @@ const MODELS: &[(&str, &str)] = &[
     ),
 ];
 
-/// Shared drag sensitivity — orbit and pan use the same value so they
-/// feel like the same "grab and move" gesture at the same speed.
-const DRAG_SENSITIVITY: f32 = 0.01;
 const ZOOM_SENSITIVITY: f32 = 0.5;
+const FOV: f32 = std::f32::consts::FRAC_PI_4; // 45° — matches Projection::default()
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -116,14 +114,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     run_with_input(
         move |grid, _input_signals, imap| {
-            // Orbit (left-drag) and pan (right-drag) share DRAG_SENSITIVITY
-            // so they feel like the same "grab" gesture at the same speed.
-            let sens = DRAG_SENSITIVITY * camera.distance;
+            let vw = grid.area.width.max(1) as f32;
+            let vh = grid.area.height.max(1) as f32;
+
+            // World-space size of the viewport at the model's depth.
+            // This makes drag feel 1:1 with the model surface.
+            let world_h = 2.0 * camera.distance * (FOV / 2.0).tan();
+            let world_w = world_h * (vw / vh);
+
+            // Orbit: full-width drag ≈ PI rotation (180°)
+            let orbit_per_cell = std::f32::consts::PI / vw;
+
+            // Pan: 1 cell of drag = 1 cell of world movement at model depth
+            let pan_per_cell_x = world_w / vw;
+            let pan_per_cell_y = world_h / vh;
 
             if let Some(orbit_sig) = imap.action_axis2d("orbit") {
                 let delta = orbit_sig.untracked();
-                camera.azimuth -= delta.x * sens;
-                camera.elevation += delta.y * sens;
+                camera.azimuth -= delta.x * orbit_per_cell;
+                camera.elevation += delta.y * orbit_per_cell;
             }
 
             if let Some(zoom_sig) = imap.action_axis1d("zoom") {
@@ -136,33 +145,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let right =
                     glam::Vec3::new(camera.azimuth.cos(), 0.0, -camera.azimuth.sin());
                 let up = glam::Vec3::Y;
-                camera.target -= (right * delta.x + up * (-delta.y)) * sens;
+                camera.target -=
+                    right * delta.x * pan_per_cell_x + up * (-delta.y) * pan_per_cell_y;
             }
 
-            // WASD keyboard pan (supplementary)
+            // WASD keyboard pan — one step per keypress (terminals don't send
+            // Release events, so Held would persist forever).
             {
                 let right =
                     glam::Vec3::new(camera.azimuth.cos(), 0.0, -camera.azimuth.sin());
                 let up = glam::Vec3::Y;
-                let step = sens;
+                let step_x = pan_per_cell_x * 3.0; // 3 cells per keypress
+                let step_y = pan_per_cell_y * 3.0;
                 if let Some(s) = imap.action_state("pan_left") {
-                    if matches!(s.untracked(), ActionState::JustPressed | ActionState::Held(_)) {
-                        camera.target -= right * step;
+                    if s.untracked() == ActionState::JustPressed {
+                        camera.target -= right * step_x;
                     }
                 }
                 if let Some(s) = imap.action_state("pan_right") {
-                    if matches!(s.untracked(), ActionState::JustPressed | ActionState::Held(_)) {
-                        camera.target += right * step;
+                    if s.untracked() == ActionState::JustPressed {
+                        camera.target += right * step_x;
                     }
                 }
                 if let Some(s) = imap.action_state("pan_up") {
-                    if matches!(s.untracked(), ActionState::JustPressed | ActionState::Held(_)) {
-                        camera.target += up * step;
+                    if s.untracked() == ActionState::JustPressed {
+                        camera.target += up * step_y;
                     }
                 }
                 if let Some(s) = imap.action_state("pan_down") {
-                    if matches!(s.untracked(), ActionState::JustPressed | ActionState::Held(_)) {
-                        camera.target -= up * step;
+                    if s.untracked() == ActionState::JustPressed {
+                        camera.target -= up * step_y;
                     }
                 }
             }
