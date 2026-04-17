@@ -35,7 +35,7 @@
 
 ## Tech Debt Closure
 
-- [ ] **REND-11**: Renderer::draw() accepts &dyn Camera (not &OrbitCamera)
+- [x] **REND-11**: Renderer::draw() accepts &dyn Camera (not &OrbitCamera)
 
 ---
 
@@ -54,7 +54,7 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| REND-11 | Phase 3.1 | Pending |
+| REND-11 | Phase 3.1 | Complete |
 | SCENE-04 | Phase 3.1 | Pending |
 | SCENE-06 | Phase 3.1 | Pending |
 | SCENE-07 | Phase 3.1 | Pending |

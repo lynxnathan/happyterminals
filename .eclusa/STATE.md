@@ -10,11 +10,11 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 ## Current Position
 
 Phase: 3.1 of 3.5 (Camera Refactor + Scene Transitions) -- v2.0 milestone
-Plan: 0 of ? in current phase (not yet planned)
-Status: Ready to plan
-Last activity: 2026-04-17 -- v2.0 roadmap created, 5 phases (3.1-3.5) derived from 16 requirements
+Plan: 1 of ? in current phase
+Status: Executing
+Last activity: 2026-04-17 -- 03.1-01 camera polymorphism complete (REND-11)
 
-Progress: [============░░░░░░░░] 60% (v1.0 complete, v2.0 starting)
+Progress: [============░░░░░░░░] 62% (v1.0 complete, v2.0 phase 3.1 plan 01 done)
 
 ## Performance Metrics
 
@@ -38,7 +38,8 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - v1.0 shipped with MSRV 1.88 (upgraded from 1.86 during Phase 2.5)
 - TransitionManager scaffold exists from Phase 1.4 (Owner disposal semantics defined)
 - Community validated z-axis spatial paradigm -- transitions are highest-value v2.0 feature
-- Camera trait with 3 implementations (Orbit/FreeLook/FPS) shipped in Phase 2.3; REND-11 refactors Renderer::draw to accept &dyn Camera
+- Camera trait with 3 implementations (Orbit/FreeLook/FPS) shipped in Phase 2.3; REND-11 closed -- Renderer::draw accepts &dyn Camera
+- Eye/forward extracted from view matrix inverse (universal for any Camera type); no eye()/forward() on trait
 
 ### Pending Todos
 
@@ -52,6 +53,6 @@ None yet for v2.0.
 ## Session Continuity
 
 Last session: 2026-04-17
-Stopped at: v2.0 roadmap created (ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated)
+Stopped at: Completed 03.1-01-PLAN.md
 Resume file: None
-Next command: `/eclusa:plan-phase 3.1`
+Next command: Continue phase 3.1 execution
