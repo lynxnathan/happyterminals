@@ -32,3 +32,26 @@ Phase 03.5 (crates.io publish) so the public release is clippy-clean.
 compiles, and the prelude compile-test passes. The downstream model-viewer
 example has been clippy-dirty since its creation; discovering it now is a side
 effect of fixing the DSL errors that previously masked it.
+
+## From Plan 03.4-03 (json-loader example)
+
+### Pre-existing `cargo fmt --all -- --check` failures across examples/lib
+
+Discovered while running the plan-level `cargo fmt --all -- --check` gate for
+json-loader. The json-loader file itself formats cleanly under
+`rustfmt --edition 2024 --check`. The following pre-existing rustfmt diffs are
+NOT caused by this plan — they pre-date Plan 03.4-03 and were reverted from the
+working tree to keep this plan's commit scoped to its own file:
+
+- `crates/happyterminals/src/lib.rs` — rustfmt wants sorted import groups
+- `crates/happyterminals/examples/color-test/main.rs` — formatting drift
+- `crates/happyterminals/examples/model-viewer/main.rs` — import ordering
+- `crates/happyterminals/examples/particles/main.rs` — formatting drift
+- `crates/happyterminals/examples/static_grid.rs` — formatting drift
+- `crates/happyterminals/examples/transitions/main.rs` — formatting drift
+
+**Suggested action:** Include workspace-wide `cargo fmt --all` as a single
+bulk-format commit in the Phase 03.5 pre-publish lint cleanup plan.
+**Impact on Plan 03.4-03:** none — json-loader/main.rs is rustfmt-clean on its
+own (verified with `rustfmt --edition 2024 --check`). The workspace-wide fmt
+drift is out of scope for this plan's SCOPE BOUNDARY.
