@@ -107,7 +107,7 @@ Plans:
 - [x] 03.4-02-PLAN.md -- Hero example: text-reveal — bounded tachyonfx text effects over a rotating bunny with Space/Tab replay + swap
 - [x] 03.4-03-PLAN.md -- json-loader example: load hello.json via load_recipe_sandboxed + rendered via run_scene, commented rejected-path demo
 - [x] 03.4-04-PLAN.md -- Header polish across 5 headline + 2 dev-utility examples to DEMO-05 contract
-- [ ] 03.4-05-PLAN.md -- scripts/smoke-examples.sh + scripts/doc-lint-examples.sh + examples-smoke CI job
+- [x] 03.4-05-PLAN.md -- scripts/smoke-examples.sh + scripts/doc-lint-examples.sh + examples-smoke CI job
 **UI hint**: yes
 
 ### Phase 3.5: crates.io Publish

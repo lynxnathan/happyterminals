@@ -2,15 +2,15 @@
 eclusa_state_version: 1.0
 milestone: v2.0
 milestone_name: exit gates
-status: executing
-stopped_at: Completed 03.4-04-PLAN.md (DEMO-05 header polish)
-last_updated: "2026-04-17T22:21:07.159Z"
+status: verifying
+stopped_at: Completed 03.4-05-PLAN.md — phase 03.4 complete (5/5)
+last_updated: "2026-04-17T22:25:17.164Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
   percent: 82
 ---
 
@@ -27,7 +27,7 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 
 Phase: 03.4 (examples-library) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-17
 
 Progress: [████████████████░░░░] 82% (v1.0 complete, v2.0 Phase 03.4 in progress — json-loader shipped)
@@ -73,6 +73,8 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - [Phase 03.4]: Phase 03.4 Plan 03: Workspace-wide rustfmt drift across 6 unrelated files (model-viewer, color-test, particles, transitions, static_grid, lib.rs) deferred to Phase 03.5 pre-publish lint cleanup (SCOPE BOUNDARY).
 - [Phase 03.4]: Phase 03.4 Plan 04: all 6 pre-existing example headers (spinning-cube, model-viewer, particles, transitions, color-test, static_grid) brought to DEMO-05 canonical 5-section shape; particles gains zero-per-frame-allocation brag per D-10; color-test and static_grid carry verbatim 'Developer utility — not a demo' marker per D-02; zero non-header code changed (D-09 honored).
 - [Phase 03.4]: Phase 03.4 Plan 04: workspace clippy/fmt drift (88 pre-existing errors in happyterminals-scene, 168 fmt diffs) confirmed neutral via git-stash baseline and routed to Phase 03.5 pre-publish lint plan (SCOPE BOUNDARY — D-09 forbids refactoring non-header code).
+- [Phase 03.4]: Phase 03.4 Plan 05: examples-smoke CI job ships — scripts/smoke-examples.sh (cargo check --example for 5 headlines) + scripts/doc-lint-examples.sh (DEMO-05 header contract lint) wired via new examples-smoke job in ci.yml; compile-only per F-D-13/Pitfall 6 (TTY-less CI runners); runtime smoke deferred to post-phase follow-up.
+- [Phase 03.4]: Phase 03.4 COMPLETE (5/5 plans): v2.0 REL-04 + DEMO-05 exit gates met — 5 runnable examples (model-viewer, particles, transitions, json-loader, text-reveal) + spinning-cube + 2 dev utilities, all with canonical DEMO-05 headers, CI smoke + doc-lint enforcing drift protection.
 
 ### Pending Todos
 
@@ -85,7 +87,7 @@ None yet for v2.0.
 
 ## Session Continuity
 
-Last session: 2026-04-17T22:21:07.155Z
-Stopped at: Completed 03.4-04-PLAN.md (DEMO-05 header polish)
+Last session: 2026-04-17T22:25:17.161Z
+Stopped at: Completed 03.4-05-PLAN.md — phase 03.4 complete (5/5)
 Resume file: None
 Next command: Execute 03.4-04-PLAN.md
