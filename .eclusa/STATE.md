@@ -1,3 +1,19 @@
+---
+eclusa_state_version: 1.0
+milestone: v2.0
+milestone_name: Compositor + v1 Release
+status: executing
+stopped_at: Completed 03.1-02-PLAN.md
+last_updated: "2026-04-17T07:52:58.707Z"
+last_activity: 2026-04-17 -- Plan 02 complete (TransitionManager with effects and state machine)
+progress:
+  total_phases: 13
+  completed_phases: 9
+  total_plans: 40
+  completed_plans: 30
+  percent: 33
+---
+
 # Project State
 
 ## Project Reference
@@ -10,20 +26,22 @@ See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 ## Current Position
 
 Phase: 3.1 of 3.5 (Camera Refactor + Scene Transitions) -- v2.0 milestone
-Plan: 0 of ? in current phase (not yet planned)
-Status: Ready to plan
-Last activity: 2026-04-17 -- v2.0 roadmap created, 5 phases (3.1-3.5) derived from 16 requirements
+Plan: 2 of 3 in current phase
+Status: Executing
+Last activity: 2026-04-17 -- Plan 02 complete (TransitionManager with effects and state machine)
 
-Progress: [============░░░░░░░░] 60% (v1.0 complete, v2.0 starting)
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
 **Velocity (v1.0):**
+
 - Total plans completed: 37
 - Total phases completed: 12
 - Average plan duration: ~5.5 min
 
 **Recent Trend (last 5 plans):**
+
 - 02.4-P01: 8min, 02.4-P02: 3min, 02.5-P02: 3min
 - Trend: Stable / Improving
 
@@ -39,6 +57,10 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - TransitionManager scaffold exists from Phase 1.4 (Owner disposal semantics defined)
 - Community validated z-axis spatial paradigm -- transitions are highest-value v2.0 feature
 - Camera trait with 3 implementations (Orbit/FreeLook/FPS) shipped in Phase 2.3; REND-11 refactors Renderer::draw to accept &dyn Camera
+- Buffer-level blending for transitions (not Grid-level) per research pitfall avoidance
+- TransitionEffect trait with blend(a, b, progress, output) established as extension point
+- [Phase 03.1]: Buffer-level blending for transitions (not Grid-level) per research pitfall avoidance
+- [Phase 03.1]: TransitionEffect trait with blend(a, b, progress, output) established as extension point
 
 ### Pending Todos
 
@@ -51,7 +73,7 @@ None yet for v2.0.
 
 ## Session Continuity
 
-Last session: 2026-04-17
-Stopped at: v2.0 roadmap created (ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated)
+Last session: 2026-04-17T07:52:53.786Z
+Stopped at: Completed 03.1-02-PLAN.md
 Resume file: None
-Next command: `/eclusa:plan-phase 3.1`
+Next command: Execute 03.1-03-PLAN.md

@@ -8,8 +8,8 @@
 
 ## Scene Transitions
 
-- [ ] **SCENE-04**: Full TransitionManager — Scene A → B via named effect (dissolve, slide, etc.) with outgoing owner disposed cleanly
-- [ ] **SCENE-06**: At least 3 built-in transition effects (dissolve, slide-left, fade-to-black) usable by name
+- [x] **SCENE-04**: Full TransitionManager — Scene A → B via named effect (dissolve, slide, etc.) with outgoing owner disposed cleanly
+- [x] **SCENE-06**: At least 3 built-in transition effects (dissolve, slide-left, fade-to-black) usable by name
 - [ ] **SCENE-07**: Transition triggered programmatically and via InputMap action
 
 ## JSON Recipes
@@ -55,8 +55,8 @@
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
 | REND-11 | Phase 3.1 | Pending |
-| SCENE-04 | Phase 3.1 | Pending |
-| SCENE-06 | Phase 3.1 | Pending |
+| SCENE-04 | Phase 3.1 | Complete |
+| SCENE-06 | Phase 3.1 | Complete |
 | SCENE-07 | Phase 3.1 | Pending |
 | DSL-04 | Phase 3.2 | Pending |
 | DSL-06 | Phase 3.2 | Pending |
