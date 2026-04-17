@@ -259,6 +259,24 @@ impl TransitionManager {
         }
     }
 
+    /// Returns references to scene(s) for rendering.
+    ///
+    /// - If idle: returns `(Some(scene), None)`.
+    /// - If transitioning: returns `(Some(from_scene), Some(to_scene))`.
+    /// - If no scene loaded: returns `(None, None)`.
+    #[must_use]
+    pub fn scenes_for_render(&self) -> (Option<&Scene>, Option<&Scene>) {
+        match &self.state {
+            Some(TransitionState::Idle { scene, .. }) => (Some(scene), None),
+            Some(TransitionState::Transitioning {
+                from_scene,
+                to_scene,
+                ..
+            }) => (Some(from_scene), Some(to_scene)),
+            None => (None, None),
+        }
+    }
+
     /// Consumes the current state and returns the scene and owner, if idle.
     ///
     /// Returns `None` if the manager has no scene or is mid-transition.

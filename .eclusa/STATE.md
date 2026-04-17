@@ -3,15 +3,15 @@ eclusa_state_version: 1.0
 milestone: v2.0
 milestone_name: Compositor + v1 Release
 status: executing
-stopped_at: v2.0 roadmap created (ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated)
-last_updated: "2026-04-17T07:42:47.886Z"
-last_activity: 2026-04-17 -- Phase 03.1 execution started
+stopped_at: Completed 03.1-03-PLAN.md
+last_updated: "2026-04-17T08:06:01.899Z"
+last_activity: 2026-04-17
 progress:
-  total_phases: 5
-  completed_phases: 0
-  total_plans: 3
-  completed_plans: 0
-  percent: 60
+  total_phases: 13
+  completed_phases: 10
+  total_plans: 40
+  completed_plans: 32
+  percent: 33
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Phase 03.1 — Camera Refactor + Scene Transitions
+**Current focus:** Phase 3.1 -- Camera Refactor + Scene Transitions
 
 ## Current Position
 
-Phase: 03.1 (Camera Refactor + Scene Transitions) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 03.1
-Last activity: 2026-04-17 -- Phase 03.1 execution started
+Phase: 3.1 of 3.5 (Camera Refactor + Scene Transitions) -- v2.0 milestone
+Plan: 3 of 3 in current phase
+Status: Ready to execute
+Last activity: 2026-04-17
 
-Progress: [============░░░░░░░░] 60% (v1.0 complete, v2.0 starting)
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
@@ -57,6 +57,11 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - TransitionManager scaffold exists from Phase 1.4 (Owner disposal semantics defined)
 - Community validated z-axis spatial paradigm -- transitions are highest-value v2.0 feature
 - Camera trait with 3 implementations (Orbit/FreeLook/FPS) shipped in Phase 2.3; REND-11 refactors Renderer::draw to accept &dyn Camera
+- Buffer-level blending for transitions (not Grid-level) per research pitfall avoidance
+- TransitionEffect trait with blend(a, b, progress, output) established as extension point
+- [Phase 03.1]: Buffer-level blending for transitions (not Grid-level) per research pitfall avoidance
+- [Phase 03.1]: TransitionEffect trait with blend(a, b, progress, output) established as extension point
+- [Phase 03.1]: run_scenes() as separate function; RenderCtx struct for param grouping; cube-only scenes pending Mesh/Particle NodeKind
 
 ### Pending Todos
 
@@ -69,7 +74,7 @@ None yet for v2.0.
 
 ## Session Continuity
 
-Last session: 2026-04-17
-Stopped at: v2.0 roadmap created (ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated)
+Last session: 2026-04-17T08:06:01.896Z
+Stopped at: Completed 03.1-03-PLAN.md
 Resume file: None
-Next command: `/eclusa:plan-phase 3.1`
+Next command: Execute 03.1-03-PLAN.md

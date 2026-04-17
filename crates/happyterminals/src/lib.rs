@@ -26,7 +26,7 @@ pub mod prelude {
     pub use happyterminals_core::{Color, Modifier, Style, Rect};
 
     // Backend (from Phase 1.1, Plan 02-03)
-    pub use happyterminals_backend_ratatui::{run, run_scene, run_with_input, FrameSpec, InputEvent, InputSignals};
+    pub use happyterminals_backend_ratatui::{run, run_scene, run_scenes, run_with_input, FrameSpec, InputEvent, InputSignals};
     pub use happyterminals_backend_ratatui::{TerminalGuard, install_panic_hook};
 
     // Color-mode control surface (from Phase 2.2)
