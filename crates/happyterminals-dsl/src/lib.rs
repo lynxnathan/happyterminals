@@ -23,6 +23,7 @@ pub mod builder;
 pub mod json;
 pub mod node_builder;
 pub mod prelude;
+pub mod sandbox;
 
 pub use builder::SceneBuilder;
 

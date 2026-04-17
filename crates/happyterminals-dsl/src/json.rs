@@ -32,6 +32,19 @@ pub enum RecipeError {
     SchemaValidation(String),
     /// The recipe JSON could not be deserialized.
     Deserialize(String),
+    /// A referenced effect name is not in the sandbox registry.
+    UnknownEffect {
+        /// The offending effect name from the recipe.
+        name: String,
+    },
+    /// A file path in the recipe was rejected by the sandbox.
+    ///
+    /// Covers path traversal (`..`), absolute paths, Windows drive letters,
+    /// and empty strings.
+    PathTraversal {
+        /// The offending path string.
+        path: String,
+    },
 }
 
 impl fmt::Display for RecipeError {
@@ -42,6 +55,8 @@ impl fmt::Display for RecipeError {
             }
             Self::SchemaValidation(msg) => write!(f, "schema validation failed: {msg}"),
             Self::Deserialize(msg) => write!(f, "deserialization failed: {msg}"),
+            Self::UnknownEffect { name } => write!(f, "unknown effect: {name}"),
+            Self::PathTraversal { path } => write!(f, "path traversal rejected: {path}"),
         }
     }
 }
