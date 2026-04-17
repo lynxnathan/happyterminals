@@ -509,7 +509,11 @@ Plans:
 
 **Pitfalls addressed:** §11 (per-frame allocation), §30 (composition cost re-validated with particles).
 
-**Plans:** TBD (planner decomposes)
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [ ] 02.4-01-PLAN.md -- Particle module + Renderer::draw_particles + criterion bench (Wave 1)
+- [ ] 02.4-02-PLAN.md -- Snow-over-bunny example + prelude re-exports + human verify (Wave 2)
 
 ---
 
@@ -779,7 +783,7 @@ The sections above (Milestone 0, Milestone 1 phases 1.0–1.5, Milestone 2 sketc
 | 2.1 OBJ Mesh Loading | 3/3 | Complete | 2026-04-15 |
 | 2.2 Color-Mode Pipeline | 3/3 | Complete | 2026-04-16 |
 | 2.3 Input Action System + Camera Modes | 0/4 | Planned | - |
-| 2.4 Particles + Per-Frame Alloc Bench | 0/? | Not started | - |
+| 2.4 Particles + Per-Frame Alloc Bench | 0/2 | Planned | - |
 | 2.5 Resize Hardening + MSRV + STL | 0/? | Not started | - |
 | M3 (sketch) | — | Re-plan at M2 exit | - |
 | M4 (sketch) | — | Re-plan at M3 exit | - |
