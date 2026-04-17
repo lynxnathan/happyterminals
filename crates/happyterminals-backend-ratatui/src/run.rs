@@ -74,6 +74,7 @@ where
     let (w, h) = crossterm::terminal::size()?;
     let input_signals = InputSignals::new(w, h);
     let mut grid = Grid::new(Rect::new(0, 0, w, h));
+    let mut resize_pending = false;
 
     loop {
         tokio::select! {
@@ -81,6 +82,13 @@ where
                 let _span = tracing::trace_span!("frame").entered();
                 terminal.draw(|frame| {
                     grid.resize(frame.area());
+                    if resize_pending {
+                        resize_pending = false;
+                        let mut out = grid.deref().clone();
+                        downsample(&mut out, color_mode);
+                        *frame.buffer_mut() = out;
+                        return;
+                    }
                     render_fn(&mut grid, &input_signals);
                     let mut out = grid.deref().clone();
                     downsample(&mut out, color_mode);
@@ -103,7 +111,7 @@ where
                                 }
                                 InputEvent::Resize { width, height } => {
                                     input_signals.terminal_size.set((*width, *height));
-                                    // Grid resizes on next tick via frame.area()
+                                    resize_pending = true;
                                 }
                                 InputEvent::FocusGained => {
                                     input_signals.focused.set(true);
@@ -168,6 +176,7 @@ where
     let input_signals = InputSignals::new(w, h);
     let mut grid = Grid::new(Rect::new(0, 0, w, h));
     let dt = spec.frame_duration();
+    let mut resize_pending = false;
 
     loop {
         tokio::select! {
@@ -175,6 +184,13 @@ where
                 let _span = tracing::trace_span!("frame").entered();
                 terminal.draw(|frame| {
                     grid.resize(frame.area());
+                    if resize_pending {
+                        resize_pending = false;
+                        let mut out = grid.deref().clone();
+                        downsample(&mut out, color_mode);
+                        *frame.buffer_mut() = out;
+                        return;
+                    }
                     render_fn(&mut grid, &input_signals, &input_map);
                     let mut out = grid.deref().clone();
                     downsample(&mut out, color_mode);
@@ -212,6 +228,7 @@ where
                                 }
                                 InputEvent::Resize { width, height } => {
                                     input_signals.terminal_size.set((*width, *height));
+                                    resize_pending = true;
                                 }
                                 InputEvent::FocusGained => {
                                     input_signals.focused.set(true);
@@ -289,15 +306,25 @@ where
     // discipline for `NodeKind::Cube` nodes.
     let cube_mesh = Cube::mesh();
     let dt = spec.frame_duration();
+    let mut resize_pending = false;
 
     loop {
         tokio::select! {
             _ = tick.tick() => {
                 let _span = tracing::trace_span!("frame").entered();
-                tick_fn(dt, &input_signals);
+                if !resize_pending {
+                    tick_fn(dt, &input_signals);
+                }
 
                 terminal.draw(|frame| {
                     grid.resize(frame.area());
+                    if resize_pending {
+                        resize_pending = false;
+                        let mut out = grid.deref().clone();
+                        downsample(&mut out, color_mode);
+                        *frame.buffer_mut() = out;
+                        return;
+                    }
                     let projection = Projection {
                         viewport_w: grid.area.width,
                         viewport_h: grid.area.height,
@@ -331,6 +358,7 @@ where
                                 }
                                 InputEvent::Resize { width, height } => {
                                     input_signals.terminal_size.set((*width, *height));
+                                    resize_pending = true;
                                 }
                                 InputEvent::FocusGained => {
                                     input_signals.focused.set(true);
