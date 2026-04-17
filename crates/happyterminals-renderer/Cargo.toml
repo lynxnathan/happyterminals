@@ -17,6 +17,7 @@ glam = { workspace = true }
 happyterminals-core = { path = "../happyterminals-core" }
 ratatui-core = { workspace = true }
 thiserror = { workspace = true }
+stl_io = { workspace = true }
 tobj = { workspace = true }
 rand = { workspace = true }
 
