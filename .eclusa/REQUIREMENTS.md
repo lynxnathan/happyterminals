@@ -22,7 +22,7 @@
 
 ## Examples Library
 
-- [ ] **REL-04**: 5+ runnable examples (mesh-viewer, particles, transitions, JSON loader, text-reveal)
+- [x] **REL-04**: 5+ runnable examples (mesh-viewer, particles, transitions, JSON loader, text-reveal)
 - [ ] **DEMO-05**: Each example has header comment explaining what it demonstrates
 
 ## crates.io Release
@@ -63,7 +63,7 @@
 | DSL-07 | Phase 3.2 | Complete |
 | DSL-05 | Phase 3.3 | Complete |
 | DSL-08 | Phase 3.3 | Complete |
-| REL-04 | Phase 3.4 | Pending |
+| REL-04 | Phase 3.4 | Complete |
 | DEMO-05 | Phase 3.4 | Pending |
 | REL-01 | Phase 3.5 | Pending |
 | REL-02 | Phase 3.5 | Pending |
