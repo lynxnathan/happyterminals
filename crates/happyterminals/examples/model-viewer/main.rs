@@ -1,13 +1,22 @@
-//! Model viewer -- Phase 2.3 upgrade.
+//! Model viewer — load bunny / cow / teapot and orbit with mouse + keyboard.
 //!
-//! Loads bunny / cow / teapot at startup. Controls:
+//! All input is routed through the InputMap action system (Phase 2.3). Cycle
+//! models with Left/Right arrows; everything else mirrors a standard
+//! orbit-camera DCC viewer.
+//!
+//! Features exercised:
+//! - OBJ mesh loading via `load_obj` (tobj, Phase 2.1)
+//! - OrbitCamera with mouse-drag + scroll-zoom + WASD pan
+//! - InputMap action system (register_default_actions + default_viewer_context)
+//! - Renderer::draw on `&dyn Camera` (Phase 3.1 refactor)
+//! - ShadingRamp + Projection defaults
+//!
+//! Controls:
 //! - Left-drag: orbit (azimuth + elevation)
 //! - Scroll: zoom (adjust camera distance)
 //! - WASD: pan camera target
 //! - Left/Right arrows: cycle model
 //! - Ctrl-C or Q: quit
-//!
-//! All input is routed through the InputMap action system.
 //!
 //! Run from the workspace root:
 //!

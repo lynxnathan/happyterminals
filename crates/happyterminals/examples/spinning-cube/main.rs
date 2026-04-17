@@ -1,5 +1,25 @@
-//! Spinning cube demo -- M1 exit artifact.
-//! Proves the full stack: signal -> camera -> renderer -> pipeline -> grid -> terminal.
+//! Spinning cube — the M1 exit artifact and the shortest possible "hello world"
+//! for the happyterminals stack.
+//!
+//! A single rotating cube driven by a reactive `Signal<f32>` updated each tick,
+//! with a `coalesce` pipeline effect layered on top. Roughly 40 LOC total — the
+//! smallest thing that exercises every layer of the framework.
+//!
+//! Features exercised:
+//! - Reactive core: Signal, create_root, Owner
+//! - Scene builder DSL: scene().camera().layer().pipeline()
+//! - Rust-native OrbitCamera
+//! - Pipeline with tachyonfx `coalesce` effect
+//! - run_scene backend entry point
+//!
+//! Run from the workspace root:
+//!
+//!     cargo run --example spinning-cube -p happyterminals
+//!
+//! Why this exists:
+//! The smallest artifact that proves every layer works together — signal,
+//! scene, camera, renderer, effect pipeline, Grid, terminal. If this fails,
+//! something in the stack is broken.
 
 use happyterminals::prelude::*;
 use std::time::Duration;

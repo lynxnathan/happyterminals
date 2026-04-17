@@ -1,7 +1,8 @@
 //! Color-test — Phase 2.2 exit artifact.
 //!
-//! Renders a static scene under a chosen or auto-detected color mode
-//! so users can visually compare truecolor / 256 / 16 / mono output.
+//! Developer utility — not a demo. Renders a static scene under a chosen or
+//! auto-detected color mode so contributors can visually compare truecolor /
+//! 256 / 16 / mono output when debugging the color cascade.
 //!
 //! Usage:
 //!

@@ -1,7 +1,24 @@
-//! Scene transitions demo -- Phase 3.1 deliverable.
+//! Scene transitions — cycle through 3 scenes using dissolve, slide-left,
+//! and fade-to-black effects (Phase 3.1 deliverable).
 //!
-//! Cycles through 3 scenes via Tab key, each using a different transition.
-//! Full interactive controls: left-drag orbit, right-drag pan, scroll zoom.
+//! Each scene is an independent reactive Owner; when the transition completes,
+//! the outgoing Owner is disposed cleanly so no reactive effects leak. The
+//! active scene's OrbitCamera remains fully interactive (orbit/zoom/pan) even
+//! during a transition.
+//!
+//! Features exercised:
+//! - TransitionManager with 3 named transition effects
+//! - run_scenes backend entry point (transition-aware loop)
+//! - InputMap action `next_scene` bound to Tab
+//! - create_root / Owner-per-scene for clean reactive disposal
+//! - OrbitCamera interactive controls routed through the active scene
+//!
+//! Controls:
+//! - Tab: transition to the next scene (cycles dissolve → slide-left → fade-to-black)
+//! - Left-drag: orbit the active scene's camera
+//! - Scroll: zoom
+//! - Right-drag: pan
+//! - Q or Ctrl-C: quit
 //!
 //! Run from the workspace root:
 //!

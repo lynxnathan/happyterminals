@@ -1,5 +1,8 @@
-//! Static grid demo: renders grapheme-correct text (ASCII + emoji + CJK + ZWJ),
-//! exits on Ctrl-C with clean terminal.
+//! Static grid — Phase 1.1 exit artifact.
+//!
+//! Developer utility — not a demo. Renders grapheme-correct text (ASCII +
+//! emoji + CJK + ZWJ) to the terminal and exits cleanly on Ctrl-C. Exists to
+//! sanity-check Grid buffer behavior during backend/font changes.
 //!
 //! Run: `cargo run -p happyterminals --example static_grid`
 

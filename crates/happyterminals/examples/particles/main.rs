@@ -1,9 +1,25 @@
-//! Snow-over-bunny particle demo.
+//! Snow-over-bunny — physics-y particles interacting with a loaded 3D mesh.
 //!
-//! White snowflakes fall over the bunny mesh, fading to light blue with age.
-//! Z-buffer occlusion hides particles behind the mesh surface.
+//! White snowflakes fall over the bunny mesh with gravity and spread, fading
+//! to light blue with age. Z-buffer occlusion hides particles behind the
+//! mesh surface. The particle emitter uses a fixed-capacity pool so NO
+//! allocation happens per frame after the initial warmup — a guarantee
+//! verified by the alloc-counting benchmark shipped in Phase 2.4.
 //!
-//! Controls: Left-drag=orbit, Scroll=zoom, Space=toggle pause, R=reset, Q=quit
+//! Features exercised:
+//! - ParticleEmitter with pool-based, zero-per-frame-allocation update loop
+//! - Renderer::draw + Renderer::draw_particles with shared z-buffer
+//! - OBJ mesh loading (bunny.obj)
+//! - InputMap orbit/zoom controls + custom Space/R bindings
+//!
+//! Controls:
+//! - Left-drag: orbit
+//! - Scroll: zoom
+//! - Space: toggle pause
+//! - R: reset emitter
+//! - Q or Ctrl-C: quit
+//!
+//! Run from the workspace root:
 //!
 //!     cargo run --example particles -p happyterminals
 
