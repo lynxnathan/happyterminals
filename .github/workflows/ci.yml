@@ -111,3 +111,17 @@ jobs:
       # Doc-lint — see Item 8 for the script itself.
       - name: doc-lint (forbidden strings)
         run: bash scripts/doc-lint.sh
+
+  examples-smoke:
+    name: examples smoke + doc-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.88"
+      - uses: Swatinem/rust-cache@v2
+      - name: smoke (cargo check --example for headline examples)
+        run: bash scripts/smoke-examples.sh
+      - name: doc-lint (DEMO-05 header contract)
+        run: bash scripts/doc-lint-examples.sh
