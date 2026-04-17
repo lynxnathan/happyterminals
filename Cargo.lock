@@ -814,6 +814,7 @@ dependencies = [
  "happyterminals-backend-ratatui",
  "happyterminals-core",
  "happyterminals-dsl",
+ "happyterminals-input",
  "happyterminals-pipeline",
  "happyterminals-renderer",
  "happyterminals-scene",
@@ -830,6 +831,7 @@ dependencies = [
  "glam",
  "happyterminals-core",
  "happyterminals-dsl",
+ "happyterminals-input",
  "happyterminals-pipeline",
  "happyterminals-renderer",
  "happyterminals-scene",
@@ -866,6 +868,16 @@ dependencies = [
  "happyterminals-pipeline",
  "happyterminals-renderer",
  "happyterminals-scene",
+]
+
+[[package]]
+name = "happyterminals-input"
+version = "0.0.0"
+dependencies = [
+ "crossterm",
+ "glam",
+ "happyterminals-core",
+ "proptest",
 ]
 
 [[package]]
