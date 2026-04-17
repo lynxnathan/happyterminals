@@ -82,120 +82,100 @@ impl InputContext {
         event: &Event,
         drag: Option<&DragOutput>,
     ) -> Option<FiredAction> {
-        // Check drag output first (if present)
         if let Some(drag_out) = drag {
+            if let Some(fired) = self.resolve_drag(drag_out) {
+                return Some(fired);
+            }
+        }
+        match event {
+            Event::Key(key_event) => self.resolve_key(key_event),
+            Event::Mouse(mouse_event) => self.resolve_mouse(*mouse_event),
+            _ => None,
+        }
+    }
+
+    fn resolve_drag(&self, drag_out: &DragOutput) -> Option<FiredAction> {
+        for cb in &self.bindings {
+            if let Binding::Drag { button, axis } = &cb.binding {
+                if *button == drag_out.button {
+                    let raw_value = match axis {
+                        DragAxis::Both => ActionValue::Axis2D(drag_out.delta),
+                        DragAxis::Horizontal => ActionValue::Axis1D(drag_out.delta.x),
+                        DragAxis::Vertical => ActionValue::Axis1D(drag_out.delta.y),
+                    };
+                    return Some(FiredAction {
+                        action_key: cb.action_key.clone(),
+                        raw_value,
+                        modifiers: cb.modifiers.clone(),
+                    });
+                }
+            }
+        }
+        None
+    }
+
+    fn resolve_key(&self, key_event: &crossterm::event::KeyEvent) -> Option<FiredAction> {
+        let pressed = key_event.kind == KeyEventKind::Press;
+        let released = key_event.kind == KeyEventKind::Release;
+        if !pressed && !released {
+            return None;
+        }
+        for cb in &self.bindings {
+            let matches = match &cb.binding {
+                Binding::Key(code) => {
+                    *code == key_event.code && (released || key_event.modifiers == KeyModifiers::NONE)
+                }
+                Binding::KeyWithModifier { key, modifier } => {
+                    *key == key_event.code
+                        && (released || key_event.modifiers.contains(*modifier))
+                }
+                _ => false,
+            };
+            if matches {
+                return Some(FiredAction {
+                    action_key: cb.action_key.clone(),
+                    raw_value: ActionValue::Bool(pressed),
+                    modifiers: if pressed { cb.modifiers.clone() } else { vec![] },
+                });
+            }
+        }
+        None
+    }
+
+    fn resolve_mouse(&self, mouse_event: crossterm::event::MouseEvent) -> Option<FiredAction> {
+        let scroll_dir = match mouse_event.kind {
+            MouseEventKind::ScrollUp => Some(ScrollDirection::Up),
+            MouseEventKind::ScrollDown => Some(ScrollDirection::Down),
+            MouseEventKind::ScrollLeft => Some(ScrollDirection::Left),
+            MouseEventKind::ScrollRight => Some(ScrollDirection::Right),
+            _ => None,
+        };
+        if let Some(dir) = scroll_dir {
             for cb in &self.bindings {
-                if let Binding::Drag { button, axis } = &cb.binding {
-                    if *button == drag_out.button {
-                        let raw_value = match axis {
-                            DragAxis::Both => ActionValue::Axis2D(drag_out.delta),
-                            DragAxis::Horizontal => {
-                                ActionValue::Axis1D(drag_out.delta.x)
-                            }
-                            DragAxis::Vertical => {
-                                ActionValue::Axis1D(drag_out.delta.y)
-                            }
-                        };
+                if let Binding::Scroll(sd) = &cb.binding {
+                    if *sd == dir {
                         return Some(FiredAction {
                             action_key: cb.action_key.clone(),
-                            raw_value,
+                            raw_value: ActionValue::Axis1D(1.0),
                             modifiers: cb.modifiers.clone(),
                         });
                     }
                 }
             }
         }
-
-        // Then match the raw event
-        match event {
-            Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                for cb in &self.bindings {
-                    match &cb.binding {
-                        Binding::Key(code) if *code == key_event.code
-                            && key_event.modifiers == KeyModifiers::NONE =>
-                        {
-                            return Some(FiredAction {
-                                action_key: cb.action_key.clone(),
-                                raw_value: ActionValue::Bool(true),
-                                modifiers: cb.modifiers.clone(),
-                            });
-                        }
-                        Binding::KeyWithModifier { key, modifier }
-                            if *key == key_event.code
-                                && key_event.modifiers.contains(*modifier) =>
-                        {
-                            return Some(FiredAction {
-                                action_key: cb.action_key.clone(),
-                                raw_value: ActionValue::Bool(true),
-                                modifiers: cb.modifiers.clone(),
-                            });
-                        }
-                        _ => {}
+        if let MouseEventKind::Down(btn) = mouse_event.kind {
+            for cb in &self.bindings {
+                if let Binding::MouseButton(mb) = &cb.binding {
+                    if *mb == btn {
+                        return Some(FiredAction {
+                            action_key: cb.action_key.clone(),
+                            raw_value: ActionValue::Bool(true),
+                            modifiers: cb.modifiers.clone(),
+                        });
                     }
                 }
             }
-            Event::Key(key_event) if key_event.kind == KeyEventKind::Release => {
-                for cb in &self.bindings {
-                    match &cb.binding {
-                        Binding::Key(code) if *code == key_event.code => {
-                            return Some(FiredAction {
-                                action_key: cb.action_key.clone(),
-                                raw_value: ActionValue::Bool(false),
-                                modifiers: vec![],
-                            });
-                        }
-                        Binding::KeyWithModifier { key, .. }
-                            if *key == key_event.code =>
-                        {
-                            return Some(FiredAction {
-                                action_key: cb.action_key.clone(),
-                                raw_value: ActionValue::Bool(false),
-                                modifiers: vec![],
-                            });
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            Event::Mouse(mouse_event) => {
-                let scroll_dir = match mouse_event.kind {
-                    MouseEventKind::ScrollUp => Some(ScrollDirection::Up),
-                    MouseEventKind::ScrollDown => Some(ScrollDirection::Down),
-                    MouseEventKind::ScrollLeft => Some(ScrollDirection::Left),
-                    MouseEventKind::ScrollRight => Some(ScrollDirection::Right),
-                    _ => None,
-                };
-                if let Some(dir) = scroll_dir {
-                    for cb in &self.bindings {
-                        if let Binding::Scroll(sd) = &cb.binding {
-                            if *sd == dir {
-                                return Some(FiredAction {
-                                    action_key: cb.action_key.clone(),
-                                    raw_value: ActionValue::Axis1D(1.0),
-                                    modifiers: cb.modifiers.clone(),
-                                });
-                            }
-                        }
-                    }
-                }
-                // Mouse button press
-                if let MouseEventKind::Down(btn) = mouse_event.kind {
-                    for cb in &self.bindings {
-                        if let Binding::MouseButton(mb) = &cb.binding {
-                            if *mb == btn {
-                                return Some(FiredAction {
-                                    action_key: cb.action_key.clone(),
-                                    raw_value: ActionValue::Bool(true),
-                                    modifiers: cb.modifiers.clone(),
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            _ => {}
         }
-
         None
     }
 
