@@ -58,7 +58,7 @@ pub mod prelude {
 
     // Renderer types
     pub use happyterminals_renderer::{OrbitCamera, Projection, ShadingRamp};
-    pub use happyterminals_renderer::{Cube, LoadStats, Mesh, MeshError, load_obj};
+    pub use happyterminals_renderer::{Cube, LoadStats, Mesh, MeshError, load_obj, load_stl};
     pub use happyterminals_renderer::{Particle, ParticleEmitter, lerp_color};
 
     // Pipeline
