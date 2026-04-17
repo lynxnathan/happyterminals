@@ -40,7 +40,12 @@ const BUNNY_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../examples/models/bunny.obj"
 );
-const AUTO_ROTATION_SPEED: f32 = 0.6; // radians per second — slow, cinematic
+const AUTO_ROTATION_SPEED: f32 = 0.22; // rad/s — slow + cinematic, not a kitchen-timer spin
+const INITIAL_CAMERA_DISTANCE: f32 = 2.8; // close enough that the bunny owns the frame
+const INITIAL_CAMERA_ELEVATION: f32 = 0.4; // slightly above horizon — shows the bunny's back
+const ELEVATION_SWAY_AMPLITUDE: f32 = 0.1; // radians — subtle nodding, not a coaster
+const ELEVATION_SWAY_FREQ: f32 = 0.3; // rad/s — slow breath
+const FRAME_DT: f32 = 0.033; // ~30fps cadence assumed by the tick closure
 const REVEAL_DURATION_MS: u64 = 1800; // long enough to see the animation land
 const ZOOM_SENSITIVITY: f32 = 0.5;
 const MIN_CAMERA_DISTANCE: f32 = 1.5;
@@ -77,13 +82,23 @@ fn coalesce_reveal(rect: Rect) -> TachyonAdapter {
 
 const REVEAL_EFFECTS: &[RevealFn] = &[fade_reveal, sweep_reveal, coalesce_reveal];
 
-/// Title rect: centered horizontally, 4 rows tall, near the top so the bunny
-/// has room to render below.
+/// Title rect: centered horizontally, 4 rows tall, anchored tight to the top
+/// of the grid so the bunny owns the central/vertical frame real estate.
+/// The title reads as a title card overlay, not as a co-star.
 fn title_rect(grid_area: Rect) -> Rect {
     let width = 44u16.min(grid_area.width.saturating_sub(2));
     let x = grid_area.x + grid_area.width.saturating_sub(width) / 2;
-    let y = grid_area.y + 4;
+    let y = grid_area.y + 1;
     Rect::new(x, y, width, 4)
+}
+
+/// Compute the cinematic elevation sway at a given elapsed time. Oscillates
+/// around a base elevation so the bunny has a sense of breath rather than
+/// spinning at a fixed camera height.
+#[inline]
+#[must_use]
+pub fn elevation_at(base_elev: f32, elapsed_secs: f32) -> f32 {
+    base_elev + ELEVATION_SWAY_AMPLITUDE * (elapsed_secs * ELEVATION_SWAY_FREQ).sin()
 }
 
 fn make_pipeline(effect_idx: usize, rect: Rect) -> Pipeline {
@@ -145,13 +160,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load bunny once, up front (propagates cleanly if asset missing).
     let (bunny, _stats) = load_obj(BUNNY_PATH)?;
 
-    // Camera: slow orbit, elevation slightly above horizon.
+    // Camera: slow orbit, slightly above horizon, close enough that the bunny
+    // dominates the frame. Elevation here is the *commanded* base — a subtle
+    // sinusoidal sway is added at render time so the motion reads as "alive"
+    // rather than "spinning prop".
     let mut camera = OrbitCamera {
         azimuth: 0.0,
-        elevation: 0.3,
-        distance: 4.0,
+        elevation: INITIAL_CAMERA_ELEVATION,
+        distance: INITIAL_CAMERA_DISTANCE,
         ..OrbitCamera::default()
     };
+    let mut commanded_elevation = INITIAL_CAMERA_ELEVATION;
+    let mut elapsed_secs: f32 = 0.0;
 
     let mut renderer = Renderer::new();
     let shading = ShadingRamp::default();
@@ -195,23 +215,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
 
             // 2. Camera: apply orbit/pan/zoom from input, then auto-rotate when idle.
-            let auto_rotate_this_frame = AUTO_ROTATION_SPEED * 0.033;
-            apply_camera_inputs(
+            //    camera.elevation here is the *commanded* value (changed only by user
+            //    orbit input). The render-time elevation adds a subtle sinusoidal sway
+            //    so the bunny feels alive rather than spinning at a locked height.
+            elapsed_secs += FRAME_DT;
+            let auto_rotate_this_frame = AUTO_ROTATION_SPEED * FRAME_DT;
+            let (_zoom, orbit_delta) = apply_camera_inputs(
                 &mut camera,
                 imap,
                 grid.area.width,
                 grid.area.height,
                 auto_rotate_this_frame,
             );
+            if orbit_delta.y != 0.0 {
+                // User drag-orbited vertically — re-anchor the sway around the new base.
+                commanded_elevation = camera.elevation;
+            }
+            let sway_elevation = elevation_at(commanded_elevation, elapsed_secs);
 
-            // 3. Draw bunny into the grid.
+            // 3. Draw bunny into the grid — use swayed elevation, restore commanded after.
             let projection = Projection {
                 viewport_w: grid.area.width,
                 viewport_h: grid.area.height,
                 fov_y: FOV,
                 ..Projection::default()
             };
+            let render_elevation_was = camera.elevation;
+            camera.elevation = sway_elevation;
             renderer.draw(grid, &bunny, &camera, &projection, &shading);
+            camera.elevation = render_elevation_was;
 
             // 4. Write title text INSIDE the bounded rect, EVERY frame.
             //    Cells are overwritten -> effect sees fresh target each tick.
@@ -405,6 +437,86 @@ mod tests {
                 cam.azimuth
             );
         });
+    }
+
+    #[test]
+    fn title_rect_anchors_tight_to_top_for_bunny_hero_frame() {
+        // The title must sit as close to the top edge as possible (row 1)
+        // so the bunny owns the central/vertical frame. If this drifts
+        // back to y+4 the composition loses its hero quality.
+        let grid_area = Rect::new(0, 0, 80, 24);
+        let rect = title_rect(grid_area);
+        assert_eq!(rect.y, grid_area.y + 1, "title must anchor at grid.y + 1 (tight to top)");
+        assert_eq!(rect.height, 4, "title height should stay at 4 rows");
+    }
+
+    #[test]
+    fn initial_camera_is_close_enough_for_hero_composition() {
+        // If the bunny doesn't fill the frame, it reads as a prop instead of
+        // the hero. This test pins the close-camera choice.
+        assert!(
+            INITIAL_CAMERA_DISTANCE <= 3.0,
+            "initial camera distance must be <= 3.0 for hero-scale bunny; got {}",
+            INITIAL_CAMERA_DISTANCE
+        );
+        assert!(
+            INITIAL_CAMERA_DISTANCE >= MIN_CAMERA_DISTANCE,
+            "initial distance must be >= MIN_CAMERA_DISTANCE"
+        );
+    }
+
+    #[test]
+    fn auto_rotation_is_cinematic_not_spinning() {
+        // A "spinning prop" feel comes from azimuth rotation > ~0.4 rad/s.
+        // Cap the auto-rotation at the cinematic range.
+        assert!(
+            AUTO_ROTATION_SPEED <= 0.3,
+            "AUTO_ROTATION_SPEED must be <= 0.3 rad/s for cinematic feel; got {}",
+            AUTO_ROTATION_SPEED
+        );
+    }
+
+    #[test]
+    fn elevation_sway_oscillates_around_base() {
+        // At elapsed=0 the sway contribution is zero — we start at the base.
+        let base = 0.4_f32;
+        assert!((elevation_at(base, 0.0) - base).abs() < 1e-6);
+
+        // After a quarter-period the sway reaches its positive peak.
+        let quarter_period = (std::f32::consts::FRAC_PI_2) / ELEVATION_SWAY_FREQ;
+        let peak = elevation_at(base, quarter_period);
+        assert!(
+            (peak - (base + ELEVATION_SWAY_AMPLITUDE)).abs() < 1e-4,
+            "at quarter-period elevation should be base + amplitude; got {}",
+            peak
+        );
+
+        // Sway amplitude must be subtle (≤ 0.15 rad ≈ 8.6°) — anything more
+        // feels like a rollercoaster, not a breath.
+        assert!(
+            ELEVATION_SWAY_AMPLITUDE <= 0.15,
+            "elevation sway amplitude must stay subtle (<= 0.15 rad); got {}",
+            ELEVATION_SWAY_AMPLITUDE
+        );
+    }
+
+    #[test]
+    fn elevation_sway_is_continuous_not_stepped() {
+        // Frame-to-frame elevation change from sway must be small — no jumps.
+        let base = 0.4_f32;
+        let mut prev = elevation_at(base, 0.0);
+        for i in 1..300 {
+            let t = (i as f32) * FRAME_DT;
+            let cur = elevation_at(base, t);
+            let jump = (cur - prev).abs();
+            assert!(
+                jump < 0.05,
+                "frame-to-frame elevation jump must be < 0.05; got {} at t={}",
+                jump,
+                t
+            );
+            prev = cur;
+        }
     }
 
     #[test]
