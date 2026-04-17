@@ -2,15 +2,15 @@
 eclusa_state_version: 1.0
 milestone: v2.0
 milestone_name: exit gates
-status: executing
-stopped_at: Completed 03.2-02-PLAN.md (prelude wiring + sample recipe)
-last_updated: "2026-04-17T08:55:53.817Z"
+status: verifying
+stopped_at: Completed 03.3-01-PLAN.md (JSON sandbox — EffectRegistry, sanitize_path, strip_ansi, load_recipe_sandboxed)
+last_updated: "2026-04-17T20:52:50.530Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  completed_phases: 3
+  total_plans: 6
+  completed_plans: 6
   percent: 62
 ---
 
@@ -21,23 +21,16 @@ progress:
 See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Phase 03.2 — JSON Recipe Loader + Schema
+**Current focus:** Phase 03.3 — json-sandbox
 
 ## Current Position
 
-<<<<<<< Updated upstream
-Phase: 3.3
-Plan: Not started
-Status: Executing Phase 03.2
+Phase: 03.3 (json-sandbox) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
 Last activity: 2026-04-17
-=======
-Phase: 03.2 (JSON Recipe Loader + Schema) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 03.2
-Last activity: 2026-04-17 -- Phase 03.2 execution started
->>>>>>> Stashed changes
 
-Progress: [============░░░░░░░░] 62% (v1.0 complete, v2.0 Phase 03.2 in progress)
+Progress: [============░░░░░░░░] 62% (v1.0 complete, v2.0 Phase 03.3 in progress)
 
 ## Performance Metrics
 
@@ -68,6 +61,10 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - RecipeError kept in DSL crate, not extending SceneError
 - JSON props stored as PropValue::Static(Box<serde_json::Value>)
 - scene_ir_to_recipe exported in prelude alongside load_recipe for round-trip utility
+- [Phase 03.3]: sanitize_path is pure-string (no canonicalize): avoids symlink surprises and non-existent-file errors
+- [Phase 03.3]: ANSI stripping is a byte-level scanner, not a regex — zero new dependencies, UTF-8 safe because ESC bytes are ASCII
+- [Phase 03.3]: load_recipe left unchanged; load_recipe_sandboxed is the new default for untrusted input
+- [Phase 03.3]: Sandboxed mesh paths store the cleaned relative path, not the joined path; downstream keeps asset-root-relative lookup
 
 ### Pending Todos
 
@@ -80,7 +77,7 @@ None yet for v2.0.
 
 ## Session Continuity
 
-Last session: 2026-04-17
-Stopped at: Completed 03.2-02-PLAN.md (prelude wiring + sample recipe)
+Last session: 2026-04-17T20:52:50.527Z
+Stopped at: Completed 03.3-01-PLAN.md (JSON sandbox — EffectRegistry, sanitize_path, strip_ansi, load_recipe_sandboxed)
 Resume file: None
 Next command: Execute 03.2-03-PLAN.md (JSON sandbox)

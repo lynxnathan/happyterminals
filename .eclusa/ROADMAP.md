@@ -90,7 +90,7 @@ Plans:
   3. User-provided strings that land in Grid cells have ANSI escape sequences stripped -- a JSON recipe containing `\x1b[2J` in a text field renders the literal characters, not a screen clear
 **Plans:** 1 plan
 Plans:
-- [ ] 03.3-01-PLAN.md -- Sandbox module (effect registry, path sandboxing, ANSI stripping) + load_recipe_sandboxed integration
+- [x] 03.3-01-PLAN.md -- Sandbox module (effect registry, path sandboxing, ANSI stripping) + load_recipe_sandboxed integration
 
 ### Phase 3.4: Examples Library
 **Goal**: New users can learn the library through 5+ self-contained, documented examples covering the major feature areas
