@@ -2,15 +2,15 @@
 eclusa_state_version: 1.0
 milestone: v2.0
 milestone_name: exit gates
-status: verifying
-stopped_at: Phase 3.4 context gathered
-last_updated: "2026-04-17T21:21:03.635Z"
+status: executing
+stopped_at: Completed 03.4-01-PLAN.md (prelude sandbox re-exports)
+last_updated: "2026-04-17T21:52:26.299Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 11
+  completed_plans: 7
   percent: 62
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: `.eclusa/PROJECT.md` (updated 2026-04-17)
 
 **Core value:** Terminal art should feel like magic, not plumbing.
-**Current focus:** Phase 03.3 — json-sandbox
+**Current focus:** Phase 03.4 — examples-library
 
 ## Current Position
 
-Phase: 3.4
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 03.4 (examples-library) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
 Last activity: 2026-04-17
 
 Progress: [============░░░░░░░░] 62% (v1.0 complete, v2.0 Phase 03.3 in progress)
@@ -65,6 +65,8 @@ Decisions logged in PROJECT.md Key Decisions table. Recent:
 - [Phase 03.3]: ANSI stripping is a byte-level scanner, not a regex — zero new dependencies, UTF-8 safe because ESC bytes are ASCII
 - [Phase 03.3]: load_recipe left unchanged; load_recipe_sandboxed is the new default for untrusted input
 - [Phase 03.3]: Sandboxed mesh paths store the cleaned relative path, not the joined path; downstream keeps asset-root-relative lookup
+- [Phase 03.4]: Phase 03.4 Plan 01: happyterminals::prelude mirrors happyterminals-dsl::prelude for JSON/sandbox surface (load_recipe_sandboxed, SandboxConfig, EffectRegistry) — single-import pattern preserved for downstream examples
+- [Phase 03.4]: Phase 03.4 Plan 01: 5 pre-existing clippy errors in examples/model-viewer/main.rs deferred to Phase 03.5 pre-publish lint cleanup (SCOPE BOUNDARY — out of current plan scope)
 
 ### Pending Todos
 
@@ -77,7 +79,7 @@ None yet for v2.0.
 
 ## Session Continuity
 
-Last session: 2026-04-17T21:21:03.631Z
-Stopped at: Phase 3.4 context gathered
-Resume file: .eclusa/phases/03.4-examples-library/03.4-CONTEXT.md
+Last session: 2026-04-17T21:52:26.296Z
+Stopped at: Completed 03.4-01-PLAN.md (prelude sandbox re-exports)
+Resume file: None
 Next command: Execute 03.2-03-PLAN.md (JSON sandbox)
