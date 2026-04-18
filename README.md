@@ -8,11 +8,12 @@
 
 ![happyterminals showcase — money rain, heat-mapped 3D model, menu swap, text input, axis gizmo](recordings/showcase.webp)
 
-A declarative, reactive terminal scene manager with GPU-quality visual effects
-rendered as pure text. You describe what you want with signals, cameras, and
-layers — the framework handles projection, compositing, and ANSI output.
-Runs on every terminal ever made, from Windows Terminal to an SSH session
-into a Raspberry Pi.
+Spatial composition primitives on the teletyper contract. Fine-grained signal
+reactivity (SolidJS-style), a react-three-fiber-shaped scene graph, the
+tachyonfx effects pipeline, and z-buffered ASCII 3D — stacked at the
+character-cell level. Describe the scene; happyterminals handles projection,
+compositing, and ANSI output. Runs on every terminal ever made, from Windows
+Terminal to an SSH session into a Raspberry Pi.
 
 ## See it
 
