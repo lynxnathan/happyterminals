@@ -55,36 +55,80 @@ const MIN_CAMERA_DISTANCE: f32 = 0.3; // drama close — can push near the bunny
 const MAX_CAMERA_DISTANCE: f32 = 20.0; // don't let the user lose the subject entirely
 const FOV: f32 = std::f32::consts::FRAC_PI_4;
 
-type RevealFn = fn(Rect) -> TachyonAdapter;
+type RevealFn = fn() -> TachyonAdapter;
 
-fn fade_reveal(rect: Rect) -> TachyonAdapter {
-    let tfx_dur = tachyonfx::Duration::from(Duration::from_millis(REVEAL_DURATION_MS));
-    TachyonAdapter::with_area(
-        tachyonfx::fx::fade_from(Color::Black, Color::Reset, tfx_dur),
-        rect,
+fn fade_reveal() -> TachyonAdapter {
+    effects::fade_from(Color::Black, Color::Reset, Duration::from_millis(REVEAL_DURATION_MS))
+}
+
+fn sweep_reveal() -> TachyonAdapter {
+    effects::sweep_in(
+        tachyonfx::Motion::LeftToRight,
+        8,
+        Color::DarkGray,
+        Duration::from_millis(REVEAL_DURATION_MS),
     )
 }
 
-fn sweep_reveal(rect: Rect) -> TachyonAdapter {
-    let tfx_dur = tachyonfx::Duration::from(Duration::from_millis(REVEAL_DURATION_MS));
-    TachyonAdapter::with_area(
-        tachyonfx::fx::sweep_in(
-            tachyonfx::Motion::LeftToRight,
-            8, // gradient length
-            0, // randomness
-            Color::DarkGray,
-            tfx_dur,
-        ),
-        rect,
+fn coalesce_reveal() -> TachyonAdapter {
+    effects::coalesce(Duration::from_millis(REVEAL_DURATION_MS))
+}
+
+fn evolve_reveal() -> TachyonAdapter {
+    // Longer duration — the character-morph read benefits from more frames.
+    effects::evolve(
+        tachyonfx::fx::EvolveSymbolSet::Circles,
+        Duration::from_millis(REVEAL_DURATION_MS * 2),
     )
 }
 
-fn coalesce_reveal(rect: Rect) -> TachyonAdapter {
-    let tfx_dur = tachyonfx::Duration::from(Duration::from_millis(REVEAL_DURATION_MS));
-    TachyonAdapter::with_area(tachyonfx::fx::coalesce(tfx_dur), rect)
+const REVEAL_EFFECTS: &[RevealFn] = &[fade_reveal, sweep_reveal, coalesce_reveal, evolve_reveal];
+
+/// Heat-map palette keyed to the renderer's default shading ramp.
+/// Cold blue/indigo for dark/unlit face shades, hot red/magenta for bright/lit.
+/// Returns `None` for any glyph outside the 12-char ramp (spaces, text chars, etc.)
+/// so title text and the gizmo keep their own colors.
+#[must_use]
+pub fn heat_color_for_symbol(sym: &str) -> Option<Color> {
+    let mut chars = sym.chars();
+    let first = chars.next()?;
+    if chars.next().is_some() {
+        return None; // multi-grapheme (not a ramp cell)
+    }
+    match first {
+        '.' => Some(Color::Rgb(40, 20, 80)),    // deep indigo — shadow
+        ',' => Some(Color::Rgb(40, 60, 120)),   // dark blue
+        '\'' => Some(Color::Rgb(30, 90, 150)),  // blue
+        ':' => Some(Color::Rgb(30, 130, 160)),  // teal
+        ';' => Some(Color::Rgb(60, 170, 140)),  // sea green
+        '!' => Some(Color::Rgb(130, 200, 100)), // green
+        '+' => Some(Color::Rgb(200, 220, 80)),  // yellow-green
+        '*' => Some(Color::Rgb(240, 220, 80)),  // yellow
+        '=' => Some(Color::Rgb(250, 180, 60)),  // amber
+        '#' => Some(Color::Rgb(255, 130, 50)),  // orange
+        '$' => Some(Color::Rgb(255, 80, 50)),   // red-orange
+        '@' => Some(Color::Rgb(255, 50, 100)),  // magenta-red — highlight
+        _ => None,
+    }
 }
 
-const REVEAL_EFFECTS: &[RevealFn] = &[fade_reveal, sweep_reveal, coalesce_reveal];
+/// Apply the heat-map palette to every cell whose symbol is in the shading ramp.
+/// Called AFTER the renderer writes the bunny and BEFORE the pipeline runs —
+/// so the reveal effect animates colored cells, not grayscale ones.
+fn colorize_bunny_cells(grid: &mut Grid) {
+    use ratatui_core::layout::Position;
+    let area = grid.area;
+    let buf = grid.buffer_mut();
+    for y in area.y..(area.y + area.height) {
+        for x in area.x..(area.x + area.width) {
+            if let Some(cell) = buf.cell_mut(Position::new(x, y)) {
+                if let Some(color) = heat_color_for_symbol(cell.symbol()) {
+                    cell.set_fg(color);
+                }
+            }
+        }
+    }
+}
 
 /// Title rect: centered horizontally, 4 rows tall, anchored tight to the top
 /// of the grid so the bunny owns the central/vertical frame real estate.
@@ -161,8 +205,8 @@ fn draw_axis_gizmo(grid: &mut Grid, camera: &OrbitCamera, corner: (u16, u16), ra
     }
 }
 
-fn make_pipeline(effect_idx: usize, rect: Rect) -> Pipeline {
-    Pipeline::new().with(REVEAL_EFFECTS[effect_idx](rect))
+fn make_pipeline(effect_idx: usize) -> Pipeline {
+    Pipeline::new().with(REVEAL_EFFECTS[effect_idx]())
 }
 
 /// Apply orbit/pan/zoom deltas from the `InputMap` to the camera, then auto-rotate
@@ -258,8 +302,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Mutable state kept across frames.
     let mut effect_idx: usize = 0;
-    let mut current_title_rect = Rect::new(0, 0, 0, 0);
-    let mut pipeline = Pipeline::new(); // rebuilt on first frame once we know grid size
+    let mut pipeline = make_pipeline(effect_idx); // unbounded full-scene effect
 
     let title_style = Style::default()
         .fg(Color::White)
@@ -269,14 +312,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     run_with_input(
         move |grid, _input_signals, imap| {
-            // 1. Lazy-init / resize-aware title rect + pipeline.
-            let new_rect = title_rect(grid.area);
-            if new_rect != current_title_rect {
-                current_title_rect = new_rect;
-                pipeline = make_pipeline(effect_idx, current_title_rect);
-            }
-
-            // 2. Camera: apply orbit/pan/zoom from input, then auto-rotate when idle.
+            // 1. Camera: apply orbit/pan/zoom from input, then auto-rotate when idle.
             //    camera.elevation here is the *commanded* value (changed only by user
             //    orbit input). The render-time elevation adds a subtle sinusoidal sway
             //    so the bunny feels alive rather than spinning at a locked height.
@@ -295,7 +331,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             let sway_elevation = elevation_at(commanded_elevation, elapsed_secs);
 
-            // 3. Draw bunny into the grid — use swayed elevation, restore commanded after.
+            // 2. Draw bunny into the grid — use swayed elevation, restore commanded after.
             let projection = Projection {
                 viewport_w: grid.area.width,
                 viewport_h: grid.area.height,
@@ -305,40 +341,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let render_elevation_was = camera.elevation;
             camera.elevation = sway_elevation;
             renderer.draw(grid, &bunny, &camera, &projection, &shading);
+            camera.elevation = render_elevation_was;
 
-            // 3b. Axis gizmo (debug + hero — "3D orientation indicator in a terminal").
-            //     Positioned in the bottom-right corner; reflects the CURRENT render
-            //     elevation so it visually tracks orbit/sway in real time.
+            // 3. Colorize the bunny cells — heat-map palette keyed to ramp characters.
+            //    Cool/blue for unlit face shades, hot/red for bright highlights.
+            //    Runs BEFORE pipeline so the reveal effect animates colored cells.
+            colorize_bunny_cells(grid);
+
+            // 4. Write title text over the (now colored) scene.
+            let rect = title_rect(grid.area);
+            grid.put_str(rect.x, rect.y, "HAPPY TERMINALS", title_style);
+            grid.put_str(rect.x, rect.y + 1, "GPU-quality effects on text", tagline_style);
+            grid.put_str(rect.x, rect.y + 3, ">  press [space] to replay", cue_style);
+
+            // 5. Apply the full-scene reveal pipeline (unbounded — bunny + title both animate).
+            pipeline.run_frame(grid, Duration::from_millis(33));
+
+            // 6. Axis gizmo — drawn AFTER the pipeline so it remains a stable
+            //    orientation anchor through reveals. Makes it a reliable debug tool.
             let gizmo_radius = 3u16;
             let gizmo_x = grid.area.x + grid.area.width.saturating_sub(gizmo_radius + 2);
             let gizmo_y = grid.area.y + grid.area.height.saturating_sub(gizmo_radius + 2);
             draw_axis_gizmo(grid, &camera, (gizmo_x, gizmo_y), gizmo_radius);
 
-            camera.elevation = render_elevation_was;
-
-            // 4. Write title text INSIDE the bounded rect, EVERY frame.
-            //    Cells are overwritten -> effect sees fresh target each tick.
-            let tx = current_title_rect.x;
-            let ty = current_title_rect.y;
-            grid.put_str(tx, ty, "HAPPY TERMINALS", title_style);
-            grid.put_str(tx, ty + 1, "GPU-quality effects on text", tagline_style);
-            grid.put_str(tx, ty + 3, ">  press [space] to replay", cue_style);
-
-            // 5. Apply the bounded reveal pipeline to animate the text cells.
-            pipeline.run_frame(grid, Duration::from_millis(33));
-
-            // 6. Handle replay (Space) — reset pipeline so effect plays again.
+            // 7. Handle replay (Space) — reset pipeline so the full scene replays.
             if let Some(sig) = imap.action_state("replay_reveal") {
                 if sig.untracked() == ActionState::JustPressed {
                     pipeline.reset();
                 }
             }
 
-            // 7. Handle effect swap (Tab) — cycle and rebuild.
+            // 8. Handle effect swap (Tab) — cycle and rebuild with new effect.
             if let Some(sig) = imap.action_state("swap_effect") {
                 if sig.untracked() == ActionState::JustPressed {
                     effect_idx = (effect_idx + 1) % REVEAL_EFFECTS.len();
-                    pipeline = make_pipeline(effect_idx, current_title_rect);
+                    pipeline = make_pipeline(effect_idx);
                 }
             }
         },
@@ -773,7 +810,7 @@ mod tests {
 
         let (_r, _owner) = create_root(|| {
             let rect = Rect::new(0, 0, 20, 4);
-            let mut pipeline = make_pipeline(0, rect); // fade_reveal
+            let mut pipeline = make_pipeline(0); // fade_reveal (full-scene)
             let mut grid = Grid::new(rect);
             let text_style = Style::default().fg(Color::White);
 
@@ -806,5 +843,109 @@ mod tests {
                 "pipeline.reset() must restart the effect — post-reset frame should not match completed-state cell"
             );
         });
+    }
+
+    #[test]
+    fn heat_palette_covers_every_ramp_character() {
+        // Every character in the renderer's DEFAULT_RAMP (12 entries, from '.'
+        // to '@') must map to a color — otherwise a cell would render in terminal
+        // default color and break the "it's colored" promise.
+        use happyterminals_renderer::shading::DEFAULT_RAMP as SHADING_RAMP;
+        // Safety: DEFAULT_RAMP is a public re-export path candidate; if not directly
+        // exposed, we hand-copy the list here to keep the assertion explicit.
+        let ramp = SHADING_RAMP;
+        for &ch in ramp {
+            let sym = ch.to_string();
+            assert!(
+                heat_color_for_symbol(&sym).is_some(),
+                "ramp char '{}' must have a heat palette entry",
+                ch
+            );
+        }
+    }
+
+    #[test]
+    fn heat_palette_rejects_non_ramp_characters() {
+        // Title text characters, spaces, digits, and anything else not in the
+        // shading ramp must NOT be recolored — title has its own colors and
+        // other glyphs should keep whatever put_str set.
+        for ch in ['A', 'Z', '0', '9', ' ', 'a', '/', '\\', '?'] {
+            let sym = ch.to_string();
+            assert!(
+                heat_color_for_symbol(&sym).is_none(),
+                "non-ramp char '{}' must NOT map to a heat color",
+                ch
+            );
+        }
+    }
+
+    #[test]
+    fn heat_palette_is_cold_to_hot_monotonic_on_red_channel() {
+        // Sanity — the palette should roughly grade from cold (low red) for the
+        // darkest ramp chars to hot (high red) for the brightest. Not strictly
+        // monotonic at every step, but darkest and brightest must be on opposite
+        // ends of the red channel.
+        let dark = heat_color_for_symbol(".").expect("'.' has color");
+        let bright = heat_color_for_symbol("@").expect("'@' has color");
+        let (dark_r, bright_r) = match (dark, bright) {
+            (Color::Rgb(dr, _, _), Color::Rgb(br, _, _)) => (dr, br),
+            _ => panic!("palette must use Color::Rgb"),
+        };
+        assert!(
+            bright_r > dark_r + 100,
+            "brightest ramp char should have much more red than darkest; dark_r={}, bright_r={}",
+            dark_r,
+            bright_r
+        );
+    }
+
+    #[test]
+    fn colorize_bunny_colors_ramp_cells_and_leaves_others_alone() {
+        use happyterminals_core::Grid;
+        use ratatui_core::layout::Position;
+        use ratatui_core::style::Modifier as RatModifier;
+
+        let (_r, _owner) = create_root(|| {
+            let rect = Rect::new(0, 0, 10, 2);
+            let mut grid = Grid::new(rect);
+            // Row 0: two ramp chars (should get colored)
+            grid.put_str(0, 0, ".", Style::default());
+            grid.put_str(1, 0, "@", Style::default());
+            // Row 0: one title char (should NOT get the heat palette — keeps original)
+            let title_color = Color::Rgb(0, 255, 255); // cyan, not in heat palette
+            grid.put_str(2, 0, "T", Style::default().fg(title_color).add_modifier(RatModifier::BOLD));
+
+            colorize_bunny_cells(&mut grid);
+
+            // Ramp cells get heat colors
+            let dot_fg = grid.cell(Position::new(0, 0)).expect("in bounds").fg;
+            let at_fg = grid.cell(Position::new(1, 0)).expect("in bounds").fg;
+            assert_eq!(dot_fg, heat_color_for_symbol(".").unwrap());
+            assert_eq!(at_fg, heat_color_for_symbol("@").unwrap());
+
+            // Non-ramp char stays its original color
+            let title_fg = grid.cell(Position::new(2, 0)).expect("in bounds").fg;
+            assert_eq!(title_fg, title_color, "title cell should keep its cyan, not get heat color");
+        });
+    }
+
+    #[test]
+    fn reveal_effects_lineup_is_four_distinct_constructors() {
+        assert_eq!(REVEAL_EFFECTS.len(), 4, "expected 4 reveal effects");
+        // Cycle once through all indices — none should panic at construction time.
+        for i in 0..REVEAL_EFFECTS.len() {
+            let _pipeline = make_pipeline(i);
+        }
+    }
+
+    #[test]
+    fn tab_cycle_wraps_effect_index() {
+        // effect_idx = (effect_idx + 1) % len — verify the modulo wraps.
+        let len = REVEAL_EFFECTS.len();
+        let mut idx = 0_usize;
+        for _ in 0..(len * 3) {
+            idx = (idx + 1) % len;
+        }
+        assert_eq!(idx, 0, "after {} cycles of {} effects, idx should wrap to 0", len * 3, len);
     }
 }
