@@ -1,0 +1,27 @@
+# Rust build artifacts
+/target
+/crates/**/target
+Cargo.lock.bak
+*.rs.bk
+
+# Editors / IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime log output from examples (debug-run artifacts)
+*.log
+
+# AI / harness artifacts (local state, not shared)
+.claude/
+.codex/
+.codex
+
+# Local toolchain overrides — canonical pin is rust-toolchain.toml
+.tool-versions
