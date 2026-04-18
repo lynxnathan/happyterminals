@@ -1,34 +1,61 @@
 # happyterminals
 
-> Terminal art should feel like magic, not plumbing.
+> **3D world on a teletyper.** Terminal art should feel like magic, not plumbing.
 
 [![CI](https://github.com/lynxnathan/happyterminals/actions/workflows/ci.yml/badge.svg)](https://github.com/lynxnathan/happyterminals/actions/workflows/ci.yml)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
-[![Rust](https://img.shields.io/badge/rust-1.86%2B-orange.svg)](rust-toolchain.toml)
+[![Rust](https://img.shields.io/badge/rust-1.88%2B-orange.svg)](rust-toolchain.toml)
 
-A declarative, reactive terminal scene manager with composable visual effects
-and ASCII 3D rendering. Describe a scene with signals, cameras, and layers --
-the framework handles projection, compositing, and ANSI output. Pure text,
-every terminal, everywhere.
+A declarative, reactive terminal scene manager with GPU-quality visual effects
+rendered as pure text. You describe what you want with signals, cameras, and
+layers — the framework handles projection, compositing, and ANSI output.
+Runs on every terminal ever made, from Windows Terminal to an SSH session
+into a Raspberry Pi.
 
-## Spinning Cube Demo
+## See it
 
-<!-- TODO: Replace with animated GIF or asciinema recording once captured -->
-<!-- asciinema rec / termsvg / vhs recording goes here -->
-
-*A signal-rotated, effect-enhanced ASCII cube rendered entirely in your terminal.*
-
-```
-cargo run --example spinning-cube
+```bash
+cargo run --example text-reveal -p happyterminals
 ```
 
-The spinning cube exercises the full stack end-to-end: reactive signals drive
-rotation, the 3D rasterizer projects and shades, the effect pipeline composites,
-and the ratatui backend paints pure ANSI text to any terminal.
+A rotating 3D bunny, heat-mapped by lighting, with tachyonfx text effects
+composed over it. Press **Space** to replay, **Tab** to cycle through four
+reveal effects, **scroll** to zoom (percentage-adaptive), **left-drag** to
+orbit, **right-drag** to pan. A small `X / Y / Z` axis gizmo in the corner
+shows the camera's orientation in real time.
 
-## Hello World
+Pure text, pure ANSI. No GPU, no OS APIs, no image protocols.
 
-A complete scene in under 20 lines:
+### More examples
+
+| Example | What it shows |
+|---------|---------------|
+| `model-viewer` | OBJ mesh loading, orbit/pan/zoom camera, cycle between bunny / cow / teapot |
+| `particles` | Pool-based particles with zero per-frame allocations over a rendered mesh |
+| `transitions` | Scene A → B named effects (dissolve, slide-left, fade-to-black) with clean owner disposal |
+| `json-loader` | Load a scene from JSON via a sandboxed loader — no eval, no arbitrary file I/O, ANSI-stripped |
+| `text-reveal` | The hero — tachyonfx text effects composed over a live 3D scene |
+| `spinning-cube` | ~40 LOC proof-of-stack — signals → 3D → pipeline → terminal |
+
+```bash
+cargo run --example <name> -p happyterminals
+```
+
+## Why
+
+Terminals have been a teletyping character-stream for fifty years. That
+constraint is the point — not the limitation. Every terminal since the VT100
+forwards keystrokes and paints glyphs; anything built on that substrate works
+everywhere, indefinitely, including over SSH to a bastion host or a Raspberry
+Pi. The constraint means stability.
+
+What's been missing from the terminal is **spatial composition**: depth,
+transitions, scene graphs, the primitives game engines made normal for UI
+decades ago. happyterminals brings them to the character grid — so your CLI
+tool, dashboard, or creative piece can *feel* three-dimensional without
+stepping outside the teletyper contract.
+
+## Hello world
 
 ```rust
 use happyterminals::prelude::*;
@@ -37,53 +64,93 @@ use happyterminals::prelude::*;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (result, _owner) = create_root(|| {
         let rotation = Signal::new(0.0_f32);
-        let r = rotation.clone();
+        let writer = rotation.clone();
         let scene = scene()
             .camera(OrbitCamera::default())
             .layer(0, |l| l.cube().rotation(&rotation))
             .build()?;
-        Ok((scene, r))
+        Ok::<_, Box<dyn std::error::Error>>((scene, writer))
     });
     let (scene, rotation) = result?;
+
     run_scene(scene, FrameSpec::default(), |dt, _| {
         rotation.set(rotation.untracked() + dt.as_secs_f32());
-    }).await
+    })
+    .await
 }
 ```
 
-## Features
+A spinning cube. ~20 lines. Every terminal.
 
-- **Fine-grained reactive signals** -- SolidJS-style `Signal`, `Memo`, `Effect` with surgical cell-level redraws (no VDOM diffing)
-- **3D ASCII rendering** -- perspective projection, z-buffer rasterization, shading ramp, orbit camera
-- **tachyonfx effects pipeline** -- 50+ composable visual effects via the official ratatui effects library
-- **Scene graph DSL** -- declarative builder API inspired by react-three-fiber: cameras, layers, meshes, signals as props
-- **Cross-terminal output** -- pure text + ANSI escapes; works on Windows Terminal, macOS Terminal.app, iTerm2, Kitty, tmux, screen, and SSH sessions
+## Install
 
-## Installation
+Currently pre-crates.io — use as a git dependency:
 
-```bash
-cargo add happyterminals
+```toml
+[dependencies]
+happyterminals = { git = "https://github.com/lynxnathan/happyterminals" }
+tokio = { version = "1", features = ["rt", "macros"] }
 ```
 
-Requires Rust 1.86+ (pinned via `rust-toolchain.toml`; `rustup` auto-installs).
+Requires **Rust 1.88+** (pinned via `rust-toolchain.toml`; `rustup`
+auto-installs).
 
-The async runtime is tokio (current-thread flavor):
+v1 release to crates.io is imminent — Phase 3.5 in the roadmap.
 
-```bash
-cargo add tokio --features rt,macros
+## Architecture
+
+A Cargo workspace of seven crates. Most users only touch the meta crate:
+
+```rust
+use happyterminals::prelude::*;
 ```
-
-## Crate Structure
 
 | Crate | Role |
 |-------|------|
-| [`happyterminals`](crates/happyterminals/) | Meta crate -- curated public surface (`use happyterminals::prelude::*`) |
-| [`happyterminals-core`](crates/happyterminals-core/) | Reactive primitives (`Signal`, `Memo`, `Effect`) and `Grid` buffer |
-| [`happyterminals-renderer`](crates/happyterminals-renderer/) | 3D projection, z-buffer rasterization, shading |
-| [`happyterminals-pipeline`](crates/happyterminals-pipeline/) | Effect trait, `Pipeline` executor, tachyonfx adapter |
-| [`happyterminals-scene`](crates/happyterminals-scene/) | Scene IR, scene graph, transition manager |
-| [`happyterminals-dsl`](crates/happyterminals-dsl/) | Rust builder API (`scene()`, `layer()`, `camera()`) |
-| [`happyterminals-backend-ratatui`](crates/happyterminals-backend-ratatui/) | Event loop, `TerminalGuard` RAII, ratatui bridge |
+| `happyterminals` | Curated public surface — the prelude |
+| `happyterminals-core` | Fine-grained reactive signals, grapheme-correct Grid buffer |
+| `happyterminals-renderer` | 3D projection, z-buffer rasterization, shading ramp, `Camera` trait |
+| `happyterminals-pipeline` | `Effect` trait, `Pipeline` executor, tachyonfx adapter |
+| `happyterminals-scene` | Scene IR, scene graph, `TransitionManager` with owner disposal |
+| `happyterminals-dsl` | Rust builder DSL + JSON recipe loader + security sandbox |
+| `happyterminals-backend-ratatui` | Event loop, `TerminalGuard` RAII, ratatui bridge |
+| `happyterminals-input` | Godot/Unreal-style `InputMap`, reactive action signals |
+
+## Design lineage
+
+- **SolidJS** — fine-grained reactivity without a VDOM. Signals are the source
+  of truth; redraws are surgical.
+- **react-three-fiber** — the declarative scene-graph feel (components as
+  nodes, props as state) applied to terminal output.
+- **tachyonfx** — the effects foundation. 50+ composable effects built on
+  ratatui.
+- **voxcii** — ASCII 3D rendering with a dotted shading ramp that keeps unlit
+  faces legible.
+- **ratatui** — the de-facto Rust TUI framework we render into.
+
+## Compatibility
+
+- **Terminals**: Windows Terminal, GNOME Terminal, macOS Terminal.app, iTerm2,
+  Kitty, Alacritty, WezTerm
+- **Multiplexers**: tmux, screen (minus some color modes)
+- **Remote**: works identically over SSH
+- **Baseline**: VT100-compatible terminals render characters but lose color
+- **No GPU, no OS APIs, no inline image protocols.** Pure ANSI.
+
+## What ships today
+
+- Reactive core — `Signal` / `Memo` / `Effect` / `Owner` / `batch` / `untracked`
+- 3D rendering — z-buffer, reversed-Z, perspective projection, OBJ/STL loading,
+  Orbit / FreeLook / FPS cameras
+- Particle system — pool-based, zero per-frame allocations
+- Color-mode cascade — truecolor → 256 → 16 → mono, `NO_COLOR` aware
+- Scene transitions — named effects, clean owner disposal, signal-bindable props
+- JSON recipes — schema validation, path sandboxing, ANSI-injection stripping
+- Input action system — rebindable mouse + keyboard, reactive action signals
+- 449 workspace tests. MSRV 1.88.
+
+Python bindings (PyO3) are the final milestone — the Rust layers are the
+engine; Python will be how creative coders reach for it.
 
 ## Development
 
@@ -91,26 +158,22 @@ cargo add tokio --features rt,macros
 cargo build --workspace
 cargo test --workspace
 cargo clippy --workspace --all-targets -- -D warnings
-cargo fmt --all
+bash scripts/smoke-examples.sh       # compile-check every example
+bash scripts/doc-lint-examples.sh    # enforce DEMO-05 header contract
 ```
-
-## Contributing
-
-See [`CONTRIBUTING.md`](./CONTRIBUTING.md). Contributions are welcome and
-will be dual-licensed under the project's terms.
 
 ## License
 
-Licensed under either of
+Dual-licensed at your option:
 
-- Apache License, Version 2.0 ([LICENSE-APACHE](./LICENSE-APACHE) or <https://www.apache.org/licenses/LICENSE-2.0>)
-- MIT License ([LICENSE-MIT](./LICENSE-MIT) or <https://opensource.org/license/mit>)
-
-at your option.
-
-### Contribution
+- [Apache License, Version 2.0](./LICENSE-APACHE) or
+  <https://www.apache.org/licenses/LICENSE-2.0>
+- [MIT License](./LICENSE-MIT) or <https://opensource.org/license/mit>
 
 Unless you explicitly state otherwise, any contribution intentionally
-submitted for inclusion in the work by you, as defined in the Apache-2.0
-license, shall be dual licensed as above, without any additional terms or
-conditions.
+submitted for inclusion in the work shall be dual-licensed under the same
+terms, without any additional terms or conditions.
+
+---
+
+*3D spatial awareness to teletyping.*
