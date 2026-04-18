@@ -47,8 +47,12 @@ const ELEVATION_SWAY_AMPLITUDE: f32 = 0.1; // radians — subtle nodding, not a 
 const ELEVATION_SWAY_FREQ: f32 = 0.3; // rad/s — slow breath
 const FRAME_DT: f32 = 0.033; // ~30fps cadence assumed by the tick closure
 const REVEAL_DURATION_MS: u64 = 1800; // long enough to see the animation land
-const ZOOM_SENSITIVITY: f32 = 0.5;
-const MIN_CAMERA_DISTANCE: f32 = 1.5;
+// Percentage-based zoom — each scroll tick multiplies distance by this factor.
+// 0.88 means ~12% closer per up-scroll / ~14% farther per down-scroll, and the
+// step size ADAPTS with distance (small moves when close, big moves when far).
+const ZOOM_FACTOR_PER_TICK: f32 = 0.88;
+const MIN_CAMERA_DISTANCE: f32 = 0.3; // drama close — can push near the bunny surface
+const MAX_CAMERA_DISTANCE: f32 = 20.0; // don't let the user lose the subject entirely
 const FOV: f32 = std::f32::consts::FRAC_PI_4;
 
 type RevealFn = fn(Rect) -> TachyonAdapter;
@@ -190,8 +194,10 @@ fn apply_camera_inputs(
     let mut zoom_delta = 0.0;
     if let Some(zoom_sig) = imap.action_axis1d("zoom") {
         zoom_delta = zoom_sig.untracked();
-        camera.distance =
-            (camera.distance - zoom_delta * ZOOM_SENSITIVITY).max(MIN_CAMERA_DISTANCE);
+        // Percentage-based (adaptive) zoom: step size scales with distance so
+        // the feel is consistent whether you're close to the bunny or far back.
+        camera.distance = (camera.distance * ZOOM_FACTOR_PER_TICK.powf(zoom_delta))
+            .clamp(MIN_CAMERA_DISTANCE, MAX_CAMERA_DISTANCE);
     }
 
     if let Some(pan_sig) = imap.action_axis2d("pan") {
@@ -481,6 +487,95 @@ mod tests {
                 "camera.distance must clamp at {}, got {}",
                 MIN_CAMERA_DISTANCE,
                 cam.distance
+            );
+        });
+    }
+
+    #[test]
+    fn zoom_clamps_at_max_distance() {
+        let (_r, _owner) = create_root(|| {
+            let mut imap = build_input_map();
+            // Many scroll-downs near max should not push past MAX_CAMERA_DISTANCE.
+            for _ in 0..50 {
+                imap.dispatch(&scroll_down_event());
+            }
+            let mut cam = OrbitCamera {
+                distance: MAX_CAMERA_DISTANCE - 0.1,
+                ..OrbitCamera::default()
+            };
+            let _ = apply_camera_inputs(&mut cam, &imap, 80, 24, 0.0);
+            assert!(
+                cam.distance <= MAX_CAMERA_DISTANCE,
+                "camera.distance must clamp at {}, got {}",
+                MAX_CAMERA_DISTANCE,
+                cam.distance
+            );
+        });
+    }
+
+    #[test]
+    fn zoom_is_adaptive_ratio_based_not_fixed_step() {
+        // With percentage-based zoom, the ABSOLUTE change per scroll tick
+        // should grow with distance — a scroll at distance 10 should move
+        // distance more (in absolute units) than a scroll at distance 1.
+        let (_r, _owner) = create_root(|| {
+            let mut imap1 = build_input_map();
+            imap1.dispatch(&scroll_up_event());
+            let mut cam_far = OrbitCamera {
+                distance: 10.0,
+                ..OrbitCamera::default()
+            };
+            apply_camera_inputs(&mut cam_far, &imap1, 80, 24, 0.0);
+            let absolute_far_move = 10.0 - cam_far.distance;
+
+            let mut imap2 = build_input_map();
+            imap2.dispatch(&scroll_up_event());
+            let mut cam_near = OrbitCamera {
+                distance: 1.0,
+                ..OrbitCamera::default()
+            };
+            apply_camera_inputs(&mut cam_near, &imap2, 80, 24, 0.0);
+            let absolute_near_move = 1.0 - cam_near.distance;
+
+            assert!(
+                absolute_far_move > absolute_near_move,
+                "adaptive zoom: far scroll should move more in absolute units \
+                 (far moved {}, near moved {})",
+                absolute_far_move,
+                absolute_near_move
+            );
+        });
+    }
+
+    #[test]
+    fn zoom_ratio_is_consistent_across_distances() {
+        // The RELATIVE change per scroll tick should be ~constant — same
+        // percentage whether you're close or far.
+        let (_r, _owner) = create_root(|| {
+            let mut imap1 = build_input_map();
+            imap1.dispatch(&scroll_up_event());
+            let mut cam_far = OrbitCamera {
+                distance: 10.0,
+                ..OrbitCamera::default()
+            };
+            apply_camera_inputs(&mut cam_far, &imap1, 80, 24, 0.0);
+            let far_ratio = cam_far.distance / 10.0;
+
+            let mut imap2 = build_input_map();
+            imap2.dispatch(&scroll_up_event());
+            let mut cam_near = OrbitCamera {
+                distance: 1.0,
+                ..OrbitCamera::default()
+            };
+            apply_camera_inputs(&mut cam_near, &imap2, 80, 24, 0.0);
+            let near_ratio = cam_near.distance / 1.0;
+
+            assert!(
+                (far_ratio - near_ratio).abs() < 0.01,
+                "zoom ratio must be ~constant regardless of distance: \
+                 far={}, near={}",
+                far_ratio,
+                near_ratio
             );
         });
     }
