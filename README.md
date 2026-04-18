@@ -6,6 +6,8 @@
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
 [![Rust](https://img.shields.io/badge/rust-1.88%2B-orange.svg)](rust-toolchain.toml)
 
+![happyterminals showcase — money rain, heat-mapped 3D model, menu swap, text input, axis gizmo](recordings/showcase.webp)
+
 A declarative, reactive terminal scene manager with GPU-quality visual effects
 rendered as pure text. You describe what you want with signals, cameras, and
 layers — the framework handles projection, compositing, and ANSI output.
@@ -15,26 +17,24 @@ into a Raspberry Pi.
 ## See it
 
 ```bash
-cargo run --example text-reveal -p happyterminals
+cargo run --example showcase -p happyterminals
 ```
 
-A rotating 3D bunny, heat-mapped by lighting, with tachyonfx text effects
-composed over it. Press **Space** to replay, **Tab** to cycle through four
-reveal effects, **scroll** to zoom (percentage-adaptive), **left-drag** to
-orbit, **right-drag** to pan. A small `X / Y / Z` axis gizmo in the corner
-shows the camera's orientation in real time.
+The demo above: four 3D models (bunny / cow / teapot / cube), menu-driven
+navigation, money particles raining continuously with gravity, live text
+input, reveal effects on scene swap, a persistent X/Y/Z axis gizmo. All
+pure ASCII + ANSI — no GPU, no OS APIs, no image protocols.
 
-Pure text, pure ANSI. No GPU, no OS APIs, no image protocols.
-
-### More examples
+### All examples
 
 | Example | What it shows |
 |---------|---------------|
+| `showcase` | The hero — everything composed (menu + 3D + particles + text input + effects) |
+| `text-reveal` | tachyonfx text effects composed over a live 3D scene |
 | `model-viewer` | OBJ mesh loading, orbit/pan/zoom camera, cycle between bunny / cow / teapot |
 | `particles` | Pool-based particles with zero per-frame allocations over a rendered mesh |
 | `transitions` | Scene A → B named effects (dissolve, slide-left, fade-to-black) with clean owner disposal |
 | `json-loader` | Load a scene from JSON via a sandboxed loader — no eval, no arbitrary file I/O, ANSI-stripped |
-| `text-reveal` | The hero — tachyonfx text effects composed over a live 3D scene |
 | `spinning-cube` | ~40 LOC proof-of-stack — signals → 3D → pipeline → terminal |
 
 ```bash

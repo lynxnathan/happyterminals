@@ -18,6 +18,9 @@ Thumbs.db
 # Runtime log output from examples (debug-run artifacts)
 *.log
 
+# Raw asciinema captures + trim intermediates — we commit the final .gif/.webp only.
+recordings/*.cast
+
 # AI / harness artifacts (local state, not shared)
 .claude/
 .codex/
